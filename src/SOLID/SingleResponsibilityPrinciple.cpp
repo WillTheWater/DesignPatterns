@@ -168,7 +168,9 @@ namespace SRP
                 }
                 catch (const std::exception& e)
                 {
-                    std::cerr << "[Warning] Skipping invalid item data: " << Line << std::endl;
+                    // Use e.what() to print the actual error
+                    std::cerr << "[Warning] Skipping invalid item data: " << Line
+                        << " (Reason: " << e.what() << ")\n";
                 }
             }
         }
@@ -178,8 +180,8 @@ namespace SRP
     }
 
     // ------------------------------------------------------------------------
- // DEMO IMPLEMENTATION
- // ------------------------------------------------------------------------
+    // DEMO IMPLEMENTATION
+    // ------------------------------------------------------------------------
     void RunDemo()
     {
         // Clear initial buffer
@@ -249,7 +251,7 @@ namespace SRP
         std::cout << "Action: We will manually add and remove items.\n\n";
         std::cout << "[Analysis]:\n";
         std::cout << "The Inventory class manages its own state. The Display class\n";
-        std::cout << "simply observes that state. You are now the Game Logic.\n\n";
+        std::cout << "simply observes that state and displays it to the user.\n\n";
 
         HFL::WaitForInput();
 
@@ -337,8 +339,8 @@ namespace SRP
 
         std::cout << "Action: Passing Inventory to the Display class.\n\n";
         std::cout << "[Analysis]:\n";
-        std::cout << "The Inventory class cannot print itself. We must pass it to\n";
-        std::cout << "InventoryDisplay. This decouples the DATA from the VIEW.\n\n";
+        std::cout << "The Inventory class doesn't know how to display itself. It is passed to\n";
+        std::cout << "InventoryDisplay. This decouples the DATA from the Display functionality.\n\n";
 
         // We use the 'Display' object we created at the top of the function
         Display.DisplayInventory(MyInventory);
@@ -349,10 +351,10 @@ namespace SRP
         HFL::ClearScreen();
         HFL::PrintHeader("Step 4: Saving Data");
 
-        std::cout << "Action: Saving Inventory to disk.\n\n";
+        std::cout << "Action: Saving Inventory.\n\n";
         std::cout << "[Analysis]:\n";
         std::cout << "The Inventory class knows nothing about file paths or writing.\n";
-        std::cout << "We delegate that to InventorySaveLoad.\n";
+        std::cout << "It is delegated to the InventorySaveLoad.\n";
 
         // We use 'Persistence' object from the top
         // We use 'Filename' from the top
