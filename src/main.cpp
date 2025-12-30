@@ -1,9 +1,8 @@
 #pragma once
-
-#include <iostream>
+#include "SOLID/SingleResponsibilityPrinciple.h"
 
 int main(int argc, char* argv[])
 {
-    std::cout << "Welcome to Design Patterns\n";
+    SRP::RunDemo();
     return 0;
 }
