@@ -27,7 +27,7 @@ Whether you're learning design patterns for the first time or reinforcing your e
 ### SOLID Principles
 
 - Single Responsibility Principle — ✓ _Completed_
-- Open–Closed Principle — ⏳ _In Progress_
+- Open–Closed Principle — ✓ _Completed_
 - Liskov Substitution Principle — ⏳ _In Progress_
 - Interface Segregation Principle — ⏳ _In Progress_
 - Dependency Inversion Principle — ⏳ _In Progress_
