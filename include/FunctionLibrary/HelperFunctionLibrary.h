@@ -7,14 +7,16 @@
 #include <fstream>
 #include <sstream>
 #include <filesystem>
-#include <cstdlib> 
+#include <cstdlib>
+#include <limits>
 
 namespace HFL
 {
+	void PrintMainMenu();
+	int GetValidMenuInput(int MaxOption);
 	void ClearScreen();
 	void WaitForInput();
 	void PrintHeader(const std::string& Title);
-
-	// Takes the Design Principle Namespace as a String.
 	std::filesystem::path GetSaveDirectory(const std::string& PrincipleNamespace);
+
 }

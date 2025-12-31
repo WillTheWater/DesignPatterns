@@ -2,6 +2,47 @@
 
 namespace HFL
 {
+    void PrintMainMenu()
+    {
+        std::cout << std::setfill('=') << std::setw(60) << "" << std::setfill(' ') << "\n";
+        std::cout << std::setw(40) << "Game Design Patterns\n";
+        std::cout << std::setfill('=') << std::setw(60) << "" << std::setfill(' ') << "\n\n";
+
+        std::cout << "Select a Principle Demo:\n\n";
+        std::cout << "1. Single Responsibility Principle (SRP)\n";
+        std::cout << "2. Open-Closed Principle (OCP)\n";
+        // "3. Liskov Substitution Principle (LSP)"
+        // "4. Interface Segregation Principle (ISP)"
+        std::cout << "0. End Demo\n";
+    }
+
+    int GetValidMenuInput(int MaxOption)
+    {
+        int Choice = -1;
+        while (true)
+        {
+            std::cout << "\nSelection: ";
+            std::cin >> Choice;
+
+            if (std::cin.fail())
+            {
+                std::cin.clear();
+                std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+                std::cout << "Invalid input. Please enter a number.\n";
+                continue;
+            }
+
+            if (Choice >= 0 && Choice <= MaxOption)
+            {
+                return Choice;
+            }
+            else
+            {
+                std::cout << "Invalid selection. Please choose between 0 and " << MaxOption << ".\n";
+            }
+        }
+    }
+
     void ClearScreen()
     {
         // Cross-platform clear screen
@@ -65,4 +106,5 @@ namespace HFL
 
         return SavePath;
     }
+
 }

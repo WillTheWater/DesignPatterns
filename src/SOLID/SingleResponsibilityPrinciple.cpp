@@ -225,7 +225,7 @@ namespace SRP
         // =========================================================================
         // SHARED SETUP
         // =========================================================================
-        // Define these objects HERE so they are shared across all steps below.
+        // Defined these objects HERE so they are shared across all steps below.
         // =========================================================================
         Inventory MyInventory;
         InventoryDisplay Display;
@@ -268,7 +268,7 @@ namespace SRP
             std::cout << "\nSelect an action:\n";
             std::cout << "1. Add Item\n";
             std::cout << "2. Remove Item\n";
-            std::cout << "0. Continue to next step\n";
+            std::cout << "0. Continue\n";
             std::cout << "Choice: ";
 
             int Action;
