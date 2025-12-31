@@ -9,6 +9,7 @@
 #include <filesystem>
 #include <cstdlib>
 #include <limits>
+#include <memory>
 
 namespace HFL
 {

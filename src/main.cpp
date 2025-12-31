@@ -2,6 +2,7 @@
 
 #include "SOLID/SingleResponsibilityPrinciple.h"
 #include "SOLID/OpenClosedPrinciple.h"
+#include "SOLID/LiskovSubstitutionPrinciple.h"
 
 void RunDemo()
 {
@@ -10,15 +11,18 @@ void RunDemo()
     {
         HFL::ClearScreen();
         HFL::PrintMainMenu();
-        int Choice = HFL::GetValidMenuInput(2);
+        int Choice = HFL::GetValidMenuInput(3);
 
         switch (Choice)
         {
         case 1:
-            SRP::RunDemo();
+            SRP::RunDemo(); // Single Responsibility Principle Demo
             break;
         case 2:
-            OCP::RunDemo();
+            OCP::RunDemo(); // Open-Closed Principle Demo
+            break;
+        case 3:
+            LSP::RunDemo(); // Liskov Substitution Principle Demo
             break;
         case 0:
             IsRunning = false;

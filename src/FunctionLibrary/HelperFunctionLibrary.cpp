@@ -1,3 +1,4 @@
+#define _CRT_SECURE_NO_WARNINGS
 #include "FunctionLibrary/HelperFunctionLibrary.h"
 
 namespace HFL
@@ -11,7 +12,7 @@ namespace HFL
         std::cout << "Select a Principle Demo:\n\n";
         std::cout << "1. Single Responsibility Principle (SRP)\n";
         std::cout << "2. Open-Closed Principle (OCP)\n";
-        // "3. Liskov Substitution Principle (LSP)"
+        std::cout << "3. Liskov Substitution Principle (LSP)\n";
         // "4. Interface Segregation Principle (ISP)"
         std::cout << "0. End Demo\n";
     }
