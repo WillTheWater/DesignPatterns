@@ -1,24 +1,23 @@
 # 📘 C++ Design Patterns & SOLID Principles — Interactive Learning Repository
 
-Welcome to **C++ Design Patterns & SOLID Principles**, a work-in-progress educational project aiming to teach core software architecture concepts through **clean, example-driven code and interactive console demos**.
+**C++ Design Patterns & SOLID Principles**, work-in-progress reference project aimed at learning core software architecture concepts through **clean, example-driven code and interactive console demos**.
 
-This repository demonstrates:
+This project demonstrates:
 
-- ✔ Practical, real-world C++ implementations
-- ✔ Highly commented and beginner-friendly source code
-- ✔ Interactive console demos to *feel* how each principle works
-- ✔ Built using **CMake**, with **Windows / macOS / Linux** compatibility in mind
+- ✔ Practical, real-world C++ implementations.
+- ✔ Highly commented and reference quality source code.
+- ✔ Interactive console demos to *see* how each principle/pattern works.
+- ✔ Built using **CMake**, with **Windows / macOS / Linux** compatibility.
 
-Whether you're learning design patterns for the first time or reinforcing your engineering fundamentals, this project is for you.
+Used for learning design patterns and reinforcing good engineering fundamentals.
 
 ---
 
-## 📌 Goals of This Project
+## 📌 This Project
 
-- Provide a **clear, approachable reference** for SOLID principles and Design Patterns in modern C++
-- Teach through **running examples**, not only theory
-- Show how patterns relate to **extensibility, maintainability, and clean architecture**
-- Encourage exploration — every demo invites you to interact and experiment
+- Provides **clear, approachable reference** for SOLID principles and Design Patterns in modern C++
+- Reenforced through **interactive demos**.
+- Shows how patterns relate to **extensibility, maintainability, and clean architecture**
 
 ---
 
@@ -36,11 +35,11 @@ Whether you're learning design patterns for the first time or reinforcing your e
 
 ### Creational Design Patterns
 
+- Singleton — ✓ _Completed_
 - Builder — ⏳ _In Progress_
 - Factory Method — ⏳ _In Progress_
 - Abstract Factory — ⏳ _In Progress_
 - Prototype — ⏳ _In Progress_
-- Singleton — ⏳ _In Progress_
 
 ---
 
@@ -83,5 +82,4 @@ This project is my **training ground**. A place to discipline the mind and sharp
 Learning through practice, reflection, failure, and refinement.
 
 > *“We are what we repeatedly do. Excellence, then, is not an act but a habit.”* — Aristotle
-
 ---
