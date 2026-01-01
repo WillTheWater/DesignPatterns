@@ -14,6 +14,7 @@ namespace HFL
         std::cout << "2. Open-Closed Principle (OCP)\n";
         std::cout << "3. Liskov Substitution Principle (LSP)\n";
         std::cout << "4. Interface Segregation Principle (ISP)\n";
+        std::cout << "5. Dependency Inversion Principle (DIP)\n";
         std::cout << "0. End Demo\n";
     }
 
@@ -107,5 +108,4 @@ namespace HFL
 
         return SavePath;
     }
-
 }

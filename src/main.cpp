@@ -4,6 +4,7 @@
 #include "SOLID/OpenClosedPrinciple.h"
 #include "SOLID/LiskovSubstitutionPrinciple.h"
 #include "SOLID/InterfaceSegregationPrinciple.h"
+#include "SOLID/DependencyInversionPrinciple.h"
 
 void RunDemo()
 {
@@ -12,7 +13,7 @@ void RunDemo()
     {
         HFL::ClearScreen();
         HFL::PrintMainMenu();
-        int Choice = HFL::GetValidMenuInput(4);
+        int Choice = HFL::GetValidMenuInput(5);
 
         switch (Choice)
         {
@@ -27,6 +28,9 @@ void RunDemo()
             break;
         case 4:
             ISP::RunDemo(); // Interface Segregation Principle Demo
+            break;
+        case 5:
+            DIP::RunDemo(); // Dependency Inversion Principle Demo
             break;
         case 0:
             IsRunning = false;
