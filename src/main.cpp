@@ -5,6 +5,7 @@
 #include "SOLID/LiskovSubstitutionPrinciple.h"
 #include "SOLID/InterfaceSegregationPrinciple.h"
 #include "SOLID/DependencyInversionPrinciple.h"
+#include "Creational/Singleton.h"
 
 void RunDemo()
 {
@@ -13,7 +14,7 @@ void RunDemo()
     {
         HFL::ClearScreen();
         HFL::PrintMainMenu();
-        int Choice = HFL::GetValidMenuInput(5);
+        int Choice = HFL::GetValidMenuInput(6);
 
         switch (Choice)
         {
@@ -31,6 +32,9 @@ void RunDemo()
             break;
         case 5:
             DIP::RunDemo(); // Dependency Inversion Principle Demo
+            break;
+        case 6:
+            SGT::RunDemo(); // Singleton Demo
             break;
         case 0:
             IsRunning = false;

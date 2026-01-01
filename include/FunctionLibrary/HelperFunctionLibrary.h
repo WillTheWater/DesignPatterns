@@ -11,6 +11,7 @@
 #include <limits>
 #include <ctime>
 #include <memory>
+#include <type_traits>
 
 namespace HFL
 {
