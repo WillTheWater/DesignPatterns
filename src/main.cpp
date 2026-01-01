@@ -3,6 +3,7 @@
 #include "SOLID/SingleResponsibilityPrinciple.h"
 #include "SOLID/OpenClosedPrinciple.h"
 #include "SOLID/LiskovSubstitutionPrinciple.h"
+#include "SOLID/InterfaceSegregationPrinciple.h"
 
 void RunDemo()
 {
@@ -11,7 +12,7 @@ void RunDemo()
     {
         HFL::ClearScreen();
         HFL::PrintMainMenu();
-        int Choice = HFL::GetValidMenuInput(3);
+        int Choice = HFL::GetValidMenuInput(4);
 
         switch (Choice)
         {
@@ -23,6 +24,9 @@ void RunDemo()
             break;
         case 3:
             LSP::RunDemo(); // Liskov Substitution Principle Demo
+            break;
+        case 4:
+            ISP::RunDemo(); // Interface Segregation Principle Demo
             break;
         case 0:
             IsRunning = false;

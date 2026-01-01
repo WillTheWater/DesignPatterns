@@ -13,7 +13,7 @@ namespace HFL
         std::cout << "1. Single Responsibility Principle (SRP)\n";
         std::cout << "2. Open-Closed Principle (OCP)\n";
         std::cout << "3. Liskov Substitution Principle (LSP)\n";
-        // "4. Interface Segregation Principle (ISP)"
+        std::cout << "4. Interface Segregation Principle (ISP)\n";
         std::cout << "0. End Demo\n";
     }
 
