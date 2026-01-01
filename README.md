@@ -29,7 +29,7 @@ Whether you're learning design patterns for the first time or reinforcing your e
 - Single Responsibility Principle — ✓ _Completed_
 - Open–Closed Principle — ✓ _Completed_
 - Liskov Substitution Principle — ✓ _Completed_
-- Interface Segregation Principle — ⏳ _In Progress_
+- Interface Segregation Principle — ✓ _Completed_
 - Dependency Inversion Principle — ⏳ _In Progress_
 
 ---
