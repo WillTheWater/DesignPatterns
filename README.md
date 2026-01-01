@@ -30,7 +30,7 @@ Whether you're learning design patterns for the first time or reinforcing your e
 - Open–Closed Principle — ✓ _Completed_
 - Liskov Substitution Principle — ✓ _Completed_
 - Interface Segregation Principle — ✓ _Completed_
-- Dependency Inversion Principle — ⏳ _In Progress_
+- Dependency Inversion Principle — ✓ _Completed_
 
 ---
 
