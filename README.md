@@ -36,10 +36,10 @@ Used for learning design patterns and reinforcing good engineering fundamentals.
 ### Creational Design Patterns
 
 - Singleton — ✓ _Completed_
-- Builder — ⏳ _In Progress_
-- Factory Method — ⏳ _In Progress_
+- Factory Method — ✓ _Completed_
 - Abstract Factory — ⏳ _In Progress_
 - Prototype — ⏳ _In Progress_
+- Builder — ⏳ _In Progress_
 
 ---
 
