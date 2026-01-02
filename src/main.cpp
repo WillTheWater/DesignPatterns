@@ -7,6 +7,7 @@
 #include "SOLID/DependencyInversionPrinciple.h"
 #include "Creational/Singleton.h"
 #include "Creational/FactoryMethod.h"
+#include "Creational/AbstractFactory.h"
 
 void RunDemo()
 {
@@ -15,7 +16,7 @@ void RunDemo()
     {
         HFL::ClearScreen();
         HFL::PrintMainMenu();
-        int Choice = HFL::GetValidMenuInput(7);
+        int Choice = HFL::GetValidMenuInput(8);
 
         switch (Choice)
         {
@@ -39,6 +40,9 @@ void RunDemo()
             break;
         case 7:
             FTM::RunDemo(); // Factory Method Demo
+            break;
+        case 8:
+            AFT::RunDemo(); // Abstract Factory Demo
             break;
         case 0:
             IsRunning = false;

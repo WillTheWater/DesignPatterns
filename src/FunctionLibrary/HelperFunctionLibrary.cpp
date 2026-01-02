@@ -17,6 +17,7 @@ namespace HFL
         std::cout << "5. Dependency Inversion Principle (DIP)\n";
         std::cout << "6. Singleton (SGT)\n";
         std::cout << "7. Factory Method (FTM)\n";
+        std::cout << "8. Abstract Factory (AFT)\n";
         std::cout << "0. End Demo\n";
     }
 
