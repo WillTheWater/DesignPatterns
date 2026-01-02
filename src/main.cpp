@@ -6,6 +6,7 @@
 #include "SOLID/InterfaceSegregationPrinciple.h"
 #include "SOLID/DependencyInversionPrinciple.h"
 #include "Creational/Singleton.h"
+#include "Creational/FactoryMethod.h"
 
 void RunDemo()
 {
@@ -14,7 +15,7 @@ void RunDemo()
     {
         HFL::ClearScreen();
         HFL::PrintMainMenu();
-        int Choice = HFL::GetValidMenuInput(6);
+        int Choice = HFL::GetValidMenuInput(7);
 
         switch (Choice)
         {
@@ -35,6 +36,9 @@ void RunDemo()
             break;
         case 6:
             SGT::RunDemo(); // Singleton Demo
+            break;
+        case 7:
+            FTM::RunDemo(); // Factory Method Demo
             break;
         case 0:
             IsRunning = false;

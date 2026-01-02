@@ -16,6 +16,7 @@ namespace HFL
         std::cout << "4. Interface Segregation Principle (ISP)\n";
         std::cout << "5. Dependency Inversion Principle (DIP)\n";
         std::cout << "6. Singleton (SGT)\n";
+        std::cout << "7. Factory Method (FTM)\n";
         std::cout << "0. End Demo\n";
     }
 
