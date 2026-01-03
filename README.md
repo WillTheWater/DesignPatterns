@@ -39,7 +39,7 @@ Used for learning design patterns and reinforcing good engineering fundamentals.
 - Factory Method — ✓ _Completed_
 - Abstract Factory — ✓ _Completed_
 - Prototype — ✓ _Completed_
-- Builder — ⏳ _In Progress_
+- Builder — ✓ _Completed_
 
 ---
 
