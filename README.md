@@ -38,7 +38,7 @@ Used for learning design patterns and reinforcing good engineering fundamentals.
 - Singleton — ✓ _Completed_
 - Factory Method — ✓ _Completed_
 - Abstract Factory — ✓ _Completed_
-- Prototype — ⏳ _In Progress_
+- Prototype — ✓ _Completed_
 - Builder — ⏳ _In Progress_
 
 ---
