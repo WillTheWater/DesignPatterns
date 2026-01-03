@@ -9,6 +9,7 @@
 #include "Creational/FactoryMethod.h"
 #include "Creational/AbstractFactory.h"
 #include "Creational/Prototype.h"
+#include "Creational/Builder.h"
 
 void RunDemo()
 {
@@ -17,7 +18,7 @@ void RunDemo()
     {
         HFL::ClearScreen();
         HFL::PrintMainMenu();
-        int Choice = HFL::GetValidMenuInput(9);
+        int Choice = HFL::GetValidMenuInput(10);
 
         switch (Choice)
         {
@@ -47,6 +48,9 @@ void RunDemo()
             break;
         case 9:
             PRO::RunDemo(); // Prototype Demo
+            break;
+        case 10:
+            BLD::RunDemo(); // Builder Demo
             break;
         case 0:
             IsRunning = false;

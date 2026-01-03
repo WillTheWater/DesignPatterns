@@ -3,7 +3,7 @@
 #include "FunctionLibrary/HelperFunctionLibrary.h"
 
 // =========================================================================
-// PRINCIPLE: Factory Method Pattern
+// CREATIONAL DESIGN PATTERNS: Factory Method
 // =========================================================================
 // "Define an interface for creating an object, but let subclasses
 // decide which class to instantiate."

@@ -3,7 +3,7 @@
 #include "FunctionLibrary/HelperFunctionLibrary.h"
 
 // =========================================================================
-// PATTERN: Abstract Factory
+// CREATIONAL DESIGN PATTERNS: Abstract Factory
 // =========================================================================
 // "Provide an interface for creating families of related objects
 // without specifying their concrete classes."

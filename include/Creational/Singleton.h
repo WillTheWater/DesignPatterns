@@ -3,7 +3,7 @@
 #include "FunctionLibrary/HelperFunctionLibrary.h"
 
 // =========================================================================
-// PRINCIPLE: Singleton Pattern
+// CREATIONAL DESIGN PATTERNS: Singleton Pattern
 // =========================================================================
 // "Ensure a class has only one instance, and provide a global point of access to it."
 //
@@ -19,10 +19,6 @@
 // BENEFIT:
 // One global manager handles multiple asset types using clean, specific code blocks for each type.
 // =========================================================================
-
-#include <string>
-#include <unordered_map>
-#include <iostream>
 
 namespace SGT
 {

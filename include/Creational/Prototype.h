@@ -3,7 +3,7 @@
 #include "FunctionLibrary/HelperFunctionLibrary.h"
 
 // =========================================================================
-// PRINCIPLE: Prototype Pattern
+// CREATIONAL DESIGN PATTERNS: Prototype Pattern
 // =========================================================================
 // "Specify the kinds of objects to create using a prototype instance, 
 // and create new objects by copying this prototype."
