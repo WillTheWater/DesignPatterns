@@ -9,7 +9,7 @@ namespace HFL
         std::cout << std::setw(40) << "Game Design Patterns\n";
         std::cout << std::setfill('=') << std::setw(60) << "" << std::setfill(' ') << "\n\n";
 
-        std::cout << "Select a Principle Demo:\n\n";
+        std::cout << "Select a Design Pattern to Demo:\n\n";
         std::cout << "1. Single Responsibility Principle (SRP)\n";
         std::cout << "2. Open-Closed Principle (OCP)\n";
         std::cout << "3. Liskov Substitution Principle (LSP)\n";
@@ -18,6 +18,7 @@ namespace HFL
         std::cout << "6. Singleton (SGT)\n";
         std::cout << "7. Factory Method (FTM)\n";
         std::cout << "8. Abstract Factory (AFT)\n";
+        std::cout << "9. Prototype (PRO)\n";
         std::cout << "0. End Demo\n";
     }
 
