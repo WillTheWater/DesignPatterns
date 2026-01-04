@@ -20,6 +20,7 @@ namespace HFL
         std::cout << "8. Abstract Factory (AFT)\n";
         std::cout << "9. Prototype (PRO)\n";
         std::cout << "10. Builder (BLD)\n";
+        std::cout << "11. Facade (FAC)\n";
         std::cout << "0. End Demo\n";
     }
 
