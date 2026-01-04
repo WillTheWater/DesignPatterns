@@ -44,7 +44,7 @@ namespace FAC
     };
 
     // ------------------------------------------------------------------------
-    // 2. SUBSYSTEMS (The Wiring - Hidden from User)
+    // 2. SUBSYSTEMS (The Wiring)
     // ------------------------------------------------------------------------
     // These classes are the "Low Level" details. The Facade manages them.
     // Note: We use Interfaces for Subsystems too, keeping the code decoupled.
@@ -96,8 +96,7 @@ namespace FAC
     public:
         void Write(const std::string& Filename, const std::string& Content) const override
         {
-            // 1. Get the Cross-Platform Path from your Helper Library
-            // We pass "FAC" so it creates a folder specific to this demo pattern
+            // 1. Get the Cross-Platform Path
             std::filesystem::path saveDir = HFL::GetSaveDirectory("FAC");
 
             // 2. Construct the full file path
