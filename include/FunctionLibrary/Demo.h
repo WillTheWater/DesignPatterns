@@ -11,6 +11,7 @@
 #include "Creational/Prototype.h"
 #include "Creational/Builder.h"
 #include "Structural/Facade.h"
+#include "Structural/Adapter.h"
 
 void RunDemo()
 {
@@ -19,7 +20,7 @@ void RunDemo()
     {
         HFL::ClearScreen();
         HFL::PrintMainMenu();
-        int Choice = HFL::GetValidMenuInput(11);
+        int Choice = HFL::GetValidMenuInput(12);
 
         switch (Choice)
         {
@@ -55,6 +56,9 @@ void RunDemo()
             break;
         case 11:
             FAC::RunDemo(); // Facade Demo
+            break;
+        case 12:
+            ADP::RunDemo(); // Adapter Demo
             break;
         case 0:
             IsRunning = false;
