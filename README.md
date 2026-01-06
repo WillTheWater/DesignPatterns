@@ -47,11 +47,11 @@ Used for learning design patterns and reinforcing good engineering fundamentals.
 
 - Façade — ✓ _Completed_
 - Adapter — ✓ _Completed_
+- Proxy — ✓ _Completed_
 - Bridge — ⏳ _In Progress_
 - Composite — ⏳ _In Progress_
 - Decorator — ⏳ _In Progress_
 - Flyweight — ⏳ _In Progress_
-- Proxy — ⏳ _In Progress_
 
 ---
 
