@@ -12,6 +12,8 @@
 #include <ctime>
 #include <memory>
 #include <type_traits>
+#include <chrono>
+#include <thread>
 
 namespace HFL
 {
