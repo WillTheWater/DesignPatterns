@@ -23,6 +23,7 @@ namespace HFL
         std::cout << "11. Facade (FAC)\n";
         std::cout << "12. Adapter (ADP)\n";
         std::cout << "13. Proxy (PRX)\n";
+        std::cout << "14. Bridge (BRG)\n";
         std::cout << "0. End Demo\n";
     }
 

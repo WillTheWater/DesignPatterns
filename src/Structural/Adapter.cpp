@@ -41,7 +41,7 @@ namespace ADP
 
         switch (Action)
         {
-        case EInputAction::MoveUp:
+        case EInputAction::Forward:
             std::cout << "   [Adapter] Forward -> W (87)\n";
             KeyCode = 87;
             break;
@@ -175,7 +175,7 @@ namespace ADP
 
             switch (Choice)
             {
-            case 'w': case 'W': Action = EInputAction::MoveUp; break;
+            case 'w': case 'W': Action = EInputAction::Forward; break;
             case 'a': case 'A': Action = EInputAction::MoveLeft; break;
             case 's': case 'S': Action = EInputAction::MoveDown; break;
             case 'd': case 'D': Action = EInputAction::MoveRight; break;

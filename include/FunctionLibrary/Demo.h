@@ -13,6 +13,7 @@
 #include "Structural/Facade.h"
 #include "Structural/Adapter.h"
 #include "Structural/Proxy.h"
+#include "Structural/Bridge.h"
 
 void RunDemo()
 {
@@ -21,7 +22,7 @@ void RunDemo()
     {
         HFL::ClearScreen();
         HFL::PrintMainMenu();
-        int Choice = HFL::GetValidMenuInput(13);
+        int Choice = HFL::GetValidMenuInput(14);
 
         switch (Choice)
         {
@@ -63,6 +64,9 @@ void RunDemo()
             break;
         case 13:
             PRX::RunDemo(); // Proxy Demo
+            break;
+        case 14:
+            BRG::RunDemo(); // Bridge Demo
             break;
         case 0:
             IsRunning = false;

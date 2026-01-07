@@ -34,7 +34,7 @@ namespace ADP
     // that both Client and Adapter agree on.
     enum class EInputAction
     {
-        MoveUp,
+        Forward,
         MoveLeft,
         MoveDown,
         MoveRight,
