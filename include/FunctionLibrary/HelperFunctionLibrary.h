@@ -14,6 +14,7 @@
 #include <type_traits>
 #include <chrono>
 #include <thread>
+#include <algorithm>
 
 namespace HFL
 {

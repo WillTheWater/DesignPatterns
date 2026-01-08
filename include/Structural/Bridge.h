@@ -25,7 +25,7 @@
 // Each device translates raw input into a game command.
 //
 // BENEFIT:
-// You can add new input hardware without changing Game Logic.
+// Add new input hardware without changing Game Logic.
 // The Abstraction and Implementations vary independently.
 // =========================================================================
 
