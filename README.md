@@ -49,7 +49,7 @@ Used for learning design patterns and reinforcing good engineering fundamentals.
 - Adapter — ✓ _Completed_
 - Proxy — ✓ _Completed_
 - Bridge — ✓ _Completed_
-- Composite — ⏳ _In Progress_
+- Composite — ✓ _Completed_
 - Decorator — ⏳ _In Progress_
 - Flyweight — ⏳ _In Progress_
 
