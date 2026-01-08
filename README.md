@@ -1,11 +1,11 @@
 # 📘 C++ Design Patterns & SOLID Principles — Interactive Learning Repository
 
-**C++ Design Patterns & SOLID Principles**, work-in-progress reference project aimed at learning core software architecture concepts through **clean, example-driven code and interactive console demos**.
+**C++ Design Patterns & SOLID Principles**, work-in-progress reference project aimed at learning core software architecture concepts through **example-driven code and interactive console demos**.
 
 This project demonstrates:
 
 - ✔ Practical, real-world C++ implementations.
-- ✔ Highly commented and reference quality source code.
+- ✔ Highly commented source code.
 - ✔ Interactive console demos to *see* how each principle/pattern works.
 - ✔ Built using **CMake**, with **Windows / macOS / Linux** compatibility.
 
@@ -31,8 +31,6 @@ Used for learning design patterns and reinforcing good engineering fundamentals.
 - Interface Segregation Principle — ✓ _Completed_
 - Dependency Inversion Principle — ✓ _Completed_
 
----
-
 ### Creational Design Patterns
 
 - Singleton — ✓ _Completed_
@@ -40,8 +38,6 @@ Used for learning design patterns and reinforcing good engineering fundamentals.
 - Abstract Factory — ✓ _Completed_
 - Prototype — ✓ _Completed_
 - Builder — ✓ _Completed_
-
----
 
 ### Structural Design Patterns
 
@@ -52,8 +48,6 @@ Used for learning design patterns and reinforcing good engineering fundamentals.
 - Composite — ✓ _Completed_
 - Decorator — ⏳ _In Progress_
 - Flyweight — ⏳ _In Progress_
-
----
 
 ### Behavioral Design Patterns
 
