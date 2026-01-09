@@ -16,6 +16,7 @@
 #include "Structural/Bridge.h"
 #include "Structural/Composite.h"
 #include "Structural/Decorator.h"
+#include "Structural/Flyweight.h"
 
 void RunDemo()
 {
@@ -24,7 +25,7 @@ void RunDemo()
     {
         HFL::ClearScreen();
         HFL::PrintMainMenu();
-        int Choice = HFL::GetValidMenuInput(16);
+        int Choice = HFL::GetValidMenuInput(17);
 
         switch (Choice)
         {
@@ -75,6 +76,9 @@ void RunDemo()
             break;
         case 16:
             DEC::RunDemo(); // Decorator Demo
+            break;
+        case 17:
+            FLY::RunDemo(); // Flyweight Demo
             break;
         case 0:
             IsRunning = false;

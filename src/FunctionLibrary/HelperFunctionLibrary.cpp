@@ -26,6 +26,7 @@ namespace HFL
         std::cout << "14. Bridge (BRG)\n";
         std::cout << "15. Composite (COM)\n";
         std::cout << "16. Decorator (DEC)\n";
+        std::cout << "17. Flyweight (FLY)\n";
         std::cout << "0. End Demo\n";
     }
 
