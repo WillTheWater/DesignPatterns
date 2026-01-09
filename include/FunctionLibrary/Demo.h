@@ -15,6 +15,7 @@
 #include "Structural/Proxy.h"
 #include "Structural/Bridge.h"
 #include "Structural/Composite.h"
+#include "Structural/Decorator.h"
 
 void RunDemo()
 {
@@ -23,7 +24,7 @@ void RunDemo()
     {
         HFL::ClearScreen();
         HFL::PrintMainMenu();
-        int Choice = HFL::GetValidMenuInput(15);
+        int Choice = HFL::GetValidMenuInput(16);
 
         switch (Choice)
         {
@@ -71,6 +72,9 @@ void RunDemo()
             break;
         case 15:
             COM::RunDemo(); // Composite Demo
+            break;
+        case 16:
+            DEC::RunDemo(); // Decorator Demo
             break;
         case 0:
             IsRunning = false;
