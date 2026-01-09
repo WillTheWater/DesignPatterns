@@ -47,7 +47,7 @@ Used for learning design patterns and reinforcing good engineering fundamentals.
 - Bridge — ✓ _Completed_
 - Composite — ✓ _Completed_
 - Decorator — ✓ _Completed_
-- Flyweight — ⏳ _In Progress_
+- Flyweight — ✓ _Completed_
 
 ### Behavioral Design Patterns
 
