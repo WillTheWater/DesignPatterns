@@ -46,7 +46,7 @@ Used for learning design patterns and reinforcing good engineering fundamentals.
 - Proxy — ✓ _Completed_
 - Bridge — ✓ _Completed_
 - Composite — ✓ _Completed_
-- Decorator — ⏳ _In Progress_
+- Decorator — ✓ _Completed_
 - Flyweight — ⏳ _In Progress_
 
 ### Behavioral Design Patterns
