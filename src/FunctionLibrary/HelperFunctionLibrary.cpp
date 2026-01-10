@@ -42,7 +42,9 @@ namespace HFL
         // --- SECTION: BEHAVIORAL ---
         std::cout << std::string((Width - 24) / 2, ' ') << "[ BEHAVIORAL PATTERNS ]\n";
         std::cout << std::left << std::setw(ColWidth) << " 18. [NUL] Null Object"
-            << std::left << std::setw(ColWidth) << " 19. [STR] Strategy" << "\n\n";
+            << std::left << std::setw(ColWidth) << " 19. [STR] Strategy" << "\n";
+        std::cout << std::left << std::setw(ColWidth) << " 20. [TMP] Template Method"
+            << std::left << std::setw(ColWidth) << " 21. [ITR] Iterator" << "\n\n";
 
         std::cout << " " << std::setfill('-') << std::setw(Width - 2) << "" << std::setfill(' ') << "\n";
         std::cout << "  0. End Demo\n";

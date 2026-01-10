@@ -19,6 +19,7 @@
 #include "Structural/Flyweight.h"
 #include "Behavioral/NullObject.h"
 #include "Behavioral/Strategy.h"
+#include "Behavioral/TemplateMethod.h"
 
 void RunDemo()
 {
@@ -27,7 +28,7 @@ void RunDemo()
     {
         HFL::ClearScreen();
         HFL::PrintMainMenu();
-        int Choice = HFL::GetValidMenuInput(19);
+        int Choice = HFL::GetValidMenuInput(20);
 
         switch (Choice)
         {
@@ -87,6 +88,9 @@ void RunDemo()
             break;
         case 19:
             STR::RunDemo(); // Strategy Pattern
+            break;
+        case 20:
+            TMP::RunDemo(); // Template Method
             break;
         case 0:
             IsRunning = false;
