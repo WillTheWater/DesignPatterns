@@ -51,18 +51,18 @@ Used for learning design patterns and reinforcing good engineering fundamentals.
 
 ### Behavioral Design Patterns
 
-- Chain of Responsibility — ⏳ _In Progress_
-- Command — ⏳ _In Progress_
-- Interpreter — ⏳ _In Progress_
-- Iterator — ⏳ _In Progress_
-- Mediator — ⏳ _In Progress_
-- Memento — ⏳ _In Progress_
-- Null Object — ⏳ _In Progress_
-- Observer — ⏳ _In Progress_
-- State — ⏳ _In Progress_
+- Null Object — ✓ _Completed_
 - Strategy — ⏳ _In Progress_
 - Template Method — ⏳ _In Progress_
+- Iterator — ⏳ _In Progress_
+- Command — ⏳ _In Progress_
+- Observer — ⏳ _In Progress_
+- State — ⏳ _In Progress_
+- Chain of Responsibility — ⏳ _In Progress_
+- Mediator — ⏳ _In Progress_
+- Memento — ⏳ _In Progress_
 - Visitor — ⏳ _In Progress_
+- Interpreter — ⏳ _In Progress_
 
 ---
 
