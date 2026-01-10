@@ -52,7 +52,7 @@ Used for learning design patterns and reinforcing good engineering fundamentals.
 ### Behavioral Design Patterns
 
 - Null Object — ✓ _Completed_
-- Strategy — ⏳ _In Progress_
+- Strategy — ✓ _Completed_
 - Template Method — ⏳ _In Progress_
 - Iterator — ⏳ _In Progress_
 - Command — ⏳ _In Progress_
