@@ -5,29 +5,48 @@ namespace HFL
 {
     void PrintMainMenu()
     {
-        std::cout << std::setfill('=') << std::setw(60) << "" << std::setfill(' ') << "\n";
-        std::cout << std::setw(40) << "Game Design Patterns\n";
-        std::cout << std::setfill('=') << std::setw(60) << "" << std::setfill(' ') << "\n\n";
+        const int Width = 70;
+        const int ColWidth = 35;
 
-        std::cout << "Select a Design Pattern to Demo:\n\n";
-        std::cout << "1. Single Responsibility Principle (SRP)\n";
-        std::cout << "2. Open-Closed Principle (OCP)\n";
-        std::cout << "3. Liskov Substitution Principle (LSP)\n";
-        std::cout << "4. Interface Segregation Principle (ISP)\n";
-        std::cout << "5. Dependency Inversion Principle (DIP)\n";
-        std::cout << "6. Singleton (SGT)\n";
-        std::cout << "7. Factory Method (FTM)\n";
-        std::cout << "8. Abstract Factory (AFT)\n";
-        std::cout << "9. Prototype (PRO)\n";
-        std::cout << "10. Builder (BLD)\n";
-        std::cout << "11. Facade (FAC)\n";
-        std::cout << "12. Adapter (ADP)\n";
-        std::cout << "13. Proxy (PRX)\n";
-        std::cout << "14. Bridge (BRG)\n";
-        std::cout << "15. Composite (COM)\n";
-        std::cout << "16. Decorator (DEC)\n";
-        std::cout << "17. Flyweight (FLY)\n";
-        std::cout << "0. End Demo\n";
+        HFL::ClearScreen();
+        std::cout << std::setfill('=') << std::setw(Width) << "" << std::setfill(' ') << "\n";
+        std::cout << std::right << std::setw((Width + 20) / 2) << "GAME DESIGN PATTERNS\n";
+        std::cout << std::setfill('=') << std::setw(Width) << "" << std::setfill(' ') << "\n\n";
+
+        // --- SECTION: SOLID PRINCIPLES ---
+        std::cout << std::string((Width - 22) / 2, ' ') << "[ SOLID PRINCIPLES ]\n";
+        std::cout << std::left << std::setw(ColWidth) << "  1. [SRP] Single Responsibility"
+            << std::left << std::setw(ColWidth) << "  2. [OCP] Open-Closed" << "\n";
+        std::cout << std::left << std::setw(ColWidth) << "  3. [LSP] Liskov Substitution"
+            << std::left << std::setw(ColWidth) << "  4. [ISP] Interface Segregation" << "\n";
+        std::cout << std::left << std::setw(ColWidth) << "  5. [DIP] Dependency Inversion" << "\n\n";
+
+        // --- SECTION: CREATIONAL ---
+        std::cout << std::string((Width - 24) / 2, ' ') << "[ CREATIONAL PATTERNS ]\n";
+        std::cout << std::left << std::setw(ColWidth) << "  6. [SGT] Singleton"
+            << std::left << std::setw(ColWidth) << "  7. [FTM] Factory Method" << "\n";
+        std::cout << std::left << std::setw(ColWidth) << "  8. [AFT] Abstract Factory"
+            << std::left << std::setw(ColWidth) << "  9. [PRO] Prototype" << "\n";
+        std::cout << std::left << std::setw(ColWidth) << " 10. [BLD] Builder" << "\n\n";
+
+        // --- SECTION: STRUCTURAL ---
+        std::cout << std::string((Width - 24) / 2, ' ') << "[ STRUCTURAL PATTERNS ]\n";
+        std::cout << std::left << std::setw(ColWidth) << " 11. [FAC] Facade"
+            << std::left << std::setw(ColWidth) << " 12. [ADP] Adapter" << "\n";
+        std::cout << std::left << std::setw(ColWidth) << " 13. [PRX] Proxy"
+            << std::left << std::setw(ColWidth) << " 14. [BRG] Bridge" << "\n";
+        std::cout << std::left << std::setw(ColWidth) << " 15. [COM] Composite"
+            << std::left << std::setw(ColWidth) << " 16. [DEC] Decorator" << "\n";
+        std::cout << std::left << std::setw(ColWidth) << " 17. [FLY] Flyweight" << "\n\n";
+
+        // --- SECTION: BEHAVIORAL ---
+        std::cout << std::string((Width - 24) / 2, ' ') << "[ BEHAVIORAL PATTERNS ]\n";
+        std::cout << std::left << std::setw(ColWidth) << " 18. [NUL] Null Object"
+            << std::left << std::setw(ColWidth) << " 19. [STR] Strategy" << "\n\n";
+
+        std::cout << " " << std::setfill('-') << std::setw(Width - 2) << "" << std::setfill(' ') << "\n";
+        std::cout << "  0. End Demo\n";
+        std::cout << " " << std::setfill('-') << std::setw(Width - 2) << "" << std::setfill(' ') << "\n";
     }
 
     int GetValidMenuInput(int MaxOption)
