@@ -53,7 +53,7 @@ Used for learning design patterns and reinforcing good engineering fundamentals.
 
 - Null Object — ✓ _Completed_
 - Strategy — ✓ _Completed_
-- Template Method — ⏳ _In Progress_
+- Template Method — — ✓ _Completed_
 - Iterator — ⏳ _In Progress_
 - Command — ⏳ _In Progress_
 - Observer — ⏳ _In Progress_
