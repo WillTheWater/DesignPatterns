@@ -20,6 +20,7 @@
 #include "Behavioral/NullObject.h"
 #include "Behavioral/Strategy.h"
 #include "Behavioral/TemplateMethod.h"
+#include "Behavioral/Iterator.h"
 
 void RunDemo()
 {
@@ -28,7 +29,7 @@ void RunDemo()
     {
         HFL::ClearScreen();
         HFL::PrintMainMenu();
-        int Choice = HFL::GetValidMenuInput(20);
+        int Choice = HFL::GetValidMenuInput(21);
 
         switch (Choice)
         {
@@ -91,6 +92,9 @@ void RunDemo()
             break;
         case 20:
             TMP::RunDemo(); // Template Method
+            break;
+        case 21:
+            ITR::RunDemo(); // Iterator
             break;
         case 0:
             IsRunning = false;
