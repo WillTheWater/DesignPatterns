@@ -73,7 +73,7 @@ namespace TMP
         HFL::WaitForInput();
 
         // Setup the Crafting Stations
-        // We use a pointer to the base class to show that the Station 
+        // Uses a pointer to the base class to show that the Station 
         // doesn't care about the specific profession.
         CraftingProcess* CurrentWorker = nullptr;
         std::string StationName = "Empty Station";
@@ -120,7 +120,7 @@ namespace TMP
                 if (CurrentWorker)
                 {
                     // THIS IS THE MOMENT:
-                    // We call the same function on the same pointer type,
+                    // Calls the same function on the same pointer type,
                     // but the Template Method dictates a different flow.
                     std::cout << "[Station] 'Craft' signal sent to Template...\n";
                     CurrentWorker->CraftItem();
