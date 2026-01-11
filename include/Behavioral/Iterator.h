@@ -49,21 +49,23 @@ namespace ITR
     };
 
     // ------------------------------------------------------------------------
-    // 2. THE CONCRETE ITERATOR (The "Filter" Logic)
+    // 2. THE CONCRETE ITERATOR (Smart Filter Logic)
     // ------------------------------------------------------------------------
-    class ActiveQuestIterator : public IQuestIterator
+    class QuestFilterIterator : public IQuestIterator
     {
     public:
-        ActiveQuestIterator(std::vector<Quest>& QuestList);
+        // TargetStatus so this one class can handle ANY filter.
+        QuestFilterIterator(std::vector<Quest>& QuestList, QuestStatus TargetStatus);
 
         bool HasNext() const override;
         Quest* Next() override;
         Quest* Current() const override;
 
     private:
-        void AdvanceToNextActive(); // The logic lives here
+        void AdvanceToNextMatch();
 
         std::vector<Quest>& Quests;
+        QuestStatus Filter;
         size_t Position = 0;
     };
 
@@ -84,6 +86,10 @@ namespace ITR
         // 3. Polymorphism: 'CreateCompletedIterator()' can be added later;
         //    the UI would treat it exactly the same way.
         std::unique_ptr<IQuestIterator> CreateActiveIterator();
+        std::unique_ptr<IQuestIterator> CreateCompletedIterator();
+        std::unique_ptr<IQuestIterator> CreateHiddenIterator();
+        std::unique_ptr<IQuestIterator> CreateAvailableIterator();
+        const std::vector<Quest>& GetAllQuestsRaw() const { return AllQuests; }
 
     private:
         std::vector<Quest> AllQuests;
