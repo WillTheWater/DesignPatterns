@@ -44,7 +44,9 @@ namespace HFL
         std::cout << std::left << std::setw(ColWidth) << " 18. [NUL] Null Object"
             << std::left << std::setw(ColWidth) << " 19. [STR] Strategy" << "\n";
         std::cout << std::left << std::setw(ColWidth) << " 20. [TMP] Template Method"
-            << std::left << std::setw(ColWidth) << " 21. [ITR] Iterator" << "\n\n";
+            << std::left << std::setw(ColWidth) << " 21. [ITR] Iterator" << "\n";
+        std::cout << std::left << std::setw(ColWidth) << " 22. [CMD] Command"
+            << std::left << std::setw(ColWidth) << " 23. [OBS] Observer" << "\n\n";
 
         std::cout << " " << std::setfill('-') << std::setw(Width - 2) << "" << std::setfill(' ') << "\n";
         std::cout << "  0. End Demo\n";

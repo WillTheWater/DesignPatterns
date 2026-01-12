@@ -15,6 +15,7 @@
 #include <chrono>
 #include <thread>
 #include <algorithm>
+#include <stack>
 
 namespace HFL
 {
