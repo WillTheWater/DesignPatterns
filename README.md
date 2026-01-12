@@ -55,7 +55,7 @@ Used for learning design patterns and reinforcing good engineering fundamentals.
 - Strategy — ✓ _Completed_
 - Template Method — — ✓ _Completed_
 - Iterator — ✓ _Completed_
-- Command — ⏳ _In Progress_
+- Command — ✓ _Completed_
 - Observer — ⏳ _In Progress_
 - State — ⏳ _In Progress_
 - Chain of Responsibility — ⏳ _In Progress_
