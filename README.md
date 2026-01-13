@@ -56,7 +56,7 @@ Used for learning design patterns and reinforcing good engineering fundamentals.
 - Template Method — — ✓ _Completed_
 - Iterator — ✓ _Completed_
 - Command — ✓ _Completed_
-- Observer — ⏳ _In Progress_
+- Observer — ✓ _Completed_
 - State — ⏳ _In Progress_
 - Chain of Responsibility — ⏳ _In Progress_
 - Mediator — ⏳ _In Progress_
