@@ -20,6 +20,25 @@ Used for learning design patterns and reinforcing good engineering fundamentals.
 - Shows how patterns relate to **extensibility, maintainability, and clean architecture**
 
 ---
+## 🛠 Setup & Build Instructions
+
+This repository includes **one-command setup scripts** for Windows, macOS, and Linux.
+The scripts automatically configure the project and build **both Debug and Release** versions.
+
+---
+
+## 📦 Prerequisites
+
+Ensure the following tools are installed:
+
+- **CMake** (3.20+ recommended)  
+  https://cmake.org/download/
+- **A C++ compiler**
+  - **Windows**: Visual Studio 2022 (MSVC)
+  - **macOS**: Xcode Command Line Tools (`xcode-select --install`)
+  - **Linux**: GCC or Clang (`build-essential` or equivalent)
+
+---
 
 ## 📜 Implementation Progress
 
