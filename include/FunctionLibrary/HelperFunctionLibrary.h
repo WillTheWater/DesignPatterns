@@ -16,6 +16,7 @@
 #include <thread>
 #include <algorithm>
 #include <stack>
+#include <functional>
 
 namespace HFL
 {
