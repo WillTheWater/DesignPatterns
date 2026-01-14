@@ -76,7 +76,7 @@ Ensure the following tools are installed:
 - Iterator — ✓ _Completed_
 - Command — ✓ _Completed_
 - Observer — ✓ _Completed_
-- State — ⏳ _In Progress_
+- State — ✓ _Completed_
 - Chain of Responsibility — ⏳ _In Progress_
 - Mediator — ⏳ _In Progress_
 - Memento — ⏳ _In Progress_
