@@ -23,6 +23,7 @@
 #include "Behavioral/Iterator.h"
 #include "Behavioral/Command.h"
 #include "Behavioral/Observer.h"
+#include "Behavioral/State.h"
 
 void RunDemo()
 {
@@ -31,7 +32,7 @@ void RunDemo()
     {
         HFL::ClearScreen();
         HFL::PrintMainMenu();
-        int Choice = HFL::GetValidMenuInput(23);
+        int Choice = HFL::GetValidMenuInput(24);
 
         switch (Choice)
         {
@@ -103,6 +104,9 @@ void RunDemo()
             break;
         case 23:
             OBS::RunDemo(); // Observer Demo
+            break;
+        case 24:
+            STA::RunDemo(); // State Pattern
             break;
         case 0:
             IsRunning = false;

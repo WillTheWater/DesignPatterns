@@ -27,4 +27,13 @@ namespace HFL
 	void PrintHeader(const std::string& Title);
 	std::filesystem::path GetSaveDirectory(const std::string& PrincipleNamespace);
 
+    // ------------------------------------------------------------------------
+    // TIME UTILITIES
+    // ------------------------------------------------------------------------
+
+    // Simple blocking wait using std::chrono
+    void Wait(float Seconds);
+
+    // Returns time elapsed since the last time this was called
+    float GetDeltaTime();
 }

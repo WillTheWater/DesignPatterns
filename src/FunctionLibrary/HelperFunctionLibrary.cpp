@@ -46,7 +46,9 @@ namespace HFL
         std::cout << std::left << std::setw(ColWidth) << " 20. [TMP] Template Method"
             << std::left << std::setw(ColWidth) << " 21. [ITR] Iterator" << "\n";
         std::cout << std::left << std::setw(ColWidth) << " 22. [CMD] Command"
-            << std::left << std::setw(ColWidth) << " 23. [OBS] Observer" << "\n\n";
+            << std::left << std::setw(ColWidth) << " 23. [OBS] Observer" << "\n";
+            std::cout << std::left << std::setw(ColWidth) << " 24. [STA] State"
+            << std::left << std::setw(ColWidth) << " 25. [COR] Chain of Responibility" << "\n\n";
 
         std::cout << " " << std::setfill('-') << std::setw(Width - 2) << "" << std::setfill(' ') << "\n";
         std::cout << "  0. End Demo\n";
@@ -142,5 +144,11 @@ namespace HFL
         }
 
         return SavePath;
+    }
+
+    void Wait(float Seconds)
+    {
+        // Convert float seconds to a chrono duration and sleep
+        std::this_thread::sleep_for(std::chrono::duration<float>(Seconds));
     }
 }
