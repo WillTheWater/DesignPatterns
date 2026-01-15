@@ -2,9 +2,9 @@
 
 namespace SRP
 {
-    // ------------------------------------------------------------------------
+    // =========================================================================
     // INVENTORY IMPLEMENTATION
-    // ------------------------------------------------------------------------
+    // =========================================================================
     void Inventory::AddItem(const std::string& Name, int Qty, float Weight)
     { 
         // Check if the item already exists in the inventory.
@@ -37,13 +37,13 @@ namespace SRP
         // 2. Check quantities
         if (RemovedItem->second.Quantity > Qty)
         {
-            // You have more than we are removing. Reduce the count.
+            // If there is more than what are being removed. Reduce the count.
             RemovedItem->second.Quantity -= Qty;
             return true;
         }
         else
         {
-            // If you are removing >= what you have, just remove the entry entirely.
+            // If removing >=, just remove the entry entirely.
             // This covers the "Remove more than you have" case.
             Items.erase(RemovedItem);
             return true;
@@ -72,9 +72,9 @@ namespace SRP
         return ResultList;
     }
 
-    // ------------------------------------------------------------------------
+    // =========================================================================
     // DISPLAY IMPLEMENTATION
-    // ------------------------------------------------------------------------
+    // =========================================================================
     void InventoryDisplay::DisplayInventory(const Inventory& inventory) const
     {
         std::cout << "\n--- Current Inventory ---\n";
@@ -111,9 +111,9 @@ namespace SRP
         std::cout << std::setfill('-') << std::setw(40) << "" << std::setfill(' ') << "\n";
     }
 
-    // ------------------------------------------------------------------------
+    // =========================================================================
     // SAVE/LOAD IMPLEMENTATION
-    // ------------------------------------------------------------------------
+    // =========================================================================
     void InventorySaveLoad::SaveInventory(const Inventory& inventory, const std::string& filename) const
     {
         std::ofstream File(filename);
@@ -179,9 +179,9 @@ namespace SRP
         std::cout << "[System] Load successful!\n";
     }
 
-    // ------------------------------------------------------------------------
+    // =========================================================================
     // DEMO IMPLEMENTATION
-    // ------------------------------------------------------------------------
+    // =========================================================================
     void RunDemo()
     {
         // Clear initial buffer
@@ -196,7 +196,7 @@ namespace SRP
         std::cout << "A class should have one, and only one, reason to change.\n\n";
 
         std::cout << "In This Demo:\n";
-        std::cout << "We will simulate a Game Inventory System. You will see how\n";
+        std::cout << "It simulates a Game Inventory System. Showing how\n";
         std::cout << "separating Logic, Display, and Persistence makes the code\n";
         std::cout << "cleaner, safer, and easier to maintain.\n";
 
@@ -206,7 +206,7 @@ namespace SRP
         HFL::ClearScreen();
         HFL::PrintHeader("Step 1: The Setup");
 
-        std::cout << "We have created three distinct classes:\n\n";
+        std::cout << "There are three distinct classes:\n\n";
 
         std::cout << "1. [Inventory]:\n";
         std::cout << "   - Responsibility: Manages data (Add/Remove items).\n";
@@ -248,7 +248,7 @@ namespace SRP
         HFL::ClearScreen();
         HFL::PrintHeader("Step 2: Interacting with Data");
 
-        std::cout << "Action: We will manually add and remove items.\n\n";
+        std::cout << "Action: Manually add and remove items.\n\n";
         std::cout << "[Analysis]:\n";
         std::cout << "The Inventory class manages its own state. The Display class\n";
         std::cout << "simply observes that state and displays it to the user.\n\n";
@@ -342,7 +342,6 @@ namespace SRP
         std::cout << "The Inventory class doesn't know how to display itself. It is passed to\n";
         std::cout << "InventoryDisplay. This decouples the DATA from the Display functionality.\n\n";
 
-        // We use the 'Display' object we created at the top of the function
         Display.DisplayInventory(MyInventory);
 
         HFL::WaitForInput();
@@ -356,8 +355,8 @@ namespace SRP
         std::cout << "The Inventory class knows nothing about file paths or writing.\n";
         std::cout << "It is delegated to the InventorySaveLoad.\n";
 
-        // We use 'Persistence' object from the top
-        // We use 'Filename' from the top
+        // Use 'Persistence' object from the top
+        // Use 'Filename' from the top
         std::cout << "\nSaving to: " << Filename << "\n";
         Persistence.SaveInventory(MyInventory, Filename);
 
@@ -373,8 +372,8 @@ namespace SRP
         std::cout << "Action: Creating a NEW empty Inventory.\n";
         std::cout << "        Loading data from the file.\n\n";
         std::cout << "[Analysis]:\n";
-        std::cout << "We create a 'NewInventory' object. It is empty by default.\n";
-        std::cout << "We use InventorySaveLoad to populate it from our save file.\n";
+        std::cout << "Create a 'NewInventory' object. It is empty by default.\n";
+        std::cout << "Uses InventorySaveLoad to populate it from our save file.\n";
         std::cout << "This proves that InventorySaveLoad is independent of the Inventory state.\n\n";
 
         Inventory NewInventory;

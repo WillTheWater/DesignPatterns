@@ -2,17 +2,17 @@
 
 namespace LSP
 {
-    // ------------------------------------------------------------------------
+    // =========================================================================
     // BASE CLASS IMPLEMENTATION
-    // ------------------------------------------------------------------------
+    // =========================================================================
     Item::Item(std::string Name, float Weight)
         : Name(Name), Weight(Weight)
     {
     }
 
-    // ------------------------------------------------------------------------
+    // =========================================================================
     // WEAPON IMPLEMENTATION
-    // ------------------------------------------------------------------------
+    // =========================================================================
     Weapon::Weapon(std::string Name, float Weight, int Damage)
         : Item(Name, Weight)
         , Damage(Damage)
@@ -25,9 +25,9 @@ namespace LSP
         return Damage * 10;
     }
 
-    // ------------------------------------------------------------------------
+    // =========================================================================
     // POTION IMPLEMENTATION
-    // ------------------------------------------------------------------------
+    // =========================================================================
     Potion::Potion(std::string Name, float Weight, int HealAmount)
         : Item(Name, Weight)
         , HealAmount(HealAmount)
@@ -51,9 +51,9 @@ namespace LSP
         return static_cast<int>(RawMaterialType) + ((int)Weight * 2);
     }
 
-    // ------------------------------------------------------------------------
+    // =========================================================================
     // TRADER IMPLEMENTATION
-    // ------------------------------------------------------------------------
+    // =========================================================================
     void Trader::AppraiseItem(const Item* Target) const
     {
         std::cout << "\n----------------------------------------\n";
@@ -89,9 +89,9 @@ namespace LSP
         Inventory.erase(Inventory.begin() + Index);
     }
 
-    // ------------------------------------------------------------------------
+    // =========================================================================
     // DEMO IMPLEMENTATION
-    // ------------------------------------------------------------------------
+    // =========================================================================
     void RunDemo()
     {
         // Clear buffer
@@ -107,9 +107,9 @@ namespace LSP
         std::cout << "If a function uses a Parent, a Child must act exactly like the Parent.\n\n";
 
         std::cout << "In This Demo:\n";
-        std::cout << "We will create an Item Appraisal System.\n";
+        std::cout << "There is an Item Appraisal System.\n";
         std::cout << "The 'Trader' (System) expects an 'Item' (Base).\n";
-        std::cout << "We will pass 'Weapons', 'Potions' and 'RawResources' (Children) to it.\n";
+        std::cout << "It passes 'Weapons', 'Potions' and 'RawResources' (Children) to it.\n";
 
         HFL::WaitForInput();
 
@@ -117,7 +117,7 @@ namespace LSP
         HFL::ClearScreen();
         HFL::PrintHeader("Step 1: The Architecture");
 
-        std::cout << "We have defined an abstract Base Class 'Item'.\n";
+        std::cout << "Defined an abstract Base Class 'Item'.\n";
         std::cout << "It defines ONLY what is true for EVERY item.\n\n";
 
         std::cout << "Universal Traits (In Base):\n";
@@ -135,10 +135,10 @@ namespace LSP
         // --- STEP 3: INTERACTIVE APPRAISAL ---
 
         // Create Objects (Upcasting automatically happens here)
-        // We store them as pointers to the Base Class
+        // Store them as pointers to the Base Class
         std::vector<std::unique_ptr<Item>> Inventory;
 
-        // Use raw pointers for the array, but manage with unique_ptr for cleanup
+        // Uses raw pointers for the array, but manages with unique_ptr for cleanup
         Inventory.emplace_back(std::make_unique<Weapon>("Rusty Dagger", 2.0f, 5));
         Inventory.emplace_back(std::make_unique<Weapon>("War Hammer", 10.0f, 25));
         Inventory.emplace_back(std::make_unique<Potion>("Health Vial", 0.5f, 20));
@@ -217,12 +217,12 @@ namespace LSP
         std::cout << "1. The Trader code never changed.\n";
         std::cout << "   It didn't need 'if (IsWeapon) ... else if (IsPotion)'.\n\n";
 
-        std::cout << "2. We Substituted freely.\n";
-        std::cout << "   We passed Weapons and Potions to a function expecting 'Item'.\n";
+        std::cout << "2. Substituted freely.\n";
+        std::cout << "   Passes Weapons and Potions to a function expecting 'Item'.\n";
         std::cout << "   Because both honored the 'GetValue()' contract, it worked perfectly.\n\n";
 
         std::cout << "3. Common Trap Avoided.\n";
-        std::cout << "   We avoided putting 'GetDamage()' in the Base.\n";
+        std::cout << "   Avoides putting 'GetDamage()' in the Base.\n";
         std::cout << "   This ensures 'Potion' remains a valid substitute for 'Item'.\n\n";
 
         std::cout << std::setw(40) << "End of Demo\n";

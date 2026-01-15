@@ -148,9 +148,7 @@ namespace COR
         HFL::ClearScreen();
         HFL::PrintHeader("Chain of Responsibility Pattern");
 
-        HFL::SetColor(HFL::EColor::BrightYellow);
         std::cout << "Definition:\n";
-        HFL::SetColor(HFL::EColor::White);
         std::cout << "Avoid coupling the sender of a request to its receiver by giving more\n";
         std::cout << "than one object a chance to handle the request. Chain the receiving\n";
         std::cout << "objects and pass the request along the chain.\n\n";
@@ -166,20 +164,14 @@ namespace COR
         HFL::ClearScreen();
         HFL::PrintHeader("Step 1: The Roles");
 
-        HFL::SetColor(HFL::EColor::BrightYellow);
         std::cout << "1. The Context (LootItem):\n";
-        HFL::SetColor(HFL::EColor::White);
         std::cout << "   - The object being built. It contains data but no logic.\n\n";
 
-        HFL::SetColor(HFL::EColor::BrightYellow);
         std::cout << "2. The Base Handler (ItemHandler):\n";
-        HFL::SetColor(HFL::EColor::White);
         std::cout << "   - An interface that defines 'SetNext()' and 'Handle()'.\n";
         std::cout << "   - It ensures every link in the chain knows who follows it.\n\n";
 
-        HFL::SetColor(HFL::EColor::BrightYellow);
         std::cout << "3. Concrete Handlers (Base, Quality, Rarity, Affix):\n";
-        HFL::SetColor(HFL::EColor::White);
         std::cout << "   - Specialized workers. One picks the item type, one rolls rarity,\n";
         std::cout << "     and one adds magical properties based on that rarity.\n";
 
@@ -245,21 +237,15 @@ namespace COR
 
         std::cout << "Key Takeaways:\n\n";
 
-        HFL::SetColor(HFL::EColor::BrightYellow);
         std::cout << "1. Decoupling:\n";
-        HFL::SetColor(HFL::EColor::White);
         std::cout << "   The Main loop only knows about the 'Base' handler.\n";
         std::cout << "   It doesn't need to know that 'Affixes' or 'Rarity' even exist.\n\n";
 
-        HFL::SetColor(HFL::EColor::BrightYellow);
         std::cout << "2. Single Responsibility (SRP):\n";
-        HFL::SetColor(HFL::EColor::White);
         std::cout << "   If we want to change the math for 'Quality', we only touch\n";
         std::cout << "   the QualityHandler class. The rest of the chain remains safe.\n\n";
 
-        HFL::SetColor(HFL::EColor::BrightYellow);
         std::cout << "3. The Power of Order:\n";
-        HFL::SetColor(HFL::EColor::White);
         std::cout << "   We can re-order the chain at runtime. Want to roll Rarity BEFORE\n";
         std::cout << "   Quality? Just change the 'SetNext()' calls.\n\n";
 

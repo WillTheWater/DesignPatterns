@@ -2,9 +2,9 @@
 
 namespace ISP
 {
-    // ------------------------------------------------------------------------
+    // =========================================================================
     // SOUND EFFECT IMPLEMENTATION
-    // ------------------------------------------------------------------------
+    // =========================================================================
     Gunshot::Gunshot()
     {}
 
@@ -24,9 +24,9 @@ namespace ISP
         std::cout << "   (SFX positioned at X:" << x << " Y:" << y << ")\n";
     }
 
-    // ------------------------------------------------------------------------
+    // =========================================================================
     // MUSIC TRACK IMPLEMENTATION
-    // ------------------------------------------------------------------------
+    // =========================================================================
     MainMenuTheme::MainMenuTheme()
         : bIsPlaying{false}
     {}
@@ -60,13 +60,13 @@ namespace ISP
         return bIsPlaying;
     }
 
-    // ------------------------------------------------------------------------
+    // =========================================================================
     // SOUND ENGINE IMPLEMENTATION
-    // ------------------------------------------------------------------------
+    // =========================================================================
     void AudioManager::PlayEffect(ISoundEffect* Effect)
     {
         std::cout << "\n--- Processing Sound Effect ---\n";
-        // We can safely call SetPosition because we know it's a SoundEffect
+        // Safely call SetPosition because it's a SoundEffect
         Effect->SetPosition3D(10.5f, 3.0f, 0.0f);
         Effect->Play();
         std::cout << "------------------------------\n";
@@ -77,8 +77,8 @@ namespace ISP
         std::cout << "\n--- Processing Music Track ---\n";
 
         // TOGGLE LOGIC:
-        // If it is already playing, we stop it.
-        // If it is stopped, we start it.
+        // If it is already playing, its stops.
+        // If it is stopped, start it.
         if (Music->IsPlaying())
         {
             std::cout << ">> Stopping currently playing track.\n";
@@ -93,9 +93,9 @@ namespace ISP
         std::cout << "------------------------------\n";
     }
 
-    // ------------------------------------------------------------------------
+    // =========================================================================
     // DEMO IMPLEMENTATION
-    // ------------------------------------------------------------------------
+    // =========================================================================
     void RunDemo()
     {
         // Clear buffer
@@ -111,7 +111,7 @@ namespace ISP
         std::cout << "Avoid 'Fat Interfaces'.\n\n";
 
         std::cout << "In This Demo:\n";
-        std::cout << "We will build an Audio System.\n";
+        std::cout << "There is an Audio System.\n";
         std::cout << "With separate 'Sound Effects' (3D) from 'Music' (Looping).\n";
         std::cout << "This prevents empty methods and confusing code.\n";
 
@@ -121,7 +121,7 @@ namespace ISP
         HFL::ClearScreen();
         HFL::PrintHeader("Step 1: The Architecture");
 
-        std::cout << "We have created two Interfaces instead of one Fat one.\n\n";
+        std::cout << "There are two Interfaces instead of one Fat one.\n\n";
 
         std::cout << "1. ISoundEffect (SFX):\n";
         std::cout << "   - Methods: Play, Stop, SetPosition3D.\n";

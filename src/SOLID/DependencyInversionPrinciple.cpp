@@ -2,9 +2,9 @@
 
 namespace DIP
 {
-    // ------------------------------------------------------------------------
+    // =========================================================================
     // LOW LEVEL IMPLEMENTATIONS
-    // ------------------------------------------------------------------------
+    // =========================================================================
 
     // =========================================================================
     // LOW LEVEL MODULE 1: TEXT FILE STORAGE
@@ -74,7 +74,6 @@ namespace DIP
 
     std::string TextFileSave::GetDescription() const
     {
-        // This is just for the demo.
         return "Text File (Human readable)";
     }
 
@@ -201,7 +200,7 @@ namespace DIP
         std::cout << ">> [CloudServer] Loading from local cache (" << FilePath << ")...\n";
 
         // 4. PARSE JSON
-        // We manually parse the string to extract the number.
+        // Manually parse the string to extract the number.
         // Format: {"score": 100}
 
         std::string Line;
@@ -210,15 +209,15 @@ namespace DIP
 
         while (std::getline(File, Line))
         {
-            // We are looking for the line containing '"score":'
+            // Looks for the line containing '"score":'
             if (Line.find("\"score\"") != std::string::npos)
             {
-                // Now we find the colon ':'
+                // Find the colon ':'
                 size_t ColonPos = Line.find(':');
 
                 if (ColonPos != std::string::npos)
                 {
-                    // We grab the substring after the colon and convert it to an int
+                    // Get the substring after the colon and convert it to an int
                     std::string ValueStr = Line.substr(ColonPos + 1);
                     try
                     {
@@ -247,9 +246,9 @@ namespace DIP
         return "Cloud Server (JSON Format)";
     }
 
-    // ------------------------------------------------------------------------
+    // =========================================================================
     // HIGH LEVEL IMPLEMENTATION
-    // ------------------------------------------------------------------------
+    // =========================================================================
     GameEngine::GameEngine() : Score(0), Storage(nullptr) {}
 
     void GameEngine::PlayGame()
@@ -303,9 +302,9 @@ namespace DIP
         Storage->SaveData(Score);
     }
 
-    // ------------------------------------------------------------------------
+    // =========================================================================
     // DEMO IMPLEMENTATION
-    // ------------------------------------------------------------------------
+    // =========================================================================
     void RunDemo()
     {
         // Clear buffer

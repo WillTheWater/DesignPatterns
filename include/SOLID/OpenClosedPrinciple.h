@@ -29,11 +29,11 @@ namespace OCP
     // Forward declaration of Player is needed so the interface knows the class exists.
     class Player;
 
-    // ------------------------------------------------------------------------
+    // =========================================================================
     // 1. THE INTERFACE (The "Open" part)
     // This is a pure virtual class, meaning its functions
     // must be overridden by the class that implements it.
-    // ------------------------------------------------------------------------
+    // =========================================================================
     class IInteractable
     {
     public:
@@ -47,11 +47,11 @@ namespace OCP
         virtual std::string GetName() const = 0;
     };
 
-    // ------------------------------------------------------------------------
+    // =========================================================================
     // 2. THE ACTOR (The "Closed" part)
     // The player only knows it can interact, but never defines with what it can
     // interact or what effect that interaction has.
-    // ------------------------------------------------------------------------
+    // =========================================================================
     class Player
     {
     public:
@@ -79,13 +79,13 @@ namespace OCP
         int Gold;
     };
 
-    // ------------------------------------------------------------------------
+    // =========================================================================
     // 3. CONCRETE CLASSES (Extensions)
     // Here is the OPEN aspect of the OCP.
     // Infinite flexibility when adding objects that can be interacted with.
     // The Player does not need to be modified because it never defines the result 
     // of the interaction.
-    // ------------------------------------------------------------------------
+    // =========================================================================
 
     class Door : public IInteractable
     {
@@ -125,8 +125,8 @@ namespace OCP
         std::string GetName() const override { return "Mystical Water Spring"; }
     };
 
-    // ------------------------------------------------------------------------
+    // =========================================================================
     // DEMO
-    // ------------------------------------------------------------------------
+    // =========================================================================
     void RunDemo();
 }
