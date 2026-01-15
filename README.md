@@ -77,7 +77,7 @@ Ensure the following tools are installed:
 - Command — ✓ _Completed_
 - Observer — ✓ _Completed_
 - State — ✓ _Completed_
-- Chain of Responsibility — ⏳ _In Progress_
+- Chain of Responsibility — ✓ _Completed_
 - Mediator — ⏳ _In Progress_
 - Memento — ⏳ _In Progress_
 - Visitor — ⏳ _In Progress_
