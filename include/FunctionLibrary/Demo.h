@@ -24,6 +24,7 @@
 #include "Behavioral/Command.h"
 #include "Behavioral/Observer.h"
 #include "Behavioral/State.h"
+#include "Behavioral/ChainOfResponsibility.h"
 
 void RunDemo()
 {
@@ -32,7 +33,7 @@ void RunDemo()
     {
         HFL::ClearScreen();
         HFL::PrintMainMenu();
-        int Choice = HFL::GetValidMenuInput(24);
+        int Choice = HFL::GetValidMenuInput(25);
 
         switch (Choice)
         {
@@ -107,6 +108,9 @@ void RunDemo()
             break;
         case 24:
             STA::RunDemo(); // State Pattern
+            break;
+        case 25:
+            COR::RunDemo(); // Chain of Responsibility Demo
             break;
         case 0:
             IsRunning = false;

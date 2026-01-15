@@ -17,23 +17,47 @@
 #include <algorithm>
 #include <stack>
 #include <functional>
+#include <random>
+#include <type_traits>
 
 namespace HFL
 {
+    enum class EColor 
+    {
+        // Standard Colors (0-7)
+        Black, Red, Green, Yellow, Blue, Magenta, Cyan, White,
+        // Bright/High Intensity (8-15)
+        Gray, BrightRed, BrightGreen, BrightYellow, BrightBlue, BrightMagenta, BrightCyan, BrightWhite
+    };
+
 	void PrintMainMenu();
 	int GetValidMenuInput(int MaxOption);
 	void ClearScreen();
 	void WaitForInput();
 	void PrintHeader(const std::string& Title);
+    void SetColor(EColor Color);
 	std::filesystem::path GetSaveDirectory(const std::string& PrincipleNamespace);
 
-    // ------------------------------------------------------------------------
-    // TIME UTILITIES
-    // ------------------------------------------------------------------------
 
-    // Simple blocking wait using std::chrono
+    // Simple wait using std::chrono
     void Wait(float Seconds);
 
-    // Returns time elapsed since the last time this was called
-    float GetDeltaTime();
+    // Random number generator std::random
+    static std::random_device rd;
+    static std::mt19937 gen(rd());
+    
+    template <typename T>
+    T GetRandom(T Min, T Max)
+    {
+        if constexpr (std::is_floating_point_v<T>) 
+        {
+            std::uniform_real_distribution<T> dis(Min, Max);
+            return dis(gen);
+        }
+        else 
+        {
+            std::uniform_int_distribution<T> dis(Min, Max);
+            return dis(gen);
+        }
+    }
 }
