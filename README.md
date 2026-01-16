@@ -78,7 +78,7 @@ Ensure the following tools are installed:
 - Observer — ✓ _Completed_
 - State — ✓ _Completed_
 - Chain of Responsibility — ✓ _Completed_
-- Mediator — ⏳ _In Progress_
+- Mediator — ✓ _Completed_
 - Memento — ⏳ _In Progress_
 - Visitor — ⏳ _In Progress_
 - Interpreter — ⏳ _In Progress_
