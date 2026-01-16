@@ -54,7 +54,9 @@ namespace HFL
         PrintOption(18, "[NUL] Null Object");     PrintOption(19, "[STR] Strategy"); std::cout << "\n";
         PrintOption(20, "[TMP] Template Method"); PrintOption(21, "[ITR] Iterator"); std::cout << "\n";
         PrintOption(22, "[CMD] Command");         PrintOption(23, "[OBS] Observer"); std::cout << "\n";
-        PrintOption(24, "[STA] State");           PrintOption(25, "[COR] Chain of Responsibility"); std::cout << "\n\n";
+        PrintOption(24, "[STA] State");           PrintOption(25, "[COR] Chain of Responsibility"); std::cout << "\n";
+        PrintOption(26, "[MED] Mediator");        PrintOption(27, "[MEM] Memento"); std::cout << "\n";
+        PrintOption(28, "[VIS] Visitor");         PrintOption(29, "[INT] Interpreter"); std::cout << "\n\n";
 
         // Footer
         SetColor(EColor::BrightRed);

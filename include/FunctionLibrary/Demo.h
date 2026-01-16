@@ -25,6 +25,7 @@
 #include "Behavioral/Observer.h"
 #include "Behavioral/State.h"
 #include "Behavioral/ChainOfResponsibility.h"
+#include "Behavioral/Mediator.h"
 
 void RunDemo()
 {
@@ -33,7 +34,7 @@ void RunDemo()
     {
         HFL::ClearScreen();
         HFL::PrintMainMenu();
-        int Choice = HFL::GetValidMenuInput(25);
+        int Choice = HFL::GetValidMenuInput(29);
 
         switch (Choice)
         {
@@ -107,11 +108,13 @@ void RunDemo()
             OBS::RunDemo(); // Observer Demo
             break;
         case 24:
-            STA::RunDemo(); // State Pattern
+            STA::RunDemo(); // State Pattern Demo
             break;
         case 25:
             COR::RunDemo(); // Chain of Responsibility Demo
             break;
+        case 26:
+            MED::RunDemo(); // Mediator Pattern Demo
         case 0:
             IsRunning = false;
             break;

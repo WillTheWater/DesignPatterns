@@ -59,18 +59,25 @@ namespace OBS
     void HUDWidget::DrawHUD() {
         int Segments = 20;
 
-        std::cout << "   Character Level: " << LastLevel << "\n";
+        std::cout << "   Character Level: "; 
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << LastLevel << "\n";
+        HFL::SetColor(HFL::EColor::White);
 
         // Health Bar
         int HPFilled = static_cast<int>((LastHealth / LastMaxHealth) * Segments);
         std::cout << "   HP: [";
+        HFL::SetColor(HFL::EColor::BrightRed);
         for (int i = 0; i < Segments; ++i) std::cout << (i < HPFilled ? "|" : " ");
+        HFL::SetColor(HFL::EColor::White);
         std::cout << "] " << (int)LastHealth << "/" << (int)LastMaxHealth << "\n";
 
         // XP Bar
         int XPFilled = static_cast<int>((LastXP / LastMaxXP) * Segments);
         std::cout << "   XP: [";
+        HFL::SetColor(HFL::EColor::BrightYellow);
         for (int i = 0; i < Segments; ++i) std::cout << (i < XPFilled ? "-" : " ");
+        HFL::SetColor(HFL::EColor::White);
         std::cout << "] " << (int)LastXP << "%\n";
     }
 
