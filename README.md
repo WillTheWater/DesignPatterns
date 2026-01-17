@@ -80,7 +80,7 @@ Ensure the following tools are installed:
 - Chain of Responsibility — ✓ _Completed_
 - Mediator — ✓ _Completed_
 - Memento — ✓ _Completed_
-- Visitor — ⏳ _In Progress_
+- Visitor — ✓ _Completed_
 - Interpreter — ⏳ _In Progress_
 
 ---

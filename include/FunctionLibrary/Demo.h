@@ -30,6 +30,7 @@
 #include "Behavioral/ChainOfResponsibility.h"
 #include "Behavioral/Mediator.h"
 #include "Behavioral/Memento.h"
+#include "Behavioral/Visitor.h"
 
 void RunDemo()
 {
@@ -122,6 +123,9 @@ void RunDemo()
             break;
         case 27:
             MEM::RunDemo(); // Memento Patter Demo
+            break;
+        case 28:
+            VIS::RunDemo(); // Visitor Pattern Demo
             break;
         case 0:
             IsRunning = false;
