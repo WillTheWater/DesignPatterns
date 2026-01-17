@@ -52,7 +52,7 @@ namespace NUL
 
         // --- STEP 2: THE RULES ---
         HFL::ClearScreen();
-        HFL::PrintHeader("Step 1: The Architecture");
+        HFL::PrintHeader("The Architecture");
 
         std::cout << "To recognize a Null Object, there are 4 key ideas:\n\n";
 
@@ -82,7 +82,7 @@ namespace NUL
         UIButton PlayButton("Start Game", RealEffect);
         bool IsMuted = false;
 
-        // --- STEP 3: DYNAMIC LOOP ---
+        // --- STEP 3: DEMO ---
         while (true)
         {
             HFL::ClearScreen();

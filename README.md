@@ -79,7 +79,7 @@ Ensure the following tools are installed:
 - State — ✓ _Completed_
 - Chain of Responsibility — ✓ _Completed_
 - Mediator — ✓ _Completed_
-- Memento — ⏳ _In Progress_
+- Memento — ✓ _Completed_
 - Visitor — ⏳ _In Progress_
 - Interpreter — ⏳ _In Progress_
 

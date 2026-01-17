@@ -45,27 +45,6 @@ target_include_directories(${PROJECT_NAME}
         ${CMAKE_SOURCE_DIR}/src
 )
 
-if(WIN32)
-    # ------------------------------------------------------------------
-    # WINDOWS: Console vs GUI Window
-    # ------------------------------------------------------------------
-    # Currently set to Console App (Default).
-    # UNCOMMENT the lines below to make Release builds a GUI App (Hide Console).
-    # set_target_properties(${PROJECT_NAME} PROPERTIES
-    #     WIN32_EXECUTABLE $<CONFIG:Release>
-    # )
-    
-elseif(APPLE)
-    # ------------------------------------------------------------------
-    # MAC: Binary vs App Bundle
-    # ------------------------------------------------------------------
-    # Currently set to Raw Binary (Default).
-    # UNCOMMENT the lines below to create a .app bundle (Standard Mac App).
-    # set_target_properties(${PROJECT_NAME} PROPERTIES
-    #     MACOSX_BUNDLE TRUE
-    # )
-endif()
-
 # ------------------------------------------------------------------
 # 6. Compiler Warnings
 # ------------------------------------------------------------------

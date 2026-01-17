@@ -5,11 +5,13 @@
 #include "SOLID/LiskovSubstitutionPrinciple.h"
 #include "SOLID/InterfaceSegregationPrinciple.h"
 #include "SOLID/DependencyInversionPrinciple.h"
+
 #include "Creational/Singleton.h"
 #include "Creational/FactoryMethod.h"
 #include "Creational/AbstractFactory.h"
 #include "Creational/Prototype.h"
 #include "Creational/Builder.h"
+
 #include "Structural/Facade.h"
 #include "Structural/Adapter.h"
 #include "Structural/Proxy.h"
@@ -17,6 +19,7 @@
 #include "Structural/Composite.h"
 #include "Structural/Decorator.h"
 #include "Structural/Flyweight.h"
+
 #include "Behavioral/NullObject.h"
 #include "Behavioral/Strategy.h"
 #include "Behavioral/TemplateMethod.h"
@@ -26,6 +29,7 @@
 #include "Behavioral/State.h"
 #include "Behavioral/ChainOfResponsibility.h"
 #include "Behavioral/Mediator.h"
+#include "Behavioral/Memento.h"
 
 void RunDemo()
 {
@@ -115,6 +119,10 @@ void RunDemo()
             break;
         case 26:
             MED::RunDemo(); // Mediator Pattern Demo
+            break;
+        case 27:
+            MEM::RunDemo(); // Memento Patter Demo
+            break;
         case 0:
             IsRunning = false;
             break;
