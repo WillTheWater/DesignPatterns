@@ -20,6 +20,9 @@
 #include <random>
 #include <type_traits>
 #include <optional>
+#include <nlohmann/json.hpp>
+
+using json = nlohmann::json;
 
 namespace HFL
 {

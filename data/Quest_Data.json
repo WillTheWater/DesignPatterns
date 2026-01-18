@@ -1,0 +1,56 @@
+{
+  "Quests": {
+    "Intro": {
+      "Type": "Level",
+      "Value": 3
+    },
+    "GoblinSlayer": {
+      "Type": "AND",
+      "Left": {
+        "Type": "Kill",
+        "Target": "Goblin",
+        "Value": 5
+      },
+      "Right": {
+        "Type": "Quest",
+        "Value": "Intro"
+      }
+    },
+    "SecretQuest": {
+      "Type": "AND",
+      "Left": {
+        "Type": "Level",
+        "Value": 5
+      },
+      "Right": {
+        "Type": "NOT",
+        "Bool": {
+          "Type": "Quest",
+          "Value": "GoblinSlayer"
+        }
+      }
+    },
+    "Legend": {
+      "Type": "OR",
+      "Left": {
+        "Type": "Level",
+        "Value": 15
+      },
+      "Right": {
+        "Type": "AND",
+        "Left": {
+          "Type": "Gold",
+          "Value": 500
+        },
+        "Right": {
+          "Type": "Quest",
+          "Value": "GoblinSlayer"
+        }
+      }
+    },
+    "Win": {
+      "Type": "Quest",
+      "Value": "Legend"
+    }
+  }
+}

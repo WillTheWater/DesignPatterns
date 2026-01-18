@@ -31,6 +31,7 @@
 #include "Behavioral/Mediator.h"
 #include "Behavioral/Memento.h"
 #include "Behavioral/Visitor.h"
+#include "Behavioral/Interpreter.h"
 
 void RunDemo()
 {
@@ -126,6 +127,9 @@ void RunDemo()
             break;
         case 28:
             VIS::RunDemo(); // Visitor Pattern Demo
+            break;
+        case 29:
+            INT::RunDemo(); // Interpreter Pattern Demo
             break;
         case 0:
             IsRunning = false;

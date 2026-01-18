@@ -69,7 +69,7 @@ namespace CMD
 
         // --- STEP 2: THE ROLES ---
         HFL::ClearScreen();
-        HFL::PrintHeader("Step 1: The Roles");
+        HFL::PrintHeader("THE ARCHITECTURE");
 
         std::cout << "1. The Receiver (PlayerCharacter):\n";
         std::cout << "   - Does the actual work (Moving, Jumping).\n\n";
