@@ -1,98 +1,88 @@
-# 📘 C++ Design Patterns & SOLID Principles — Interactive Learning Repository
+#  SOLID Principles & Design Patterns
 
-**C++ Design Patterns & SOLID Principles**, work-in-progress reference project aimed at learning core software architecture concepts through **example-driven code and interactive console demos**.
+**For C++ Game Development Reference**
 
-This project demonstrates:
+Work-in-progress reference project aimed at learning core software architecture concepts through **example-driven code and interactive console demos**.
 
-- ✔ Practical, real-world C++ implementations.
-- ✔ Highly commented source code.
-- ✔ Interactive console demos to *see* how each principle/pattern works.
-- ✔ Built using **CMake**, with **Windows / macOS / Linux** compatibility.
+## This project demonstrates:
 
-Used for learning design patterns and reinforcing good engineering fundamentals.
-
----
-
-## 📌 This Project
-
-- Provides **clear, approachable reference** for SOLID principles and Design Patterns in modern C++
-- Reenforced through **interactive demos**.
-- Shows how patterns relate to **extensibility, maintainability, and clean architecture**
+- ✓ Practical, real-world implementations of each principle and pattern.
+- ✓ Detailed comments for reference.
+- ✓ Interactive console demos to *see* how each principle/pattern works.
+- ✓ Built using **CMake**, with **Windows / macOS / Linux** compatibility.
 
 ---
+
 ## 🛠 Setup & Build Instructions
 
-This repository includes **one-command setup scripts** for Windows, macOS, and Linux.
+- Double-click the **Setup-and-Build script** for Windows or macOS and Linux.
 The scripts automatically configure the project and build **both Debug and Release** versions.
 
 ---
 
-## 📦 Prerequisites
+## Prerequisites
 
 Ensure the following tools are installed:
 
-- **CMake** (3.20+ recommended)  
+- **CMake** (3.20+)  
   https://cmake.org/download/
 - **A C++ compiler**
-  - **Windows**: Visual Studio 2022 (MSVC)
-  - **macOS**: Xcode Command Line Tools (`xcode-select --install`)
-  - **Linux**: GCC or Clang (`build-essential` or equivalent)
+  - **Windows**: Visual Studio.
+  - **macOS**: Xcode Command Line Tools.
+  - **Linux**: GCC or Clang.
 
 ---
 
-## 📜 Implementation Progress
+## Implementation Progress 29 of 29 (Completed)
 
 ### SOLID Principles
 
-- Single Responsibility Principle — ✓ _Completed_
-- Open–Closed Principle — ✓ _Completed_
-- Liskov Substitution Principle — ✓ _Completed_
-- Interface Segregation Principle — ✓ _Completed_
-- Dependency Inversion Principle — ✓ _Completed_
+- Single Responsibility Principle
+- Open–Closed Principle
+- Liskov Substitution Principle
+- Interface Segregation Principle
+- Dependency Inversion Principle
 
 ### Creational Design Patterns
 
-- Singleton — ✓ _Completed_
-- Factory Method — ✓ _Completed_
-- Abstract Factory — ✓ _Completed_
-- Prototype — ✓ _Completed_
-- Builder — ✓ _Completed_
+- Singleton
+- Factory Method
+- Abstract Factory
+- Prototype
+- Builder
 
 ### Structural Design Patterns
 
-- Façade — ✓ _Completed_
-- Adapter — ✓ _Completed_
-- Proxy — ✓ _Completed_
-- Bridge — ✓ _Completed_
-- Composite — ✓ _Completed_
-- Decorator — ✓ _Completed_
-- Flyweight — ✓ _Completed_
+- Façade
+- Adapter
+- Proxy
+- Bridge
+- Composite
+- Decorator
+- Flyweight
 
 ### Behavioral Design Patterns
 
-- Null Object — ✓ _Completed_
-- Strategy — ✓ _Completed_
-- Template Method — — ✓ _Completed_
-- Iterator — ✓ _Completed_
-- Command — ✓ _Completed_
-- Observer — ✓ _Completed_
-- State — ✓ _Completed_
-- Chain of Responsibility — ✓ _Completed_
-- Mediator — ✓ _Completed_
-- Memento — ✓ _Completed_
-- Visitor — ✓ _Completed_
-- Interpreter — ⏳ _In Progress_
+- Null Object
+- Strategy
+- Template Method
+- Iterator
+- Command
+- Observer
+- State
+- Chain of Responsibility
+- Mediator
+- Memento
+- Visitor
+- Interpreter
 
 ---
 
-## 📜 Why This Project Exists
+## Why This Project Exists
 
-I'm building this project not to teach — but to learn.  
+I'm building this project not to teach, but to learn.  
 Game development is my life's task. 
-**Mastering software architecture from the ground up** requires implementing every principle and pattern myself, step by step, in real code. Reading theory is easy, but **Mastery** takes practice, repetition, and building things with your own hands.
-
-This project is my **training ground**. A place to discipline the mind and sharpen my craft. I am not as a master but as a student of the way. 
-Learning through practice, reflection, failure, and refinement.
+**Mastering software architecture from the ground up** requires implementing every principle and pattern myself, step by step. Theory is easy, but **Mastery** takes practice, repetition, and building things with my own hands.
 
 > *“We are what we repeatedly do. Excellence, then, is not an act but a habit.”* — Aristotle
 ---
