@@ -3,31 +3,37 @@
 #include "FunctionLibrary/HelperFunctionLibrary.h"
 
 // =========================================================================
-// PRINCIPLE: Single Responsibility Principle (SRP)
+// SOLID DESIGN PRINCIPLE: Single Responsibility Principle
 // =========================================================================
-// "A class should have one, and only one, reason to change."
+// "A class should have only one reason to change."
 //
 // THE GOAL:
-// Decouple the different aspects of a system so that a change in one 
-// area (like UI) does not force refactoring unrelated Logic.
+// To avoid fragile code. When a class sticks to one job (high cohesion) and
+// relies less on other classes' internal details (low coupling), small changes
+// stop causing chain reactions of bugs.
+// This principle isn't about limiting a class to one function. It means grouping
+// code together because it changes for the same reason. Logic, user interface,
+// and saving data are separate worlds. Changing the visuals shouldn't force you
+// to rewrite the save system. Keeping them apart prevents accidental breakage.
 //
-// EXAMPLE:
-// A Game Inventory system.
-// 1. Inventory: Responsible only for storing and accessing item data.
-// 2. InventoryDisplay: Responsible only for formatting data for UI.
-// 3. InventorySaveLoad: Responsible only for File I/O (Writing/Reading).
+// THE BENEFIT:
+// * Maintenance: Fixing a bug in the save system won't accidentally break the UI.
+// * Reusability: You can reuse the inventory logic in a new project without
+//   dragging the old console UI code along with it.
+// * Testability: You can test the logic without needing a hard drive or screen.
 //
-// BENEFIT:
-// If you decide to save to the Cloud instead of a file, you ONLY change 
-// InventorySaveLoad. The Inventory and Display classes remain uneffected.
+// THE EXAMPLE:
+// [Inventory]:  Holds the data and rules.
+// [InventoryDisplay]: Draws the data.
+// [InventorySaveLoad]: Saves/Loads the data.
 // =========================================================================
 
 namespace SRP 
 {
-    // ------------------------------------------------------------------------
-    // 1. ITEM DATA MODEL
-    // Holds data about an item.
-    // ------------------------------------------------------------------------
+    // =========================================================================
+    // ITEM DATA MODEL
+    // Defines the data that makes an item.
+    // =========================================================================
     struct Item 
     {
         std::string Name;
@@ -35,12 +41,12 @@ namespace SRP
         float Weight;
     };
 
-    // ------------------------------------------------------------------------
-    // 2. INVENTORY
+    // =========================================================================
+    // INVENTORY
     // 
-    // The Inventory class has ONE reason to change:
-    // How to store or access items.
-    // ------------------------------------------------------------------------
+    // The Inventory class has a SINGLE responsibility:
+    // Add and remove items from the inventory.
+    // =========================================================================
     class Inventory 
     {
     public:
@@ -55,27 +61,27 @@ namespace SRP
         std::unordered_map<std::string, Item> Items;
     };
 
-    // ------------------------------------------------------------------------
-    // 3. PRESENTATION (UI)
+    // =========================================================================
+    // PRESENTATION (UI)
     //
-    // This class has ONE reason to change:
-    // To change the format of the display.
+    // This class has a SINGLE responsibility:
+    // Display the inventory changes.
     //
     // It takes a const reference to Inventory. It doesn't own it,
     // it just looks at it.
-    // ------------------------------------------------------------------------
+    // =========================================================================
     class InventoryDisplay 
     {
     public:
         void DisplayInventory(const Inventory& inventory) const; 
     };
 
-    // ------------------------------------------------------------------------
-    // 4. SAVE/LOAD:
+    // =========================================================================
+    // SAVE/LOAD:
     //
-    // This class has ONE reason to change:
-    // To change the save file format
-    // ------------------------------------------------------------------------
+    // This class has a SINGLE responsibility:
+    // Save and load the player's inventory.
+    // =========================================================================
     class InventorySaveLoad 
     {
     public:
@@ -83,9 +89,9 @@ namespace SRP
         void LoadInventory(Inventory& inventory, const std::string& filename) const;
     };
 
-    // ------------------------------------------------------------------------
+    // =========================================================================
     // DEMO: 
-    // ------------------------------------------------------------------------
+    // =========================================================================
     void RunDemo();
 
 }

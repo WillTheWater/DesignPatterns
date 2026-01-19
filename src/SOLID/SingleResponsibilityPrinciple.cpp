@@ -3,7 +3,7 @@
 namespace SRP
 {
     // =========================================================================
-    // INVENTORY IMPLEMENTATION
+    // INVENTORY
     // =========================================================================
     void Inventory::AddItem(const std::string& Name, int Qty, float Weight)
     { 
@@ -14,12 +14,12 @@ namespace SRP
         {
             // Item exists: Stack it.
             NewItem->second.Quantity += Qty;
-            NewItem->second.Weight += Weight;
+            NewItem->second.Weight += (Weight * Qty);
         }
         else
         {
             // Item doesn't exist: Create it and add it.
-            Items[Name] = Item{ Name, Qty, Weight };
+            Items[Name] = Item{ Name, Qty, (Weight * Qty) };
         }
     }
 
@@ -37,14 +37,13 @@ namespace SRP
         // 2. Check quantities
         if (RemovedItem->second.Quantity > Qty)
         {
-            // If there is more than what are being removed. Reduce the count.
+            // If there is more than what is being removed, reduce the count.
             RemovedItem->second.Quantity -= Qty;
             return true;
         }
         else
         {
             // If removing >=, just remove the entry entirely.
-            // This covers the "Remove more than you have" case.
             Items.erase(RemovedItem);
             return true;
         }
@@ -56,7 +55,7 @@ namespace SRP
         //
         // This hides the internal implementation (unordered_map).
         // The Display and Save classes don't need to know how items are stored,
-        // they just need to iterate over a list of full Item structs.
+        // they just need to iterate over a list of Item structs.
         //
         // Note: Pair.second is the Item struct (Name, Qty, Weight).
 
@@ -65,7 +64,7 @@ namespace SRP
 
         for (const auto& Pair : Items) 
         {
-            // Copies the Item struct into the list
+            // Copies the Item struct into the vector
             ResultList.push_back(Pair.second);
         }
 
@@ -73,46 +72,52 @@ namespace SRP
     }
 
     // =========================================================================
-    // DISPLAY IMPLEMENTATION
+    // DISPLAY
     // =========================================================================
     void InventoryDisplay::DisplayInventory(const Inventory& inventory) const
     {
-        std::cout << "\n--- Current Inventory ---\n";
-
-        // 1. HEADER ROW
-        // Set left alignment for text, fixed widths for columns
+        // ======================== Header Configuration ========================
+        HFL::SetColor(HFL::EColor::Green);
         std::cout << std::left
-            << std::setw(25) << "Item Name"
+            << std::setw(25) << "ITEM NAME"
             << std::right
-            << std::setw(5) << "Qty"
-            << std::setw(10) << "Weight"
+            << std::setw(8) << "QUANTITY"
+            << std::setw(12) << "WEIGHT"
             << "\n";
 
-        // 2. SEPARATOR LINE
-        std::cout << std::setfill('-');
-        std::cout << std::setw(40) << ""
-            << std::setfill(' ')
-            << "\n";
+        // ======================== Divider ========================
+        HFL::SetColor(HFL::EColor::Cyan);
+        std::cout << std::setfill('-') << std::setw(45) << "" << std::setfill(' ') << "\n";
 
-        // 3. DATA ROWS
-        for (const auto& Item : inventory.GetItems())
+        // ======================== Data Rendering ========================
+        const auto Items = inventory.GetItems();
+
+        if (Items.empty())
         {
-            // std::left: Align names to the left of the 25-char slot
-            // std::right: Align numbers to the right (standard for accounting/math)
-            // std::fixed & setprecision(2): Ensure weight always shows 2 decimals (e.g., 5.00 kg)
-
-            std::cout << std::left << std::setw(25) << Item.Name
-                << std::right << std::setw(5) << Item.Quantity
-                << std::setw(10) << std::fixed << std::setprecision(2) << Item.Weight
-                << "\n";
+            HFL::SetColor(HFL::EColor::Gray);
+            std::cout << "          [Inventory Status: Empty]\n";
+        }
+        else
+        {
+            HFL::SetColor(HFL::EColor::Gray);
+            for (const auto& Item : Items)
+            {
+                std::cout << std::left << std::setw(25) << Item.Name
+                    << std::right << std::setw(8) << Item.Quantity
+                    << std::setw(12) << std::fixed << std::setprecision(2) << Item.Weight
+                    << "\n";
+            }
         }
 
-        // 4. BOTTOM LINE
-        std::cout << std::setfill('-') << std::setw(40) << "" << std::setfill(' ') << "\n";
+        // ======================== Footer ========================
+        HFL::SetColor(HFL::EColor::Cyan);
+        std::cout << std::setfill('-') << std::setw(45) << "" << std::setfill(' ') << "\n\n";
+
+        HFL::SetColor(HFL::EColor::White); // Reset to default
     }
 
     // =========================================================================
-    // SAVE/LOAD IMPLEMENTATION
+    // SAVE/LOAD
     // =========================================================================
     void InventorySaveLoad::SaveInventory(const Inventory& inventory, const std::string& filename) const
     {
@@ -125,7 +130,6 @@ namespace SRP
 
         std::cout << "[System] Saving inventory to " << filename << "...\n";
 
-        // Format: Name,Quantity,Weight
         for (const auto& Item : inventory.GetItems())
         {
             File << Item.Name << "," << Item.Quantity << "," << Item.Weight << "\n";
@@ -168,7 +172,6 @@ namespace SRP
                 }
                 catch (const std::exception& e)
                 {
-                    // Use e.what() to print the actual error
                     std::cerr << "[Warning] Skipping invalid item data: " << Line
                         << " (Reason: " << e.what() << ")\n";
                 }
@@ -184,219 +187,363 @@ namespace SRP
     // =========================================================================
     void RunDemo()
     {
-        // Clear initial buffer
         std::cin.clear();
         std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
-        // --- STEP 1: INTRODUCTION ---
+        // ======================== INTRODUCTION ========================
         HFL::ClearScreen();
-        HFL::PrintHeader("Single Responsibility Principle (SRP)");
+        HFL::PrintHeader("SINGLE RESPONSIBILITY PRINCIPLE");
 
-        std::cout << "Definition:\n";
+        HFL::PrintSection("THE DEFINITION");
+        HFL::SetColor(HFL::EColor::White);
         std::cout << "A class should have one, and only one, reason to change.\n\n";
 
-        std::cout << "In This Demo:\n";
-        std::cout << "It simulates a Game Inventory System. Showing how\n";
-        std::cout << "separating Logic, Display, and Persistence makes the code\n";
-        std::cout << "cleaner, safer, and easier to maintain.\n";
+        HFL::PrintSection("THE GOAL");
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The Single Responsibility Principle is a foundational rule of software\n"
+            << "engineering designed to increase system stability. It dictates that\n"
+            << "every module or class should encapsulate a single part of the software's\n"
+            << "functionality. This reduces dependencies (coupling) and ensures that\n"
+            << "modifications to one domain do not result in unintended side effects\n"
+            << "in unrelated subsystems.\n\n";
+
+        HFL::PrintSection("THE EXAMPLE");
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "This demonstration has a Game Inventory System with three distinct\n"
+            << "functional layers:\n\n";
+
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] INVENTORY: ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Data storage, item stacking, and state management.\n";
+
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] DISPLAY (UI): ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Data formatting for displaying the Inventory.\n";
+
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] SAVING/LOADING: ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Serialization and file I/O operations.\n\n";
+
+        HFL::PrintSection("THE BENEFIT");
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] MAINTAINABILITY: ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Updates to the UI layer occur without logic modification.\n";
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] REUSABILITY: ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The core logic persists regardless of the save medium.\n";
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] ROBUSTNESS: ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Error handling is localized to the relevant module.\n";
 
         HFL::WaitForInput();
 
-        // --- STEP 2: THE SETUP ---
+        // ======================== THE ARCHITECTURE ========================
         HFL::ClearScreen();
-        HFL::PrintHeader("Step 1: The Setup");
+        HFL::PrintHeader("THE ARCHITECTURE");
 
-        std::cout << "There are three distinct classes:\n\n";
+        HFL::PrintSection("EXAMPLE");
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "To adhere to SRP, the system is decomposed into three distinct classes.\n"
+            << "Each class encapsulates a specific domain, ensuring that changes to\n"
+            << "one system do not necessitate modifications to others.\n\n";
 
-        std::cout << "1. [Inventory]:\n";
-        std::cout << "   - Responsibility: Manages data (Add/Remove items).\n";
-        std::cout << "   - Does NOT know how to display or save itself.\n\n";
+        HFL::PrintSection("IMPLEMENTATION");
 
-        std::cout << "2. [InventoryDisplay]:\n";
-        std::cout << "   - Responsibility: Display the contents of the Inventory.\n";
-        std::cout << "   - Does NOT know how items are stored.\n\n";
+        // ======================== INVENTORY CLASS ========================
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] Inventory\n";
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "    ROLE:           ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Internal State Management.\n";
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "    SCOPE:          ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Addition, removal, and retrieval of item data.\n";
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "    CONSTRAINT:     ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Maintains no knowledge of UI or File I/O.\n\n";
 
-        std::cout << "3. [InventorySaveLoad]:\n";
-        std::cout << "   - Responsibility: Read/Write files to disk.\n";
-        std::cout << "   - Does NOT know Inventory or UI logic.\n\n";
+        // ======================== UI CLASS ========================
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] InventoryDisplay\n";
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "    ROLE:           ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Visual Representation.\n";
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "    SCOPE:          ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Formats raw inventory data for the console interface.\n";
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "    CONSTRAINT:     ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Cannot modify the inventory data it observes.\n\n";
 
+        // ======================== SAVE/LOAD CLASS ========================
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] InventorySaveLoad\n";
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "    ROLE:           ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Data Persistence.\n";
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "    SCOPE:          ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Serialization of items to disk and restoration from files.\n";
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "    CONSTRAINT:     ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Functions independently of the display implementation.\n\n";
+
+        HFL::SetColor(HFL::EColor::White);
         HFL::WaitForInput();
 
-        // =========================================================================
-        // SHARED SETUP
-        // =========================================================================
-        // Defined these objects HERE so they are shared across all steps below.
-        // =========================================================================
-        Inventory MyInventory;
+        // ======================== THE IMPLEMENTATION ========================
+        Inventory PlayerInventory;
         InventoryDisplay Display;
         InventorySaveLoad Persistence;
 
-        // Pre-calculate the file path once
         std::filesystem::path SavePath = HFL::GetSaveDirectory("SRP");
         std::string Filename = (SavePath / "inventory_data.txt").string();
 
-        // Setup a simple database of items to choose from
-        struct MenuItem { std::string Name; float Weight; };
-        std::vector<MenuItem> ItemDB = {
+        struct MenuItems { std::string Name; float Weight; };
+        std::vector<MenuItems> ItemDB = 
+        {
             {"Health Potion", 0.5f},
             {"Iron Sword", 5.0f},
             {"Wooden Shield", 3.0f},
             {"Magic Scroll", 0.1f}
         };
 
-        // --- STEP 3: POPULATING DATA ---
-        HFL::ClearScreen();
-        HFL::PrintHeader("Step 2: Interacting with Data");
-
-        std::cout << "Action: Manually add and remove items.\n\n";
-        std::cout << "[Analysis]:\n";
-        std::cout << "The Inventory class manages its own state. The Display class\n";
-        std::cout << "simply observes that state and displays it to the user.\n\n";
-
-        HFL::WaitForInput();
-
-        // Interactive Loop
-        bool InStep = true;
-        while (InStep)
+        // ======================== THE INTERACTION ========================
+        while (true)
         {
             HFL::ClearScreen();
-            HFL::PrintHeader("Inventory Editor");
+            HFL::PrintHeader("INVENTORY");
 
-            // 1. Always show the current state
-            Display.DisplayInventory(MyInventory);
+            Display.DisplayInventory(PlayerInventory);
 
-            std::cout << "\nSelect an action:\n";
-            std::cout << "1. Add Item\n";
-            std::cout << "2. Remove Item\n";
-            std::cout << "0. Continue\n";
-            std::cout << "Choice: ";
+            HFL::PrintSection("MENU");
+            HFL::SetColor(HFL::EColor::Green);
+            std::cout << " [1] "; HFL::SetColor(HFL::EColor::White); std::cout << "ADD ITEM\n";
+            HFL::SetColor(HFL::EColor::Green);
+            std::cout << " [2] "; HFL::SetColor(HFL::EColor::White); std::cout << "REMOVE ITEM\n\n";
+            HFL::SetColor(HFL::EColor::Green);
+            std::cout << " [0] "; HFL::SetColor(HFL::EColor::White); std::cout << "CONTINUE\n\n";
 
-            int Action;
-            std::cin >> Action;
+            HFL::SetColor(HFL::EColor::Gray);
+            int UserAction = HFL::GetValidMenuInput(2);
 
-            // Clear errors in case user typed a letter
-            if (std::cin.fail()) {
-                std::cin.clear();
-                std::cin.ignore();
-                continue;
-            }
+            if (UserAction == 0) break;
 
-            if (Action == 0) break;
-            if (Action < 0 || Action > 2) continue;
+            int SelectedIndex = -1;
+            int TransactionQuantity = 0;
 
-            // --- ADD / REMOVE LOGIC ---
-            int ItemIndex = -1;
-            int Qty = 0;
-
-            if (Action == 1 || Action == 2)
+            if (UserAction == 1 || UserAction == 2)
             {
-                HFL::PrintHeader("Select Item");
+                HFL::ClearScreen();
+                HFL::PrintHeader(UserAction == 1 ? "TRANSACTION: ADD" : "TRANSACTION: REMOVE");
+                Display.DisplayInventory(PlayerInventory);
+
+                // ======================== Display Items ========================
+                HFL::PrintSection("AVAILABLE ITEMS");
                 for (size_t i = 0; i < ItemDB.size(); ++i)
                 {
-                    std::cout << static_cast<int>(i) + 1 << ". " << ItemDB[i].Name << "\n";
+                    HFL::SetColor(HFL::EColor::Green);
+                    std::cout << " [" << i + 1 << "] ";
+                    HFL::SetColor(HFL::EColor::White);
+                    std::cout << ItemDB[i].Name << "\n";
                 }
-                std::cout << "\nItem Number: ";
-                std::cin >> ItemIndex;
 
-                std::cout << "Quantity: ";
-                std::cin >> Qty;
+                HFL::SetColor(HFL::EColor::White);
+                std::cout << "\nSELECT ITEM: ";
+                std::cin >> SelectedIndex;
 
-                // Validate selection
-                if (ItemIndex >= 1 && ItemIndex <= static_cast<int>(ItemDB.size()) && Qty > 0)
+                std::cout << "ENTER QUANTITY:  ";
+                std::cin >> TransactionQuantity;
+
+                // ======================== Processing ========================
+                if (SelectedIndex >= 1 && SelectedIndex <= static_cast<int>(ItemDB.size()) && TransactionQuantity > 0)
                 {
-                    const auto& SelectedItem = ItemDB[ItemIndex - 1];
+                    const auto& SelectedItem = ItemDB[SelectedIndex - 1];
 
-                    if (Action == 1) // Action == 1 (Add)
+                    HFL::SetColor(HFL::EColor::Gray);
+                    std::cout << "\nProcessing ";
+                    for (int i = 0; i < 3; ++i) { HFL::Wait(0.5f); std::cout << "."; }
+                    std::cout << "\n";
+
+                    if (UserAction == 1)
                     {
-                        MyInventory.AddItem(SelectedItem.Name, Qty, SelectedItem.Weight);
-                        std::cout << "\n[Success] Added " << Qty << " " << SelectedItem.Name << "(s).\n";
+                        PlayerInventory.AddItem(SelectedItem.Name, TransactionQuantity, SelectedItem.Weight);
+                        HFL::SetColor(HFL::EColor::Green);
+                        std::cout << "[SUCCESS] ";
+                        HFL::SetColor(HFL::EColor::White);
+                        std::cout << "Transferred " << TransactionQuantity << " " << SelectedItem.Name << "(s) to inventory.\n";
                     }
-                    else // Action == 2 (Remove)
+                    else
                     {
-                        if (MyInventory.RemoveItem(SelectedItem.Name, Qty))
+                        if (PlayerInventory.RemoveItem(SelectedItem.Name, TransactionQuantity))
                         {
-                            std::cout << "\n[Success] Removed " << Qty << " " << SelectedItem.Name << "(s).\n";
+                            HFL::SetColor(HFL::EColor::Green);
+                            std::cout << "[SUCCESS] ";
+                            HFL::SetColor(HFL::EColor::White);
+                            std::cout << "Removed " << TransactionQuantity << " " << SelectedItem.Name << "(s) from inventory.\n";
                         }
                         else
                         {
-                            // --- HANDLE FAILURE ---
-                            std::cout << "\n[Error] You do not own any " << SelectedItem.Name << "(s).\n";
+                            HFL::SetColor(HFL::EColor::BrightRed);
+                            std::cout << "[FAILURE] ";
+                            HFL::SetColor(HFL::EColor::White);
+                            std::cout << "Insufficient stock or item not found: " << SelectedItem.Name << ".\n";
                         }
                     }
                 }
                 else
                 {
-                    std::cout << "\n[Error] Invalid selection.\n";
+                    HFL::SetColor(HFL::EColor::BrightRed);
+                    std::cout << "\n[ERROR] Invalid input parameters. Transaction aborted.\n";
                 }
 
-                HFL::WaitForInput();
+                HFL::Wait(2.5f);
             }
         }
 
-        // --- STEP 4: DISPLAYING DATA ---
+        // ======================== DISPLAYING DATA ========================
         HFL::ClearScreen();
-        HFL::PrintHeader("Step 3: Displaying Data");
+        HFL::PrintHeader("DISPLAY");
 
-        std::cout << "Action: Passing Inventory to the Display class.\n\n";
-        std::cout << "[Analysis]:\n";
-        std::cout << "The Inventory class doesn't know how to display itself. It is passed to\n";
-        std::cout << "InventoryDisplay. This decouples the DATA from the Display functionality.\n\n";
+        HFL::PrintSection("ACTION");
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "Injecting Inventory reference into the Display system.\n\n";
 
-        Display.DisplayInventory(MyInventory);
+        HFL::PrintSection("PROCESS");
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The Inventory class maintains zero logic regarding visual output.\n"
+            << "By passing the data to InventoryDisplay, the system achieves a strict\n"
+            << "decoupling of raw state from the presentation layer.\n\n";
+
+        Display.DisplayInventory(PlayerInventory);
 
         HFL::WaitForInput();
 
-        // --- STEP 5: SAVING DATA ---
+        // ======================== SAVING DATA ========================
         HFL::ClearScreen();
-        HFL::PrintHeader("Step 4: Saving Data");
+        HFL::PrintHeader("SAVING");
 
-        std::cout << "Action: Saving Inventory.\n\n";
-        std::cout << "[Analysis]:\n";
-        std::cout << "The Inventory class knows nothing about file paths or writing.\n";
-        std::cout << "It is delegated to the InventorySaveLoad.\n";
+        HFL::PrintSection("ACTION");
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "Executing external file serialization.\n\n";
 
-        // Use 'Persistence' object from the top
-        // Use 'Filename' from the top
-        std::cout << "\nSaving to: " << Filename << "\n";
-        Persistence.SaveInventory(MyInventory, Filename);
-
-        std::cout << "[Status]: File written successfully.\n";
-        std::cout << "You can verify this by opening the file in a text editor.\n";
+        HFL::PrintSection("PROCESS");
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "File paths, stream buffers, and disk I/O are encapsulated within\n"
+            << "InventorySaveLoad. The Inventory class remains unaware of the\n"
+            << "underlying storage medium.\n\n";
 
         HFL::WaitForInput();
 
-        // --- STEP 6: LOADING DATA (PROOF) ---
-        HFL::ClearScreen();
-        HFL::PrintHeader("Step 5: Simulating a Restart");
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[SYSTEM]: ";
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "Accessing: " << Filename << "\n";
+        HFL::Wait(0.8f);
 
-        std::cout << "Action: Creating a NEW empty Inventory.\n";
-        std::cout << "        Loading data from the file.\n\n";
-        std::cout << "[Analysis]:\n";
-        std::cout << "Create a 'NewInventory' object. It is empty by default.\n";
-        std::cout << "Uses InventorySaveLoad to populate it from our save file.\n";
-        std::cout << "This proves that InventorySaveLoad is independent of the Inventory state.\n\n";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Writing data packets";
+        for (int i = 0; i < 3; ++i) { HFL::Wait(1.f); std::cout << "."; }
+        std::cout << "\n";
+
+        Persistence.SaveInventory(PlayerInventory, Filename);
+
+        HFL::WaitForInput();
+
+        // ======================== LOADING DATA ========================
+        HFL::ClearScreen();
+        HFL::PrintHeader("SIMULATING SYSTEM RESTART");
+
+        HFL::PrintSection("ACTION");
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "Instantiating a secondary Inventory and performing restoration.\n\n";
+
+        HFL::PrintSection("PROCESS");
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "By populating a 'NewInventory' object from disk, the system shows\n"
+            << "that the SaveLoad module functions independently of any specific\n"
+            << "active instance or state.\n\n";
+
+        HFL::WaitForInput();
 
         Inventory NewInventory;
-        std::cout << "New Inventory Count (Before Load): " << NewInventory.GetTotalCount() << "\n\n";
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "Creating a NEW empty Invetory\n";
+        Display.DisplayInventory(NewInventory);
+        HFL::WaitForInput();
 
-        // Using Persistence and Filename from the top
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Loading Inventory";
+        for (int i = 0; i < 3; ++i) { HFL::Wait(1.f); std::cout << "."; }
+        std::cout << "\n\n";
+
         Persistence.LoadInventory(NewInventory, Filename);
+        std::cout << "\n";
 
-        std::cout << "\nDisplaying New Inventory (Loaded from file):\n";
+        HFL::PrintSection("LOADED INVENTORY");
         Display.DisplayInventory(NewInventory);
 
         HFL::WaitForInput();
 
-        // --- STEP 7: CONCLUSION ---
+        // ======================== CONCLUSION ========================
         HFL::ClearScreen();
-        HFL::PrintHeader("Conclusion");
+        HFL::PrintHeader("CONCLUSION");
 
-        std::cout << "1. The Inventory class remained simple and focused on items.\n";
-        std::cout << "2. Changing how we display items (UI) does not break Inventory.\n";
-        std::cout << "3. Changing how we save files (Database vs File) does not break Inventory.\n\n";
-        std::cout << "This is the Single Responsibility Principle in action:\n";
-        std::cout << "Keep responsibilities separated to make code flexible & robust.\n\n";
+        HFL::PrintSection("ARCHITECTURE");
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "The modular approach to the Inventory System confirms the following:\n\n";
 
-        std::cout << std::setw(40) << "End of Demo\n";
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] LOGIC ISOLATION: ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The Inventory class remains focused strictly on data integrity.\n";
+
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] UI INDEPENDENCE: ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Modifications to visual formatting do not impact core logic.\n";
+
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] STORAGE AGNOSTIC: ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Transitioning between file formats or databases occurs without\n"
+            << "    refactoring the Inventory or Display systems.\n\n";
+
+        HFL::PrintSection("SUMMARY");
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "The Single Responsibility Principle ensures that software is:\n\n";
+
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] FLEXIBLE: ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Easy to extend with new features.\n";
+
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] ROBUST: ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Highly resistant to regressive bugs during maintenance.\n";
+
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] SCALABLE: ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Capable of supporting complex systems through separation of concerns.\n\n";
+
+        HFL::SetColor(HFL::EColor::White);
+        HFL::WaitForInput();
     }
 }

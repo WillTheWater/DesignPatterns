@@ -28,10 +28,14 @@ namespace HFL
 {
     enum class EColor 
     {
-        // Standard Colors (0-7)
-        Black, Red, Green, Yellow, Blue, Magenta, Cyan, White,
-        // Bright/High Intensity (8-15)
-        Gray, BrightRed, BrightGreen, BrightYellow, BrightBlue, BrightMagenta, BrightCyan, BrightWhite
+        Black,      Red,    Green, 
+        Yellow,     Blue,   Magenta, 
+        Cyan,       White,  Gray, 
+
+        BrightRed,      BrightGreen, 
+        BrightYellow,   BrightBlue, 
+        BrightMagenta,  BrightCyan, 
+        BrightWhite
     };
 
 	void PrintMainMenu();
@@ -39,6 +43,7 @@ namespace HFL
 	void ClearScreen();
 	void WaitForInput();
 	void PrintHeader(const std::string& Title);
+    void PrintSection(const std::string& Title, EColor Color = EColor::Cyan);
     void SetColor(EColor Color);
 	std::filesystem::path GetSaveDirectory(const std::string& PrincipleNamespace);
 

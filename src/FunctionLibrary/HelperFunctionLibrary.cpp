@@ -10,47 +10,38 @@ namespace HFL
     {
         ClearScreen();
 
-        // Header
-        SetColor(EColor::Blue);
-        std::cout << std::setfill('=') << std::setw(Width) << "" << std::setfill(' ') << "\n";
-        SetColor(EColor::BrightWhite);
-        std::cout << std::right << std::setw((Width + 20) / 2) << "GAME DESIGN PATTERNS\n";
-        SetColor(EColor::Blue);
-        std::cout << std::setfill('=') << std::setw(Width) << "" << std::setfill(' ') << "\n\n";
+        // ======================== HEADER ========================
+        PrintHeader("GAME DESIGN PATTERNS");
 
         auto PrintOption = [&](int Index, const std::string& Label) 
             {
-                SetColor(EColor::Yellow);
+                SetColor(EColor::BrightWhite);
                 std::cout << std::right << std::setw(3) << Index << ". ";
-                SetColor(HFL::EColor::White);
+                SetColor(HFL::EColor::Gray);
                 std::cout << std::left << std::setw(ColWidth - 5) << Label;
             };
 
-        // --- SECTION: SOLID PRINCIPLES ---
-        SetColor(EColor::Green);
-        std::cout << std::string((Width - 22) / 2, ' ') << "[ SOLID PRINCIPLES ]\n";
+        // ======================== SECTION: SOLID PRINCIPLES ========================
+        PrintSection("[ SOLID PRINCIPLES ]\n");
         PrintOption(1, "[SRP] Single Responsibility"); PrintOption(2, "[OCP] Open-Closed"); std::cout << "\n";
         PrintOption(3, "[LSP] Liskov Substitution");   PrintOption(4, "[ISP] Interface Segregation"); std::cout << "\n";
         PrintOption(5, "[DIP] Dependency Inversion");   std::cout << "\n\n";
 
-        // --- SECTION: CREATIONAL ---
-        SetColor(EColor::Green);
-        std::cout << std::string((Width - 24) / 2, ' ') << "[ CREATIONAL PATTERNS ]\n";
+        // ======================== SECTION: CREATIONAL ========================
+        PrintSection("[ CREATIONAL PATTERNS ]\n");
         PrintOption(6, "[SGT] Singleton");       PrintOption(7, "[FTM] Factory Method"); std::cout << "\n";
         PrintOption(8, "[AFT] Abstract Factory"); PrintOption(9, "[PRO] Prototype"); std::cout << "\n";
         PrintOption(10, "[BLD] Builder");         std::cout << "\n\n";
 
-        // --- SECTION: STRUCTURAL ---
-        SetColor(EColor::Green);
-        std::cout << std::string((Width - 24) / 2, ' ') << "[ STRUCTURAL PATTERNS ]\n";
+        // ======================== SECTION: STRUCTURAL ========================
+        PrintSection("[ STRUCTURAL PATTERNS ]\n");
         PrintOption(11, "[FAC] Facade");    PrintOption(12, "[ADP] Adapter"); std::cout << "\n";
         PrintOption(13, "[PRX] Proxy");     PrintOption(14, "[BRG] Bridge"); std::cout << "\n";
         PrintOption(15, "[COM] Composite"); PrintOption(16, "[DEC] Decorator"); std::cout << "\n";
         PrintOption(17, "[FLY] Flyweight"); std::cout << "\n\n";
 
-        // --- SECTION: BEHAVIORAL ---
-        SetColor(EColor::Green);
-        std::cout << std::string((Width - 24) / 2, ' ') << "[ BEHAVIORAL PATTERNS ]\n";
+        // ======================== SECTION: BEHAVIORAL ========================
+        PrintSection("[ BEHAVIORAL PATTERNS ]\n");
         PrintOption(18, "[NUL] Null Object");     PrintOption(19, "[STR] Strategy"); std::cout << "\n";
         PrintOption(20, "[TMP] Template Method"); PrintOption(21, "[ITR] Iterator"); std::cout << "\n";
         PrintOption(22, "[CMD] Command");         PrintOption(23, "[OBS] Observer"); std::cout << "\n";
@@ -58,21 +49,21 @@ namespace HFL
         PrintOption(26, "[MED] Mediator");        PrintOption(27, "[MEM] Memento"); std::cout << "\n";
         PrintOption(28, "[VIS] Visitor");         PrintOption(29, "[INT] Interpreter"); std::cout << "\n\n";
 
-        // Footer
-        SetColor(EColor::BrightRed);
-        std::cout << " " << std::setfill('-') << std::setw(Width - 2) << "" << std::setfill(' ') << "\n";
-        SetColor(EColor::Yellow);
-        std::cout << "  0. ";
+        // ======================== FOOTER ========================
+        SetColor(EColor::Red);
+        std::cout << std::setfill('=') << std::setw(60) << "" << std::setfill(' ') << "\n";
         SetColor(EColor::BrightWhite);
+        std::cout << "  0. ";
+        SetColor(EColor::Gray);
         std::cout << "End Demo\n";
-        SetColor(EColor::BrightRed);
-        std::cout << " " << std::setfill('-') << std::setw(Width - 2) << "" << std::setfill(' ') << "\n";
-
+        SetColor(EColor::Red);
+        std::cout << std::setfill('=') << std::setw(60) << "" << std::setfill(' ') << "\n";
         HFL::SetColor(HFL::EColor::White);
     }
 
     int GetValidMenuInput(int MaxOption)
     {
+        SetColor(EColor::Magenta);
         int Choice = -1;
         while (true)
         {
@@ -83,7 +74,7 @@ namespace HFL
             {
                 std::cin.clear();
                 std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-                std::cout << "Invalid input. Please enter a number.\n";
+                std::cout << "Invalid input.\n";
                 continue;
             }
 
@@ -93,23 +84,24 @@ namespace HFL
             }
             else
             {
-                std::cout << "Invalid selection. Please choose between 0 and " << MaxOption << ".\n";
+                std::cout << "Invalid selection.\n";
             }
         }
+        SetColor(EColor::White);
     }
 
     void ClearScreen()
     {
-        // Cross-platform clear screen
-#ifdef _WIN32
-        std::system("cls");
-#else
-        std::system("clear");
-#endif
+        #ifdef _WIN32
+                std::system("cls");
+        #else
+                std::system("clear");
+        #endif
     }
 
     void WaitForInput()
     {
+        SetColor(EColor::Magenta);
         std::cout << "\n[Press Enter to continue...]";
         std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
         if (std::cin.peek() == '\n') std::cin.get();
@@ -120,10 +112,16 @@ namespace HFL
         SetColor(EColor::Blue);
         std::cout << std::setfill('=') << std::setw(60) << "" << std::setfill(' ') << "\n";
         SetColor(EColor::BrightWhite);
-        std::cout << std::string(18, ' ') << "" << Title << "\n";
+        std::cout << std::setw((60 + Title.length()) / 2) << std::right << Title << "\n";
         SetColor(EColor::Blue);
         std::cout << std::setfill('=') << std::setw(60) << "" << std::setfill(' ') << "\n\n";
         SetColor(EColor::White);
+    }
+
+    void PrintSection(const std::string& Title, EColor Color)
+    {
+        SetColor(Color);
+        std::cout << std::setw((60 + Title.length()) / 2) << std::right << Title << "\n";
     }
 
     void SetColor(EColor Color)
@@ -149,17 +147,17 @@ namespace HFL
         }
     }
 
-    // ------------------------------------------------------------------------
-    // CROSS-PLATFORM SAVE DIRECTORY
-    // ------------------------------------------------------------------------
-    // Windows: C:\Users\Name\AppData\Roaming\GameDesignPatterns\SRP\
-    // Linux/Mac: ~/.local/share/GameDesignPatterns/SRP/ (or equiv)
-    // ------------------------------------------------------------------------
+    // =========================================================================
+    // CROSS-PLATFORM SAVING
+    // =========================================================================
+    // Windows: C:/Users/Name/AppData/Roaming/GameDesignPatterns/SRP/
+    // Linux/Mac: ~/.local/share/GameDesignPatterns/SRP/
+    // =========================================================================
     std::filesystem::path GetSaveDirectory(const std::string& PrincipleNamespace)
     {
         std::filesystem::path SavePath;
 
-        // 1. Determine the OS-specific base directory
+        // Determines the OS-specific base directory
         #ifdef _WIN32
                 const char* AppData = std::getenv("APPDATA");
                 if (AppData) SavePath = AppData;
@@ -175,11 +173,11 @@ namespace HFL
                 }
         #endif
 
-        // 2. Append Project Root and Specific Subfolder
+        // Appends Project Root and Subfolder
         SavePath /= "GameDesignPatterns";
         SavePath /= PrincipleNamespace;
 
-        // 3. Create the directory structure if it doesn't exist
+        // Creates the directory structure
         if (!std::filesystem::exists(SavePath))
         {
             std::filesystem::create_directories(SavePath);
@@ -191,7 +189,7 @@ namespace HFL
 
     void Wait(float Seconds)
     {
-        // Convert float seconds to a chrono duration and sleep
+        // Converts float seconds to a chrono duration and sleeps
         std::this_thread::sleep_for(std::chrono::duration<float>(Seconds));
     }
 }
