@@ -543,7 +543,6 @@ namespace SRP
         HFL::SetColor(HFL::EColor::Gray);
         std::cout << "Capable of supporting complex systems through separation of concerns.\n\n";
 
-        HFL::SetColor(HFL::EColor::White);
         HFL::WaitForInput();
     }
 }

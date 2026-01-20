@@ -31,7 +31,8 @@
 namespace SRP 
 {
     // =========================================================================
-    // ITEM DATA MODEL
+    // ITEM
+    // 
     // Defines the data that makes an item.
     // =========================================================================
     struct Item 
@@ -66,7 +67,6 @@ namespace SRP
     //
     // This class has a SINGLE responsibility:
     // Display the inventory changes.
-    //
     // It takes a const reference to Inventory. It doesn't own it,
     // it just looks at it.
     // =========================================================================

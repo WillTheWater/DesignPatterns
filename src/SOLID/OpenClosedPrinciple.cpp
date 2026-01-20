@@ -12,10 +12,14 @@ namespace OCP
 
     void Player::InteractWith(IInteractable* Target)
     {
-        // The Player is "Closed".
-        // It performs the generic act of interacting without knowing the details
-        // of what happens when it interacts.
-        std::cout << "You approach the " << Target->GetName() << "...\n";
+        if (!Target) return;
+
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "[Action] Initiating contact with: ";
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << Target->GetName() << "...\n";
+
+        // The Player is "Closed". It delegates the logic to the Target.
         Target->Interact(*this);
     }
 
@@ -26,19 +30,14 @@ namespace OCP
 
     void Door::Interact(Player& PlayerRef)
     {
-        // Door doesn't use the player reference so Cast to void to ignore.
-        // This prevents compilation Warnings
-        (void)PlayerRef;
+        (void)PlayerRef; // Door does not modify player state.
 
-        IsOpen = !IsOpen; // Toggle the door state
-        if (IsOpen)
-        {
-            std::cout << "and the door creaks open.\n";
-        }
-        else
-        {
-            std::cout << "and the door shuts.\n";
-        }
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Result: ";
+        IsOpen = !IsOpen;
+
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << (IsOpen ? "The door opens.\n" : "The door closes.\n");
     }
 
     // =========================================================================
@@ -52,15 +51,19 @@ namespace OCP
 
     void Chest::Interact(Player& PlayerRef)
     {
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Result: ";
         if (!IsLooted)
         {
-            std::cout << "You open the chest and find " << GoldAmount << " gold!\n";
+            HFL::SetColor(HFL::EColor::Green);
+            std::cout << "CONTENTS ACQUIRED. [+" << GoldAmount << " Gold]\n";
             PlayerRef.AddGold(GoldAmount);
             IsLooted = true;
         }
         else
         {
-            std::cout << "The chest is empty.\n";
+            HFL::SetColor(HFL::EColor::Gray);
+            std::cout << "EMPTY. No items remaining.\n";
         }
     }
 
@@ -69,17 +72,18 @@ namespace OCP
     // =========================================================================
     void WaterSpring::Interact(Player& PlayerRef)
     {
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Result: ";
         if (PlayerRef.GetHealth() < PlayerRef.GetMaxHealth())
         {
-            int OldHealth = PlayerRef.GetHealth();
-            PlayerRef.SetHealth(OldHealth + 10);
-            std::cout << "You drink from the spring. \nRefreshing!\n";
-            std::cout << "HP restored by 10.\n";
+            PlayerRef.SetHealth(std::min(PlayerRef.GetHealth() + 10, PlayerRef.GetMaxHealth()));
+            HFL::SetColor(HFL::EColor::Green);
+            std::cout << "HEALTH RESTORED. [+10 HP]\n";
         }
         else
         {
-            std::cout << "You can't drink any more.\n";
-            std::cout << "You are already full.\n";
+            HFL::SetColor(HFL::EColor::Gray);
+            std::cout << "NO EFFECT. Player is at full health.\n";
         }
     }
 
@@ -88,136 +92,180 @@ namespace OCP
     // =========================================================================
     void RunDemo()
     {
-        // Clear initial buffer
         std::cin.clear();
         std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
-        // --- STEP 1: INTRODUCTION ---
+        // ======================== INTRODUCTION ========================
         HFL::ClearScreen();
-        HFL::PrintHeader("Open-Closed Principle (OCP)");
+        HFL::PrintHeader("OPEN-CLOSED PRINCIPLE");
 
-        std::cout << "Definition:\n";
-        std::cout << "A class should be open for extension,\n";
-        std::cout << "but closed for modification.\n\n";
+        HFL::PrintSection("THE DEFINITION");
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "Entities should be open for extension, but closed for modification.\n\n";
 
-        std::cout << "In This Demo:\n";
-        std::cout << "We will create an Interaction System.\n";
-        std::cout << "The 'Player' (Closed) can interact with many objects,\n";
-        std::cout << "but never defines what those objects are.\n";
+        HFL::PrintSection("THE GOAL");
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The Open-Closed Principle (OCP) prevents code fragility by allowing\n"
+            << "new behaviors to be added through abstraction. Instead of editing\n"
+            << "existing logic, it extends the system by implementing interfaces.\n\n";
+
+        HFL::PrintSection("THE EXAMPLE");
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "This demonstration features an Interaction System with two primary\n"
+            << "architectural roles:\n\n";
+
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] THE ACTOR (PLAYER): ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Triggers actions via an interface. (Closed)\n";
+
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] THE INTERFACE: ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Defines a contract for all interactable objects. (Open)\n";
+
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] EXTENSIONS: ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Unique objects (Door, Chest, Spring) that define logic.\n\n";
 
         HFL::WaitForInput();
 
-        // --- STEP 2: THE SETUP ---
+        // ======================== THE ARCHITECTURE ========================
         HFL::ClearScreen();
-        HFL::PrintHeader("Step 1: The Architecture");
+        HFL::PrintHeader("THE ARCHITECTURE");
 
-        std::cout << "We have defined an Interface 'IInteractable'.\n";
-        std::cout << "Any object that implements this Interface can be interacted with.\n\n";
+        HFL::PrintSection("EXAMPLE");
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "To adhere to OCP, the Player does not contain logic for specific objects.\n"
+            << "It only knows how to speak to the IInteractable interface.\n\n";
 
-        std::cout << "1. [Player]:\n";
-        std::cout << "   - Responsibility: Initiates interaction.\n";
-        std::cout << "   - Constraint: Does NOT know about Doors, Chests, or Water.\n";
-        std::cout << "   - It just calls Interact() on the object.\n\n";
+        HFL::PrintSection("IMPLEMENTATION");
 
-        std::cout << "2. [The Objects]:\n";
-        std::cout << "   - Door, Chest, and WaterSpring implement the Interface.\n";
-        std::cout << "   - They define EXACTLY what happens when interacted with.\n";
-        std::cout << "   - The Player is blind to their internal logic.\n";
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] Player\n";
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "    ROLE:           ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The Interactor.\n";
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "    CONSTRAINT:     ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Closed. No code changes required to add new objects.\n\n";
 
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] Concrete Objects\n";
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "    ROLE:           ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The Extensions.\n";
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "    SCOPE:          ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Defining distinct behaviors (Healing, Looting, Opening).\n\n";
+
+        HFL::SetColor(HFL::EColor::White);
         HFL::WaitForInput();
 
-        // --- STEP 3: INTERACTIVE PLAYGROUND ---
-
-        // Initialize Objects
-        // Note: Uses pointers to the Interface. This allows the Player
-        // to hold a list of completely different objects uniformly.
+        // ======================== INITIALIZATION ========================
         Player MyHero;
         Door WoodenDoor;
-        Chest TreasureChest(50); // Chest contains 50 gold
+        Chest TreasureChest(HFL::GetRandom(10, 150));
         WaterSpring HealingSpring;
 
-        // Store objects in a vector for the menu
-        std::vector<IInteractable*> SceneObjects;
-        SceneObjects.push_back(&WoodenDoor);
-        SceneObjects.push_back(&TreasureChest);
-        SceneObjects.push_back(&HealingSpring);
+        std::vector<IInteractable*> SceneObjects = 
+        { &WoodenDoor, &TreasureChest, &HealingSpring };
 
-        bool InDemo = true;
-        while (InDemo)
+        // ======================== INTERACTION LOOP ========================
+        while (true)
         {
             HFL::ClearScreen();
-            HFL::PrintHeader("Interaction Playground");
+            HFL::PrintHeader("INTERACTION PLAYGROUND");
 
-            // 1. Display Player Stats
-            std::cout << "Player Status:\n";
-            std::cout << "  Health: " << MyHero.GetHealth() << "/" << MyHero.GetMaxHealth() << "\n";
-            std::cout << "  Gold:   " << MyHero.GetGold() << "\n\n";
+            // ======================== Status Panel ========================
+            HFL::PrintSection("PLAYER STATS");
+            HFL::SetColor(HFL::EColor::White);
+            std::cout << " HEALTH: "; HFL::SetColor(HFL::EColor::Green); std::cout << MyHero.GetHealth() << "/" << MyHero.GetMaxHealth();
+            HFL::SetColor(HFL::EColor::White);
+            std::cout << " | GOLD: "; HFL::SetColor(HFL::EColor::Green); std::cout << MyHero.GetGold() << "\n\n";
 
-            // 2. Display Menu
-            std::cout << "What would you like to interact with?\n\n";
+            // ======================== Menu ========================
+            HFL::PrintSection("INTERACTABLE OBJECTS");
             for (size_t i = 0; i < SceneObjects.size(); ++i)
             {
-                std::cout << static_cast<int>(i) + 1 << ". "
-                    << SceneObjects[i]->GetName() << "\n";
+                HFL::SetColor(HFL::EColor::Green);
+                std::cout << " [" << i + 1 << "] ";
+                HFL::SetColor(HFL::EColor::White);
+                std::cout << SceneObjects[i]->GetName() << "\n";
             }
-            std::cout << "0. Continue\n";
-            std::cout << "\nChoice: ";
+            HFL::SetColor(HFL::EColor::Green);
+            std::cout << "\n [0] "; HFL::SetColor(HFL::EColor::White); std::cout << "CONTINUE\n\n";
 
-            int Choice;
-            std::cin >> Choice;
-
-            // Handle bad input
-            if (std::cin.fail())
-            {
-                std::cin.clear();
-                std::cin.ignore();
-                continue;
-            }
+            HFL::SetColor(HFL::EColor::Gray);
+            int Choice = HFL::GetValidMenuInput(SceneObjects.size());
 
             if (Choice == 0) break;
 
-            // Validate selection
-            if (Choice >= 1 && Choice <= static_cast<int>(SceneObjects.size()))
-            {
-                IInteractable* Target = SceneObjects[Choice - 1];
+            // ======================== Execution ========================
+            HFL::ClearScreen();
+            HFL::PrintHeader("EXECUTING INTERACTION");
 
-                std::cout << "\n----------------------------------------\n";
-                // The Player acts blindly through the interface
-                MyHero.InteractWith(Target);
-                std::cout << "----------------------------------------\n";
-            }
-            else
-            {
-                std::cout << "\n[!] Invalid selection.\n";
-            }
+            HFL::PrintSection("INTERACTING");
+            HFL::SetColor(HFL::EColor::Gray);
+            std::cout << "The Player class is currently executing a generic Interact() call.\n"
+                << "It remains unaware of the target's underlying class type.\n\n";
+
+            HFL::SetColor(HFL::EColor::Gray);
+            std::cout << "Analyzing object";
+            for (int i = 0; i < 3; ++i) { HFL::Wait(0.4f); std::cout << "."; }
+            std::cout << "\n\n";
+
+            MyHero.InteractWith(SceneObjects[Choice - 1]);
 
             HFL::WaitForInput();
         }
 
-        // --- STEP 4: CONCLUSION ---
+        // ======================== CONCLUSION ========================
         HFL::ClearScreen();
-        HFL::PrintHeader("Conclusion");
+        HFL::PrintHeader("CONCLUSION");
 
-        std::cout << "1. The Player Class is 'Closed'.\n";
-        std::cout << "   And three distinct objects that can beinteracted with (Door, Chest, Spring).\n";
-        std::cout << "   However, the Player source code is never edited.\n";
-        std::cout << "   It does not have methods like 'OpenDoor()' or 'Drink()'.\n";
-        std::cout << "   By keeping Player closed, it guarantees it stays stable.\n\n";
+        HFL::PrintSection("ARCHITECTURE");
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "The interaction confirms the following OCP advantages:\n\n";
 
-        std::cout << "2. The interactablity is extended by using Interfaces.\n";
-        std::cout << "   You implement 'IInteractable' for any new object.\n";
-        std::cout << "   The Player doesn't care what the object IS, only that it\n";
-        std::cout << "   implements the interface.\n\n";
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] ZERO-MODIFICATION: ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The Player source code remained untouched.\n";
 
-        std::cout << "3. Future Proofing.\n";
-        std::cout << "   All that is needed to add a new 'Interactable',\n";
-        std::cout << "   is simply making a NEW class that implements the interface.\n";
-        std::cout << "   This way there is no risk breaking the Player or existing items.\n\n";
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] UNIFORMITY: ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Different object types are stored and accessed identically.\n";
 
-        std::cout << "This is the Open-Closed Principle in action:\n";
-        std::cout << "Closed for modification (Safety) vs Open for Extension (Growth).\n\n";
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] FUTURE PROOF: ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Adding a 'Trap' or 'NPC' requires only a new subclass.\n\n";
 
-        std::cout << std::setw(40) << "End of Demo\n";
+        HFL::PrintSection("SUMMARY");
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "The Open-Closed Principle ensures that systems are:\n\n";
+
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] STABLE: ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Core logic is protected from regression bugs.\n";
+
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] EXTENSIBLE: ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "New features are added by writing NEW code, not changing old code.\n";
+
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] DECOUPLED: ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The interactor and the interactable exist in separate domains.\n\n";
 
         HFL::WaitForInput();
     }

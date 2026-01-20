@@ -3,76 +3,82 @@
 #include "FunctionLibrary/HelperFunctionLibrary.h"
 
 // =========================================================================
-// PRINCIPLE: Open-Closed Principle (OCP)
+// SOLID DESIGN PRINCIPLE: Open-Closed Principle
 // =========================================================================
-// "Entities (classes, modules, functions) should be open for 
-// extension, but closed for modification."
+// "Software entities should be open for extension, but closed for modification."
 //
 // THE GOAL:
-// Create a system where you can add new behaviors (new objects) without
-// breaking or modifying existing classes.
+// To ensure system stability during expansion. By utilizing abstraction, new 
+// functionality is introduced by adding new code (extension) rather than 
+// altering existing, tested code (modification). This prevents regressive 
+// bugs in the core logic when the system grows.
+//
+// THE BENEFIT:
+// * Stability: Core classes remain untouched, reducing the risk of 
+//   breaking existing features.
+// * Scalability: New object types can be integrated indefinitely without 
+//   increasing the complexity of the calling class.
+// * Maintainability: Logic for specific behaviors is encapsulated within 
+//   the objects themselves, not in a massive central switch statement.
 //
 // THE EXAMPLE:
-// An Interaction System.
-// 1. Player: Does not know what it is interacting with.
-// 2. IInteractable: An interface that defines a single Interact() method.
-// 3. Door, Chest, WaterSpring: Concrete implementations that perform 
-//    unique actions when interacted with.
-//
-// BENEFIT:
-// You can add any number of other objects to interact with later by creating a NEW class. 
-// Without ever needing to edit Player (the interactor).
+// [IInteractable]: An interface defining the "Open" contract for interaction.
+// [Player]: The "Closed" actor that triggers interactions without knowing 
+//           the specific types.
+// [Door/Chest/Spring]: Extensions that implement unique interaction logic.
 // =========================================================================
 
 namespace OCP
 {
-    // Forward declaration of Player is needed so the interface knows the class exists.
+    // Forward declaration to allow the interface to reference the Player class.
     class Player;
 
     // =========================================================================
-    // 1. THE INTERFACE (The "Open" part)
-    // This is a pure virtual class, meaning its functions
-    // must be overridden by the class that implements it.
+    // THE INTERFACE
+    //
+    // Defines the contract for all interactable objects. This is the "Open" 
+    // part of the principle, allowing for infinite behavioral extensions.
     // =========================================================================
     class IInteractable
     {
     public:
         virtual ~IInteractable() = default;
 
-        // The Player passes itself as a reference so objects can modify it.
-        // (e.g., Chest gives gold, Spring heals HP).
+        // Triggers the unique behavior of the object.
+        // The Player instance is passed to allow the object to modify player state.
         virtual void Interact(Player& PlayerRef) = 0;
 
-        // Helper for displaying the interactable object in the menu
+        // Returns the identifier for display within the user interface.
         virtual std::string GetName() const = 0;
     };
 
     // =========================================================================
-    // 2. THE ACTOR (The "Closed" part)
-    // The player only knows it can interact, but never defines with what it can
-    // interact or what effect that interaction has.
+    // THE ACTOR
+    //
+    // The Player class is "Closed" for modification. It facilitates interaction 
+    // through the interface without requiring knowledge of concrete types.
     // =========================================================================
     class Player
     {
     public:
         Player();
 
-        // This is the key of the Open-Closed Principle! 
-        // Player does not define object types or control what they can interact with. 
-        // It simply delegates to the interface.
+        // Execution of the Open-Closed Principle.
+        // Interaction is delegated entirely to the interface, ensuring this 
+        // function never needs to change when new interactable types are added.
         void InteractWith(IInteractable* Target);
 
-        // Getters/Setters for the interaction objects
-        // Even these elements could be wrapped in their own
-        // version of OCP, but further abstraction would over complicate this demo.
+        // Attribute Accessors
         int GetHealth() const { return Health; }
         int GetMaxHealth() const { return MaxHealth; }
         int GetGold() const { return Gold; }
+
+        // Attribute Mutators
         void SetHealth(int Amount) { Health = Amount; }
         void AddGold(int Amount) { Gold += Amount; }
 
     private:
-        // Think of these as player attributes.
+        // Attributes.
         // Interacting with different objects determines how they are affected.
         int Health;
         int MaxHealth;
@@ -80,11 +86,10 @@ namespace OCP
     };
 
     // =========================================================================
-    // 3. CONCRETE CLASSES (Extensions)
-    // Here is the OPEN aspect of the OCP.
-    // Infinite flexibility when adding objects that can be interacted with.
-    // The Player does not need to be modified because it never defines the result 
-    // of the interaction.
+    // CONCRETE EXTENSIONS
+    //
+    // These classes extend the system functionality. Adding or removing these 
+    // modules requires zero changes to the Player class logic.
     // =========================================================================
 
     class Door : public IInteractable
@@ -92,10 +97,6 @@ namespace OCP
     public:
         Door();
 
-        // What happens when the player interacts with a door
-        // The door tells the player what happens.
-        // It makes sense that the player does not get to tell the door
-        // how it should work.
         void Interact(Player& PlayerRef) override;
         std::string GetName() const override { return "Wooden Door"; }
 
@@ -108,7 +109,6 @@ namespace OCP
     public:
         Chest(int GoldAmount);
 
-        // What happens when the player interacts with a chest
         void Interact(Player& PlayerRef) override;
         std::string GetName() const override { return "Old Chest"; }
 
@@ -120,7 +120,6 @@ namespace OCP
     class WaterSpring : public IInteractable
     {
     public:
-        // What happens when the player interacts with a water spring
         void Interact(Player& PlayerRef) override;
         std::string GetName() const override { return "Mystical Water Spring"; }
     };
