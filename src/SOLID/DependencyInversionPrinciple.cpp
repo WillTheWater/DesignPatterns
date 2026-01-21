@@ -7,61 +7,43 @@ namespace DIP
     // =========================================================================
 
     // =========================================================================
-    // LOW LEVEL MODULE 1: TEXT FILE STORAGE
-    // =========================================================================
-    // This class implements the ISaveSystem interface to save data
-    // as a human-readable text file.
+    // LOW LEVEL MODULE: TEXT FILE STORAGE
+    // ROLE: Implements the contract for human-readable disk storage.
     // =========================================================================
 
     TextFileSave::TextFileSave()
     {
-        // Uses HelperFunctionLibrary to find a cross-platform save directory.
-        // This ensures it works on Windows, Mac, and Linux without hardcoding paths.
+        // Use HFL to ensure path consistency across different operating systems.
         std::filesystem::path Dir = HFL::GetSaveDirectory("DIP");
-
-        // This defines the filename here.
         FilePath = (Dir / "score_data.txt").string();
     }
 
     void TextFileSave::SaveData(int Score) const
     {
-        // std::ofstream opens a file for writing.
-        // If the file doesn't exist, it creates it.
-        // If it does exist, it overwrites it.
         std::ofstream File(FilePath);
 
         if (File.is_open())
         {
-            // Text mode handles formatting automatically.
-            // It write a label so we konw what the "data" means.
+            // Text mode handles formatting and readability automatically.
             File << "Player Score: " << Score << "\n";
-
             std::cout << ">> [TextFile] Saved score to: " << FilePath << "\n";
         }
         else
         {
-            // In real context, it might throw an exception.
-            // This helps pinpoint future errors
             std::cerr << ">> [TextFile] Error: Could not open file for writing.\n";
         }
     }
 
     int TextFileSave::LoadData() const
     {
-        // std::ifstream opens a file for reading.
         std::ifstream File(FilePath);
         int LoadedScore = 0;
 
         if (File.is_open())
         {
-            std::string Label1;
-            std::string Label2;
-
-            // The >> operator reads data based on the type.
-            // Since LoadedScore is an int, it reads the number automatically.
-            // It skips over the text label automatically (until it hits whitespace/newline).
+            std::string Label1, Label2;
+            // Skips labels and reads the integer directly.
             File >> Label1 >> Label2 >> LoadedScore;
-
             std::cout << ">> [TextFile] Loaded score: " << LoadedScore << "\n";
         }
         else
@@ -78,37 +60,25 @@ namespace DIP
     }
 
     // =========================================================================
-    // LOW LEVEL MODULE 2: BINARY FILE STORAGE
-    // =========================================================================
-    // This class implements the ISaveSystem interface to save data
-    // as raw binary (machine-readable only).
+    // LOW LEVEL MODULE: BINARY FILE STORAGE
+    // ROLE: Implements the contract for raw, efficient machine-readable storage.
     // =========================================================================
 
     BinaryFileSave::BinaryFileSave()
     {
-        // Uses HelperFunctionLibrary to find a cross-platform save directory.
         std::filesystem::path Dir = HFL::GetSaveDirectory("DIP");
-
-        // Binary files often use .bin or .dat extension.
         FilePath = (Dir / "score_data.bin").string();
     }
 
     void BinaryFileSave::SaveData(int Score) const
     {
-        // IMPORTANT: std::ios::binary flag.
-        // This prevents the OS from converting newlines (\n) to OS-specific formats (\r\n).
-        // It ensures it writes the raw bytes of the integer.
+        // Using std::ios::binary avoids line-ending conversions by the OS.
         std::ofstream File(FilePath, std::ios::binary);
 
         if (File.is_open())
         {
-            // reinterpret_cast<const char*>
-            // A C++ specific cast that treats the memory of 'Score' (an int)
-            // as a block of raw bytes (char*).
-            // sizeof(Score) tells the function to write exactly 4 bytes (on a 32-bit int).
-            // This is much faster than text conversion.
+            // Treat the memory of 'Score' as raw bytes (char*) for speed.
             File.write(reinterpret_cast<const char*>(&Score), sizeof(Score));
-
             std::cout << ">> [BinaryFile] Wrote raw bytes to: " << FilePath << "\n";
         }
     }
@@ -120,7 +90,6 @@ namespace DIP
 
         if (File.is_open())
         {
-            // We read exactly sizeof(int) bytes directly into the memory address of LoadedScore.
             File.read(reinterpret_cast<char*>(&LoadedScore), sizeof(LoadedScore));
             std::cout << ">> [BinaryFile] Read raw bytes: " << LoadedScore << "\n";
         }
@@ -139,50 +108,37 @@ namespace DIP
 
     // =========================================================================
     // LOW LEVEL MODULE 3: CLOUD SERVER STORAGE (SIMULATED)
-    // =========================================================================
-    // This class implements the ISaveSystem interface to simulate sending
-    // data over a network. In a real engine, this would use HTTP (libcurl).
+    // ROLE: Implements the contract for JSON-based network storage.
     // =========================================================================
 
     CloudServerSave::CloudServerSave()
     {
-        // How to save a JSON file locally to demonstrate serialization.
-        // In a real case, this file would be uploaded via HTTP.
-        std::filesystem::path Dir = HFL::GetSaveDirectory("DIP");
-        FilePath = (Dir / "cloud_save.json").string();
+        // Points to the data directory
+        FilePath = "cloud_save.json";
     }
 
     void CloudServerSave::SaveData(int Score) const
     {
-        // 1. CONSTRUCT JSON STRING
-        // In a real case, use a library like 'JsonCpp' or 'RapidJSON'.
-        // For this demo, it's just a string using stringstream.
-        std::stringstream ss;
-        ss << "{\n";                             //
-        ss << "  \"score\": " << Score << "\n";  // This Is a FAKE JSON Do not use
-        ss << "}";                               //
+        // Create the JSON object
+        json SaveObject;
+        SaveObject["player_stats"] = {
+            {"score", Score},
+            {"timestamp", "2026-01-21"} // Example of adding more complex data easily
+        };
 
-        std::string JSONString = ss.str();
+        std::cout << ">> [CloudServer] Serializing to nlohmann::json...\n";
 
-        // 2. SIMULATE NETWORK PROCESS
-        std::cout << ">> [CloudServer] Serializing game state to JSON...\n";
-        std::cout << ">> [CloudServer] Connecting to api.game-server.com...\n";
-        std::cout << ">> [CloudServer] Uploading data...\n";
-
-        // 3. WRITE TO DISK
-        // Even though it's a 'Cloud' save, we save the JSON file locally.
-        // To allow the 'Load' function to work.
-        // In the real case it would be uploaded to cloud.
+        // Write to disk (Simulating the local cache of a cloud upload)
         std::ofstream File(FilePath);
         if (File.is_open())
         {
-            File << JSONString;
-            std::cout << ">> [CloudServer] Upload Successful!\n";
-            std::cout << ">> [CloudServer] Local cache saved to: " << FilePath << "\n";
+            // The '4' inside dump() provides pretty-printing (4 spaces)
+            File << SaveObject.dump(4);
+            std::cout << ">> [CloudServer] Upload Successful! Cache: " << FilePath << "\n";
         }
         else
         {
-            std::cerr << ">> [CloudServer] Error: Failed to save local cache.\n";
+            std::cerr << ">> [CloudServer] Error: Failed to write JSON cache.\n";
         }
     }
 
@@ -191,71 +147,47 @@ namespace DIP
         std::ifstream File(FilePath);
         if (!File.is_open())
         {
-            std::cout << ">> [CloudServer] No local cache found. Fetching from remote server...\n";
-            // In a real case, this is where you would use 'libcurl' to download.
-            // For demo, we just return 0.
+            std::cout << ">> [CloudServer] No cache found. Returning 0.\n";
             return 0;
         }
 
-        std::cout << ">> [CloudServer] Loading from local cache (" << FilePath << ")...\n";
-
-        // 4. PARSE JSON
-        // Manually parse the string to extract the number.
-        // Format: {"score": 100}
-
-        std::string Line;
-        int Score = 0;
-        bool bFoundScore = false;
-
-        while (std::getline(File, Line))
+        try
         {
-            // Looks for the line containing '"score":'
-            if (Line.find("\"score\"") != std::string::npos)
-            {
-                // Find the colon ':'
-                size_t ColonPos = Line.find(':');
+            // Parse the JSON file
+            json LoadedData = json::parse(File);
 
-                if (ColonPos != std::string::npos)
-                {
-                    // Get the substring after the colon and convert it to an int
-                    std::string ValueStr = Line.substr(ColonPos + 1);
-                    try
-                    {
-                        Score = std::stoi(ValueStr);
-                        bFoundScore = true;
-                    }
-                    catch (...)
-                    {
-                        // Handle bad format
-                        std::cout << ">> [CloudServer] Error: Invalid JSON format.\n";
-                    }
-                }
-            }
+            // Navigate the structure: data["player_stats"]["score"]
+            int Score = LoadedData.at("player_stats").at("score").get<int>();
+
+            std::cout << ">> [CloudServer] JSON Parsed. Syncing Score: " << Score << "\n";
+            return Score;
         }
-
-        if (bFoundScore)
+        catch (json::parse_error& e)
         {
-            std::cout << ">> [CloudServer] Sync complete. Score: " << Score << "\n";
+            std::cerr << ">> [CloudServer] Parse Error: " << e.what() << "\n";
+            return 0;
         }
-
-        return Score;
+        catch (json::out_of_range& e)
+        {
+            std::cerr << ">> [CloudServer] Key Error: Could not find score in JSON.\n";
+            return 0;
+        }
     }
 
     std::string CloudServerSave::GetDescription() const
     {
-        return "Cloud Server (JSON Format)";
+        return "Cloud Server (nlohmann/json)";
     }
 
     // =========================================================================
-    // HIGH LEVEL IMPLEMENTATION
+    // HIGH LEVEL IMPLEMENTATION: GAME ENGINE
     // =========================================================================
+
     GameEngine::GameEngine() : Score(0), Storage(nullptr) {}
 
     void GameEngine::PlayGame()
     {
-        std::cout << "\n----------------------------------------\n";
-        std::cout << "           Guess the Number!\n";
-        std::cout << "----------------------------------------\n";
+        HFL::PrintSection("GUESS THE NUMBER");
         std::cout << "I'm thinking of a number between 1 and 100.\n\n";
 
         std::srand(static_cast<unsigned int>(std::time(nullptr)));
@@ -275,30 +207,30 @@ namespace DIP
         {
             if (Guess == MagicNumber)
             {
+                HFL::SetColor(HFL::EColor::Green);
                 std::cout << "\nCORRECT! You Win!\n";
                 Score = 100;
             }
             else
             {
+                HFL::SetColor(HFL::EColor::Yellow);
                 std::cout << "\nWRONG! It was " << MagicNumber << ".\n";
-                Score = 100 - (std::abs(MagicNumber - Guess));
+                Score = std::max(0, 100 - (std::abs(MagicNumber - Guess)));
             }
         }
-        std::cout << "----------------------------------------\n";
     }
 
     void GameEngine::SaveGame() const
     {
-        if (Storage == nullptr)
+        if (!Storage)
         {
-            std::cout << "[Error] No storage system selected!\n";
+            HFL::SetColor(HFL::EColor::Red);
+            std::cout << "[Error] No storage system injected!\n";
             return;
         }
 
-        std::cout << "\n>> GameEngine: Saving...\n";
-        // The High Level Engine calls SaveGame. But it doesn't know
-        // how writing a file or sending a network packet works.
-        // That belongs only to the Modules.
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "\n>> [GameEngine] Requesting save via ISaveSystem interface...\n";
         Storage->SaveData(Score);
     }
 
@@ -307,164 +239,235 @@ namespace DIP
     // =========================================================================
     void RunDemo()
     {
-        // Clear buffer
         std::cin.clear();
         std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
-        // --- STEP 1: INTRODUCTION ---
+        // ======================== INTRODUCTION ========================
         HFL::ClearScreen();
-        HFL::PrintHeader("Dependency Inversion Principle (DIP)");
+        HFL::PrintHeader("DEPENDENCY INVERSION PRINCIPLE");
 
-        std::cout << "Definition:\n";
-        std::cout << "Depend on abstractions, not on concretions.\n";
-        std::cout << "Invert the dependency arrow to point towards the interface.\n\n";
+        HFL::PrintSection("THE DEFINITION");
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "High-level modules should not depend on low-level modules.\n"
+            << "Both should depend on abstractions (interfaces).\n\n";
 
-        std::cout << "In This Demo:\n";
-        std::cout << "You will play a mini-game to generate a score.\n";
-        std::cout << "Then, you will dynamically select HOW to save that score.\n";
-        std::cout << "The Game Engine never knows how it's saved.\n";
+        HFL::PrintSection("THE GOAL");
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The Dependency Inversion Principle (DIP) decouples the 'Policy' of the\n"
+            << "program from its 'Implementation'. By depending on a shared contract\n"
+            << "rather than concrete classes, the high-level logic remains isolated\n"
+            << "from changes in low-level volatile details like databases or APIs.\n\n";
+
+        HFL::PrintSection("THE EXAMPLE");
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "This demonstration features a decoupled Save System with three layers:\n\n";
+
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] THE ABSTRACTION (INTERFACE): ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "ISaveSystem defines the Save/Load contract.\n";
+
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] THE CONCRETIONS (WORKERS):   ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Text, Binary, and JSON (nlohmann) handlers.\n";
+
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] THE HIGH-LEVEL (BOSS):       ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The GameEngine that executes saves via injection.\n\n";
+
+        HFL::PrintSection("THE BENEFIT");
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] FLEXIBILITY:   ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Swap local storage for cloud storage at runtime without re-compiling logic.\n";
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] TESTABILITY:   ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Inject 'Mock' save systems to test the engine without hitting the disk.\n";
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] DECOUPLING:    ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Third-party libraries (like nlohmann/json) are hidden from the core engine.\n";
 
         HFL::WaitForInput();
 
-        // --- STEP 2: THE SETUP ---
+        // ======================== THE ARCHITECTURE ========================
         HFL::ClearScreen();
-        HFL::PrintHeader("Step 1: The Architecture");
+        HFL::PrintHeader("THE ARCHITECTURE");
 
-        std::cout << "We have defined the (Interface) in the High Level.\n\n";
+        HFL::PrintSection("THE INVERSION");
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Traditionally, the Boss (Engine) would own the Workers (Files). In DIP, this\n"
+            << "is inverted. The Boss publishes a 'Job Description' (Interface), and the\n"
+            << "Workers must change their shape to fit that description to be hired.\n\n";
 
-        std::cout << "1. ISaveSystem (The Interface):\n";
-        std::cout << "   - Defines 'SaveData' and 'LoadData'.\n";
-        std::cout << "   - Created by the GameEngine.\n\n";
+        HFL::PrintSection("IMPLEMENTATION");
 
-        std::cout << "2. Low Level Modules:\n";
-        std::cout << "   - TextFile: Implements Interface to write .txt files.\n";
-        std::cout << "   - BinaryFile: Implements Interface to write .bin bytes.\n";
-        std::cout << "   - CloudServer: Implements Interface to send .JSON packets.\n\n";
+        // ======================== INTERFACE ========================
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] ISaveSystem (Interface)\n";
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "    ROLE:           ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The Abstraction. Defines how data flows, not where it goes.\n";
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "    SCOPE:          ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Pure virtual SaveData() and LoadData().\n";
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "    DEPENDENCY:     ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Owns no logic. It is the bridge between Engine and Disk.\n\n";
 
-        std::cout << "The Inversion:\n";
-        std::cout << "   The Engine creates the 'Job'.\n";
-        std::cout << "   The Modules 'apply' for the job.\n";
+        // ======================== LOW LEVEL ========================
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] Text / Binary / Cloud (nlohmann/json)\n";
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "    ROLE:           ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The Low-Level Details. They handle the messy work of bytes and strings.\n";
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "    SCOPE:          ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Implements the Interface. Uses external libraries for serialization.\n";
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "    CONSTRAINT:     ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Must follow the ISaveSystem contract exactly to be 'Injectable'.\n\n";
 
+        // ======================== HIGH LEVEL ========================
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] GameEngine (High-Level Module)\n";
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "    ROLE:           ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The High-Level Policy. It knows WHEN to save, but never HOW.\n";
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "    SCOPE:          ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Holds an ISaveSystem pointer. Uses Dependency Injection via setters.\n";
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "    ADVANTAGE:      ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Engine remains 100% clean of file-system or network code.\n\n";
+
+        HFL::SetColor(HFL::EColor::White);
         HFL::WaitForInput();
 
-        // --- STEP 3: INTERACTIVE SYSTEM ---
-
-        // Create the Low Level Modules (The Workers)
+        // ======================== INITIALIZATION ========================
         TextFileSave TextStorage;
         BinaryFileSave BinaryStorage;
         CloudServerSave CloudStorage;
-
-        // Create the High Level Module (The Boss)
         GameEngine MyEngine;
 
-        bool InDemo = true;
-        while (InDemo)
+        // ======================== SYSTEM LOOP ========================
+        while (true)
         {
             HFL::ClearScreen();
-            HFL::PrintHeader("DIP Engine System");
+            HFL::PrintHeader("GUESSING GAME");
 
-            std::cout << "Current Score: " << MyEngine.GetScore() << "\n\n";
+            HFL::SetColor(HFL::EColor::White);
+            std::cout << "Current Score: ";
+            HFL::SetColor(HFL::EColor::Green);
+            std::cout << MyEngine.GetScore() << "\n\n";
 
-            std::cout << "Select an Action:\n";
-            std::cout << "1. Play Game (Generate Score)\n";
-            std::cout << "2. Save Game (Choose Storage)\n";
-            std::cout << "3. Load Game (Choose Storage)\n";
-            std::cout << "0. Exit Demo\n";
-            std::cout << "\nChoice: ";
+            HFL::PrintSection("MENU");
+            HFL::SetColor(HFL::EColor::Green);
+            std::cout << " [1] "; HFL::SetColor(HFL::EColor::White); std::cout << "PLAY\n";
+            HFL::SetColor(HFL::EColor::Green);
+            std::cout << " [2] "; HFL::SetColor(HFL::EColor::White); std::cout << "SAVE\n";
+            HFL::SetColor(HFL::EColor::Green);
+            std::cout << " [3] "; HFL::SetColor(HFL::EColor::White); std::cout << "LOAD\n\n";
+            HFL::SetColor(HFL::EColor::Green);
+            std::cout << " [0] "; HFL::SetColor(HFL::EColor::White); std::cout << "CONTINUE\n";
 
-            int Choice;
-            std::cin >> Choice;
-
-            if (std::cin.fail()) { std::cin.clear(); std::cin.ignore(); continue; }
-
+            int Choice = HFL::GetValidMenuInput(3);
             if (Choice == 0) break;
 
-            // --- PLAY GAME ---
             if (Choice == 1)
             {
                 MyEngine.PlayGame();
                 HFL::WaitForInput();
             }
-
-            // --- SAVE GAME ---
-            else if (Choice == 2)
+            else if (Choice == 2 || Choice == 3)
             {
-                std::cout << "\nSelect Storage Provider:\n";
+                HFL::PrintSection("CHOOSE PROVIDER");
                 std::cout << "1. " << TextStorage.GetDescription() << "\n";
                 std::cout << "2. " << BinaryStorage.GetDescription() << "\n";
                 std::cout << "3. " << CloudStorage.GetDescription() << "\n";
-                std::cout << "\nStorage Choice: ";
 
-                int StorageChoice;
-                std::cin >> StorageChoice;
+                int Prov = HFL::GetValidMenuInput(3);
+                ISaveSystem* Selected = nullptr;
+                if (Prov == 1) Selected = &TextStorage;
+                else if (Prov == 2) Selected = &BinaryStorage;
+                else if (Prov == 3) Selected = &CloudStorage;
 
-                if (std::cin.fail()) { std::cin.clear(); std::cin.ignore(); continue; }
-
-                ISaveSystem* SelectedSaver = nullptr;
-
-                if (StorageChoice == 1) SelectedSaver = &TextStorage;
-                else if (StorageChoice == 2) SelectedSaver = &BinaryStorage;
-                else if (StorageChoice == 3) SelectedSaver = &CloudStorage;
-
-                if (SelectedSaver)
+                if (Selected)
                 {
-                    // INJECTION POINT
-                    MyEngine.SetSaveSystem(SelectedSaver);
-                    MyEngine.SaveGame();
-                }
-                HFL::WaitForInput();
-            }
-
-            // --- LOAD GAME ---
-            else if (Choice == 3)
-            {
-                std::cout << "\nSelect Storage Provider:\n";
-                std::cout << "1. " << TextStorage.GetDescription() << "\n";
-                std::cout << "2. " << BinaryStorage.GetDescription() << "\n";
-                std::cout << "3. " << CloudStorage.GetDescription() << "\n";
-                std::cout << "\nStorage Choice: ";
-
-                int StorageChoice;
-                std::cin >> StorageChoice;
-
-                if (std::cin.fail()) { std::cin.clear(); std::cin.ignore(); continue; }
-
-                ISaveSystem* SelectedSaver = nullptr;
-
-                if (StorageChoice == 1) SelectedSaver = &TextStorage;
-                else if (StorageChoice == 2) SelectedSaver = &BinaryStorage;
-                else if (StorageChoice == 3) SelectedSaver = &CloudStorage;
-
-                if (SelectedSaver)
-                {
-                    MyEngine.SetSaveSystem(SelectedSaver);
-                    // Simple demo of load (updates score)
-                    std::cout << ">> Loading data into Engine...\n";
-                    int LoadedScore = SelectedSaver->LoadData();
-                    MyEngine.SetScore(LoadedScore);
-                    MyEngine.SetSaveSystem(nullptr);
+                    MyEngine.SetSaveSystem(Selected);
+                    if (Choice == 2)
+                    {
+                        MyEngine.SaveGame();
+                    }
+                    else
+                    {
+                        std::cout << "\n>> Engine: Pulling data through interface...\n";
+                        MyEngine.SetScore(Selected->LoadData());
+                    }
                 }
                 HFL::WaitForInput();
             }
         }
 
-        // --- STEP 4: CONCLUSION ---
+        // ======================== CONCLUSION ========================
         HFL::ClearScreen();
-        HFL::PrintHeader("Conclusion");
+        HFL::PrintHeader("CONCLUSION");
 
-        std::cout << "Summary of DIP:\n\n";
-        std::cout << "1. The GameEngine (High Level) is never affected.\n";
-        std::cout << "   It didn't need 'SaveTextFile' or 'UploadToCloud'.\n\n";
+        HFL::PrintSection("ARCHITECTURE");
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "The strict adherence to Dependency Inversion confirms the following:\n\n";
 
-        std::cout << "2. We Inverted the Dependency.\n";
-        std::cout << "   The Engine defined 'ISaveSystem'.\n";
-        std::cout << "   The Files and Cloud implemented it.\n\n";
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] ABSTRACTION OWNERSHIP: ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The 'GameEngine' owns the 'ISaveSystem' interface. Low-level\n"
+            << "    modules (Text/Binary/Cloud) must adapt to the engine's needs.\n";
 
-        std::cout << "3. Constructor/Setter Injection.\n";
-        std::cout << "   We 'injected' the storage choice at runtime.\n";
-        std::cout << "   The Engine was flexible and open to change.\n\n";
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] PLUGGABLE INFRASTRUCTURE: ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Integrate a real JSON library (nlohmann) and updated the storage\n"
+            << "    logic without touching a single line of the GameEngine's core code.\n";
 
-        std::cout << std::setw(40) << "End of Demo\n";
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] REDUCED COUPLING: ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The engine remains 'blind' to specific headers like <fstream> or\n"
+            << "    <nlohmann/json.hpp>, preventing 'Header Pollution' in high-level logic.\n\n";
+
+        HFL::PrintSection("SUMMARY");
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "The Dependency Inversion Principle ensures that software is:\n\n";
+
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] FLEXIBLE: ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The strategy for saving (Local vs Cloud) is a runtime decision.\n";
+
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] RESILIENT: ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Changes to low-level details (like file formats) do not break the boss logic.\n";
+
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] SCALABLE: ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Adding a new 'DatabaseSave' simply requires a new worker class,\n"
+            << "    keeping the existing system open for extension but closed for modification.\n\n";
+
+        HFL::SetColor(HFL::EColor::White);
         HFL::WaitForInput();
     }
 }

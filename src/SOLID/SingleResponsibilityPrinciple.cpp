@@ -237,7 +237,7 @@ namespace SRP
         HFL::SetColor(HFL::EColor::Gray);
         std::cout << "The core logic persists regardless of the save medium.\n";
         HFL::SetColor(HFL::EColor::Green);
-        std::cout << "[*] ROBUSTNESS: ";
+        std::cout << "[*] CLEAN CODE: ";
         HFL::SetColor(HFL::EColor::Gray);
         std::cout << "Error handling is localized to the relevant module.\n";
 

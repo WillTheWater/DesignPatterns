@@ -3,35 +3,37 @@
 #include "FunctionLibrary/HelperFunctionLibrary.h"
 
 // =========================================================================
-// PRINCIPLE: Interface Segregation Principle (ISP)
+// SOLID DESIGN PRINCIPLE: Interface Segregation Principle (ISP)
 // =========================================================================
 // "Clients should not be forced to depend on methods they do not use."
 //
 // THE GOAL:
-// Avoid "Fat Interfaces" where an interface tries to do too much.
-// Split interfaces into smaller, specific roles.
+// To avoid "Fat Interfaces"—large, monolithic interfaces that force classes 
+// to implement dummy or empty methods for functionality they don't need. 
+// Instead, we split interfaces into smaller, specialized roles.
+//
+// THE BENEFIT:
+// * Flexibility: Systems are easier to refactor because changes to one 
+//   interface don't affect unrelated implementations.
+// * Safety: Prevents illegal state transitions (e.g., trying to loop a 
+//   one-shot gunshot sound).
+// * Readability: Classes clearly signal their purpose by which specific 
+//   interfaces they implement.
 //
 // THE EXAMPLE:
-// An Audio System.
-// 1. Fat Interface (Bad): One 'IAudio' with Play, Loop, and SetPosition.
-//    -> SFX would be forced to have empty Loop().
-//    -> Music would be forced to have empty SetPosition().
-// 2. Segregated Interfaces (Good):
-//    -> ISoundEffect: Play, Stop, SetPosition (for 3D sounds).
-//    -> IMusicTrack: Play, Stop, Loop (for background music).
-//
-// BENEFIT:
-// The SoundEngine code is cleaner and less prone to errors.
-// It is impossible to accidentally try to 'Loop' a Gunshot SFX.
+// [ISoundEffect]: Interface for short, positional sounds (Spatial 3D Audio).
+// [IMusicTrack]: Interface for long-form audio (Looping/State Management).
+// [AudioManager]: A client that enforces strict role-based audio playback.
 // =========================================================================
 
 namespace ISP
 {
     // =========================================================================
-    // 1. SEGREGATED INTERFACES
+    // SEGREGATED INTERFACES
+    // We split Audio into two roles. One for 3D FX, one for Background Music.
     // =========================================================================
 
-    // Interface for short, positional sounds (Footsteps, Gunshots, Explosions)
+    // Role: Short, trigger-based audio with 3D spatial properties.
     class ISoundEffect
     {
     public:
@@ -39,11 +41,11 @@ namespace ISP
         virtual void Play() = 0;
         virtual void Stop() = 0;
 
-        // 3D Audio: Only SFX needs this.
+        // 3D Audio: Only spatial effects need coordinate tracking.
         virtual void SetPosition3D(float x, float y, float z) = 0;
     };
 
-    // Interface for background audio (Music, Ambiance)
+    // Role: Continuous audio with looping logic and playback state.
     class IMusicTrack
     {
     public:
@@ -51,23 +53,19 @@ namespace ISP
         virtual void Play() = 0;
         virtual void Stop() = 0;
 
-        // Looping: Only Music needs this. SFX plays once.
+        // Looping: Background music requires persistence logic.
         virtual void SetLooping(bool ShouldLoop) = 0;
         virtual bool IsPlaying() const = 0;
-
-    private:
-        bool bIsPlaying;
     };
 
     // =========================================================================
-    // 2. CONCRETE IMPLEMENTATIONS
+    // CONCRETE IMPLEMENTATIONS
     // =========================================================================
 
     class Gunshot : public ISoundEffect
     {
     public:
         Gunshot();
-
         void Play() override;
         void Stop() override;
         void SetPosition3D(float x, float y, float z) override;
@@ -77,7 +75,6 @@ namespace ISP
     {
     public:
         MainMenuTheme();
-
         void Play() override;
         void Stop() override;
         void SetLooping(bool ShouldLoop) override;
@@ -85,26 +82,18 @@ namespace ISP
 
     private:
         bool bIsPlaying;
-        
     };
 
     // =========================================================================
-    // 3. THE CLIENT (Sound Engine)
+    // THE CLIENT: AUDIO MANAGER
     // =========================================================================
     class AudioManager
     {
     public:
-        // Because of ISP, it enforces correct usage.
-        // Cannot pass a MusicTrack to the SFX player.
+        // ISP enforces that only valid sound types are passed to specific logic.
         void PlayEffect(ISoundEffect* Effect);
-
-        // Cannot pass a SFX to the Music player.
         void PlayMusic(IMusicTrack* Music);
-        
     };
 
-    // =========================================================================
-    // DEMO
-    // =========================================================================
     void RunDemo();
 }
