@@ -2,33 +2,37 @@
 
 namespace SGT
 {
-    // ------------------------------------------------------------------------
-    // SINGLETON IMPLEMENTATION
-    // ------------------------------------------------------------------------
+    // =========================================================================
+    // SINGLETON IMPLEMENTATION: AssetManager
+    // ROLE: Managing the lifecycle and access of the unique Manager instance.
+    // =========================================================================
+
     AssetManager::AssetManager()
     {
+        // Private constructor ensures no external entity can 'new' this class.
         std::cout << "[System] AssetManager Singleton Initialized.\n";
     }
 
     AssetManager& AssetManager::GetInstance()
     {
-        // 'instance' is a static variable inside a function.
-        // 1. It is created the first time this function is called.
-        // 2. It is destroyed automatically when the program exits.
-        // 3. It is Thread-Safe: The compiler ensures only one thread runs the constructor.
+        // 1. STATIC LOCAL INSTANCE (Meyers' Singleton):
+        //    Created the first time this function is called.
+        // 2. LIFECYCLE:
+        //    Lives for the duration of the program; destroyed at exit.
+        // 3. THREAD SAFETY:
+        //    C++11 guarantees this initialization is thread-safe.
         static AssetManager instance;
         return instance;
     }
 
-    // ------------------------------------------------------------------------
+    // =========================================================================
     // TEMPLATE SPECIALIZATION IMPLEMENTATIONS
-    // ------------------------------------------------------------------------
-    // We provide a custom implementation of 'LoadAsset' for EVERY specific type.
-    // LoadAsset<Texture> -> Use function A (Texture Cache).
-    // LoadAsset<Sound>   -> Use function B (Sound Cache).
-    // LoadAsset<Font>    -> Use function C (Font Cache).
+    // ROLE: Custom logic for different asset types using the same function name.
+    // =========================================================================
+    // We provide specific implementations for each 'Tag' (Texture, Sound, Font).
+    // This allows the manager to route requests to the correct internal cache.
 
-    // --- VERSION 1: TEXTURE ---
+    // --- SPECIALIZATION 1: TEXTURES ---
     template <>
     inline void AssetManager::LoadAsset<Texture>(const std::string& AssetPath)
     {
@@ -37,21 +41,19 @@ namespace SGT
         auto It = TextureCache.find(AssetPath);
         if (It != TextureCache.end())
         {
-            // This has been loaded this before.
-            It->second++;
-            std::cout << "   [Found Asset] Texture '" << AssetPath << "' found.\n";
-            std::cout << "   [Status] New Reference Count: " << It->second << "\n";
+            It->second++; // Increment Reference Count
+            std::cout << "   [Cache Hit] Texture '" << AssetPath << "' found.\n";
+            std::cout << "   [Status] Reference Count updated to: " << It->second << "\n";
         }
         else
         {
-            //  Load from "Disk" (Simulated)
-            std::cout << "   Loading Texture '" << AssetPath << "' from disk...\n";
+            std::cout << "   [Cache Miss] Loading Texture '" << AssetPath << "' from Disk...\n";
             TextureCache[AssetPath] = 1;
-            std::cout << "   [Status] Texture Loaded.\n";
+            std::cout << "   [Status] Asset Registered in Texture Cache.\n";
         }
     }
 
-    // --- VERSION 2: SOUND (NEW) ---
+    // --- SPECIALIZATION 2: SOUNDS ---
     template <>
     inline void AssetManager::LoadAsset<Sound>(const std::string& AssetPath)
     {
@@ -60,21 +62,19 @@ namespace SGT
         auto It = SoundCache.find(AssetPath);
         if (It != SoundCache.end())
         {
-            // This has been loaded this before.
             It->second++;
-            std::cout << "   [Found Asset] Sound '" << AssetPath << "' found.\n";
-            std::cout << "   [Status] New Reference Count: " << It->second << "\n";
+            std::cout << "   [Cache Hit] Sound '" << AssetPath << "' found.\n";
+            std::cout << "   [Status] Reference Count updated to: " << It->second << "\n";
         }
         else
         {
-            //  Load from "Disk" (Simulated)
-            std::cout << "   Loading Sound '" << AssetPath << "' from disk...\n";
+            std::cout << "   [Cache Miss] Loading Sound '" << AssetPath << "' from Disk...\n";
             SoundCache[AssetPath] = 1;
-            std::cout << "   [Status] Sound Loaded.\n";
+            std::cout << "   [Status] Asset Registered in Sound Cache.\n";
         }
     }
 
-    // --- VERSION 3: FONT ---
+    // --- SPECIALIZATION 3: FONTS ---
     template <>
     inline void AssetManager::LoadAsset<Font>(const std::string& AssetPath)
     {
@@ -83,173 +83,204 @@ namespace SGT
         auto It = FontCache.find(AssetPath);
         if (It != FontCache.end())
         {
-            // This has been loaded this before.
             It->second++;
-            std::cout << "   [Found Asset] Font '" << AssetPath << "' found.\n";
-            std::cout << "   [Status] New Reference Count: " << It->second << "\n";
+            std::cout << "   [Cache Hit] Font '" << AssetPath << "' found.\n";
+            std::cout << "   [Status] Reference Count updated to: " << It->second << "\n";
         }
         else
         {
-            //  Load from "Disk" (Simulated)
-            std::cout << "   Loading Font '" << AssetPath << "' from disk...\n";
+            std::cout << "   [Cache Miss] Loading Font '" << AssetPath << "' from Disk...\n";
             FontCache[AssetPath] = 1;
-            std::cout << "   [Status] Font Loaded.\n";
+            std::cout << "   [Status] Asset Registered in Font Cache.\n";
         }
     }
 
-    // ------------------------------------------------------------------------
+    // =========================================================================
     // DEMO IMPLEMENTATION
-    // ------------------------------------------------------------------------
+    // =========================================================================
     void RunDemo()
     {
-        // Clear buffer
         std::cin.clear();
         std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
-        // --- STEP 1: INTRODUCTION ---
+        // ======================== INTRODUCTION ========================
         HFL::ClearScreen();
-        HFL::PrintHeader("Singleton Pattern (Asset Manager)");
+        HFL::PrintHeader("SINGLETON PATTERN");
 
-        std::cout << "Definition:\n";
-        std::cout << "Ensure a class has only one instance.\n";
-        std::cout << "Provide a global point of access to it.\n\n";
+        HFL::PrintSection("THE DEFINITION");
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "Ensure a class has only one instance and provide a global access point.\n\n";
 
-        std::cout << "In This Demo:\n";
-        std::cout << "There is an AssetManager Singleton.\n";
-        std::cout << "It uses TEMPLATE SPECIALIZATION to handle Textures, Sounds, and Fonts.\n";
-        std::cout << "It has three separate 'LoadAsset' functions.\n";
+        HFL::PrintSection("THE GOAL");
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The Singleton prevents the creation of multiple managers that could\n"
+            << "cause resource conflicts. By using a single AssetManager, we ensure\n"
+            << "that every system in the game shares the same cache and data.\n\n";
+
+        HFL::PrintSection("THE EXAMPLE");
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "This demo uses a 'Template Asset Manager' to manage different types:\n\n";
+
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] THE INSTANCE:   ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "A single manager handling all global resource requests.\n";
+
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] THE SPECIALIST: ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Template specialization routes files to the correct internal maps.\n";
+
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] THE CACHE:      ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Reference counting prevents loading the same file twice.\n\n";
 
         HFL::WaitForInput();
 
-        // --- STEP 2: THE RULES ---
+        // ======================== THE ARCHITECTURE ========================
         HFL::ClearScreen();
-        HFL::PrintHeader("Step 1: The Rules");
+        HFL::PrintHeader("THE ARCHITECTURE");
 
-        std::cout << "To enforce a Singleton, there are 4 rules:\n\n";
+        HFL::PrintSection("THE RULES");
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "To strictly enforce a Singleton, implement the four core constraints:\n\n";
 
-        std::cout << "1. Private Constructor:\n";
-        std::cout << "   private:\n";
-        std::cout << "       AssetManager();\n";
-        std::cout << "   };\n";
-        std::cout << "   Result: You cannot type 'new AssetManager()'.\n\n";
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] PRIVATE CONSTRUCTOR: ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Prevents 'new AssetManager()' or stack allocation.\n";
 
-        std::cout << "2. Static GetInstance():\n";
-        std::cout << "   Checks if instance exists. If yes, return it.\n";
-        std::cout << "   If no, create it (Lazy Initialization).\n\n";
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] STATIC ACCESS:       ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "GetInstance() provides the only gateway to the instance.\n";
 
-        std::cout << "3. Deleted Copy Constructor:\n";
-        std::cout << "   AssetManager(const AssetManager&) = delete;\n";
-        std::cout << "   Prevents accidentally making a copy of the Singleton.\n\n";
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] DELETED COPY:        ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Prevents duplicating the instance via copy constructors.\n";
 
-        std::cout << "4. Deleted Assignment:\n";
-        std::cout << "   operator=(const AssetManager&) = delete;\n";
-        std::cout << "   Prevents overwriting the single instance.\n\n";
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] DELETED ASSIGNMENT:  ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Prevents overwriting the instance via the '=' operator.\n\n";
 
-        std::cout << "The Template System:\n";
-        std::cout << "   We have 'struct Texture', 'struct Sound', 'struct Font'.\n";
-        std::cout << "   They act as 'Tags' to tell the function which Cache to use.\n";
+        HFL::PrintSection("THE TEMPLATE SYSTEM");
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "By using Empty Structs (Texture, Sound, Font) as 'Tags', it allows\n"
+            << "polymorphic behavior without the overhead of virtual functions.\n\n";
 
         HFL::WaitForInput();
 
-        // --- STEP 3: INTERACTIVE SYSTEM ---
-
-        // Access the Singleton
+        // ======================== INTERACTIVE SYSTEM ========================
         AssetManager& Manager = AssetManager::GetInstance();
 
-        bool InDemo = true;
-        while (InDemo)
+        while (true)
         {
             HFL::ClearScreen();
-            HFL::PrintHeader("Asset Manager");
+            HFL::PrintHeader("ASSET MANAGER");
 
-            std::cout << "Select an Asset to Load:\n";
-            std::cout << "1. Load Texture 'Hero.png'\n";
-            std::cout << "2. Load Texture 'Wall.jpg'\n";
-            std::cout << "3. Load Sound 'Explosion.wav'\n";
-            std::cout << "4. Load Sound 'BGM.mp3'\n";
-            std::cout << "5. Reload Texture 'Hero.png' (Test Singleton Cache)\n";
-            std::cout << "6. Reload Sound 'Explosion.wav' (Test Singleton Cache)\n";
-            std::cout << "0. Exit Demo\n";
-            std::cout << "\nChoice: ";
+            HFL::SetColor(HFL::EColor::White);
+            std::cout << "Manager Instance: ";
+            HFL::SetColor(HFL::EColor::Green);
+            std::cout << "[" << &Manager << "]\n";
+            HFL::SetColor(HFL::EColor::Gray);
+            std::cout << "Status: Ready to process requests...\n\n";
 
-            int Choice;
-            std::cin >> Choice;
+            HFL::PrintSection("MENU");
+            HFL::SetColor(HFL::EColor::Green);
+            std::cout << " [1] "; HFL::SetColor(HFL::EColor::White); std::cout << "LOAD: (Hero.png)\n";
+            HFL::SetColor(HFL::EColor::Green);
+            std::cout << " [2] "; HFL::SetColor(HFL::EColor::White); std::cout << "LOAD: (Environment.png)\n";
+            HFL::SetColor(HFL::EColor::Green);
+            std::cout << " [3] "; HFL::SetColor(HFL::EColor::White); std::cout << "LOAD: (Explosion.wav)\n";
+            HFL::SetColor(HFL::EColor::Green);
+            std::cout << " [4] "; HFL::SetColor(HFL::EColor::White); std::cout << "LOAD: (Menu_Font.ttf)\n\n";
+            HFL::SetColor(HFL::EColor::Green);
+            std::cout << " [0] "; HFL::SetColor(HFL::EColor::White); std::cout << "CONTINUE\n";
 
-            if (std::cin.fail()) { std::cin.clear(); std::cin.ignore(); continue; }
-
+            int Choice = HFL::GetValidMenuInput(4);
             if (Choice == 0) break;
 
-            if (Choice == 1)
+            HFL::PrintSection("LOADING STATUS");
+
+            // ======================== LOADING SIMULATION ========================
+            HFL::SetColor(HFL::EColor::Yellow);
+            std::cout << ">> Accessing Global Singleton..."; HFL::Wait(0.8f); std::cout << " OK!\n";
+            std::cout << ">> Locating Asset Path..."; HFL::Wait(0.1f); std::cout << " FOUND!\n";
+
+            HFL::SetColor(HFL::EColor::White);
+            std::cout << ">> Executing specialized LoadAsset<T>...\n\n";
+            HFL::Wait(0.6f);
+
+            // ======================== DYNAMIC RESULTS ========================
+            HFL::SetColor(HFL::EColor::Cyan);
+            switch (Choice)
             {
-                // Generates 'LoadAsset<Texture>' version
-                Manager.LoadAsset<Texture>("Hero.png");
-                HFL::WaitForInput();
+            case 1: Manager.LoadAsset<Texture>("Hero.png"); break;
+            case 2: Manager.LoadAsset<Texture>("Environment.png"); break;
+            case 3: Manager.LoadAsset<Sound>("Explosion.wav"); break;
+            case 4: Manager.LoadAsset<Font>("Menu_Font.ttf"); break;
             }
-            else if (Choice == 2)
-            {
-                // Generates 'LoadAsset<Texture>' version (Different Asset)
-                Manager.LoadAsset<Texture>("Wall.jpg");
-                HFL::WaitForInput();
-            }
-            else if (Choice == 3)
-            {
-                // Generates 'LoadAsset<Sound>' version
-                Manager.LoadAsset<Sound>("Explosion.wav");
-                HFL::WaitForInput();
-            }
-            else if (Choice == 4)
-            {
-                // Generates 'LoadAsset<Sound>' version (Different Asset)
-                Manager.LoadAsset<Sound>("BGM.mp3");
-                HFL::WaitForInput();
-            }
-            else if (Choice == 5)
-            {
-                // This tests the Singleton "Cache" logic for Textures
-                std::cout << "\nAttempting to load 'Hero.png' again...\n";
-                Manager.LoadAsset<Texture>("Hero.png");
-                HFL::WaitForInput();
-            }
-            else if (Choice == 6)
-            {
-                // This tests the Singleton "Cache" logic for Sounds
-                std::cout << "\nAttempting to load 'Explosion.wav' again...\n";
-                Manager.LoadAsset<Sound>("Explosion.wav");
-                HFL::WaitForInput();
-            }
+
+            // ======================== CACHE ANALYSIS ========================
+            HFL::Wait(0.6f);
+            HFL::SetColor(HFL::EColor::Gray);
+            std::cout << "\n--------------------------------------------------\n";
+            std::cout << "   NOTE: If this was the first load, it will\n";
+            std::cout << "  'Load from Disk'. Loading it again will use the\n";
+            std::cout << "              Singleton's 'Cache'.\n";
+            std::cout << "--------------------------------------------------\n";
+
+            HFL::WaitForInput();
         }
 
-        // --- STEP 4: GLOBAL ACCESS ---
+        // ======================== CONCLUSION ========================
         HFL::ClearScreen();
-        HFL::PrintHeader("Step 2: Global Access");
+        HFL::PrintHeader("CONCLUSION");
 
-        std::cout << "Because GetInstance() is static and public,\n";
-        std::cout << "we can access the manager from ANYWHERE.\n\n";
-        std::cout << "Accessing from a totally different context...\n";
+        HFL::PrintSection("ARCHITECTURE");
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "The AssetManager Singleton implementation confirms the following:\n\n";
 
-        // We can just call GetInstance again directly
-        SGT::AssetManager::GetInstance().LoadAsset<Texture>("Floor.png");
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] RESOURCE INTEGRITY: ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Only one instance ever existed, ensuring a single source of truth.\n";
 
-        HFL::WaitForInput();
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] TYPE-SAFE ROUTING:  ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Template specialization allowed a unified interface (LoadAsset)\n"
+            << "    to handle distinct internal data structures (Caches).\n";
 
-        // --- STEP 5: CONCLUSION ---
-        HFL::ClearScreen();
-        HFL::PrintHeader("Conclusion");
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] GLOBAL EFFICIENCY:  ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The manager was accessible from any scope without passing pointers,\n"
+            << "    maintaining a clean and highly scannable codebase.\n\n";
 
-        std::cout << "Summary:\n\n";
-        std::cout << "1. Singleton Rule:\n";
-        std::cout << "   Only ONE AssetManager existed.\n";
-        std::cout << "   It remembered the reference counts for Textures, Sounds, AND Fonts.\n\n";
+        HFL::PrintSection("SUMMARY");
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "The Singleton Pattern ensures that software is:\n\n";
 
-        std::cout << "2. Clean Templates:\n";
-        std::cout << "   We used 'template <> void LoadAsset<Texture>'\n";
-        std::cout << "   And 'template <> void LoadAsset<Sound>'.\n";
-        std::cout << "   And 'template <> void LoadAsset<Font>'.\n";
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] CENTRALIZED: ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Unique resources are managed from a single, predictable location.\n";
 
-        std::cout << "3. Efficiency:\n";
-        std::cout << "   By caching, we avoided loading 'Hero.png' and 'Explosion.wav' twice.\n\n";
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] THREAD-SAFE: ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Modern C++ static initialization prevents race conditions on startup.\n";
 
-        std::cout << std::setw(40) << "End of Demo\n";
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] ACCESSIBLE: ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Global systems can interact with the manager instantly via GetInstance().\n\n";
+
+        HFL::SetColor(HFL::EColor::White);
         HFL::WaitForInput();
     }
 }

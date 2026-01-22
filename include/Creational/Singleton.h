@@ -8,83 +8,95 @@
 // "Ensure a class has only one instance, and provide a global point of access to it."
 //
 // THE GOAL:
-// Prevent multiple instantiations of a class that represents a unique resource.
+// The Singleton pattern is used to coordinate a unique, centralized resource 
+// that must exist exactly once throughout the lifetime of the application. 
+// It prevents "Multiple Source of Truth" errors by strictly controlling 
+// instantiation.
 //
 // THE EXAMPLE:
-// A generic Asset Manager using Template Specialization.
-// 1. Singleton Class: Holds separate reference counts for Textures, Sounds, and Fonts.
-// 2. Template Function: LoadAsset<Texture>(), LoadAsset<Sound>(), LoadAsset<Font>().
-//    Which could be extended to load any asset type.
+// This implementation features a Modern Thread-Safe Asset Manager that 
+// utilizes Template Specialization to handle distinct asset types:
+// 1. [TEXTURES]: Managed in a dedicated internal hash map.
+// 2. [SOUNDS]: Managed separately to prevent type-pollution.
+// 3. [FONTS]: Demonstrates how the same manager handles diverse resources.
 //
-// BENEFIT:
-// One global manager handles multiple asset types using clean, specific code blocks for each type.
+// THE BENEFIT:
+// * Resource Safety: Guarantees that global states (like GPU memory or File 
+//   Handles) aren't duplicated or overwritten.
+// * Simplified Access: Systems like UI, Physics, or Audio can all reach 
+//   the same manager without passing complex pointers through constructors.
+// * Type Safety: Using templates allows a single manager to provide specialized 
+//   logic for different data types.
 // =========================================================================
 
 namespace SGT
 {
     // ------------------------------------------------------------------------
-    // ASSET TYPES (FAKE)
+    // ASSET TYPES (MOCK)
+    // ROLE: Type-safe tags used to differentiate internal storage logic.
     // ------------------------------------------------------------------------
-    // Sample types as 'Tags' to tell the manager what cache to use.
     struct Texture {};
     struct Sound {};
     struct Font {};
 
-    // ------------------------------------------------------------------------
-    // THE SINGLETON CLASS
-    // ------------------------------------------------------------------------
+    // =========================================================================
+    // THE SINGLETON CLASS: AssetManager
+    // ROLE: The unique authority for loading and caching game resources.
+    // =========================================================================
     class AssetManager
     {
     public:
-        // THE GLOBAL ACCESS POINT
-        // Static method to access the single instance.
+        // ------------------------------------------------------------------------
+        // THE GLOBAL ACCESS POINT (Meyers' Singleton)
+        // ------------------------------------------------------------------------
+        // Static method to access the single instance. This approach ensures 
+        // the instance is created lazily (only when first called) and is 
+        // thread-safe by default in C++11 and later.
+        // ------------------------------------------------------------------------
         static AssetManager& GetInstance();
 
         // ------------------------------------------------------------------------
-        // PUBLIC TEMPLATE DECLARATION
+        // PUBLIC INTERFACE: LoadAsset
         // ------------------------------------------------------------------------
-        // 'typename T' allows this function to accept 'Texture', 'Sound' or 'Font'.
-        // The compiler generates separate versions of this function.
+        // 'typename T' allows this function to accept Texture, Sound, or Font.
+        // The implementation uses Template Specialization to 
+        // ensure the correct cache is updated based on the type provided.
+        // ------------------------------------------------------------------------
         template <typename T>
         void LoadAsset(const std::string& AssetPath);
 
     private:
-        // -------------------------------------------------------------------------
-        // SINGLETON RULES (The Enforcements)
-        // -------------------------------------------------------------------------
+        // =========================================================================
+        // SINGLETON ENFORCEMENT RULES
+        // =========================================================================
 
         // 1. PRIVATE CONSTRUCTOR:
-        // By making this private, the compiler prevents code like:
-        // AssetManager* Mgr = new AssetManager();
-        // It forces the use of GetInstance() to access the object.
+        // Prevents external code from creating new instances via 'new' or stack 
+        // allocation. The manager can only be instantiated inside GetInstance().
         AssetManager();
 
-        // 2. DESTRUCTOR (Defaulted):
-        // Since we this setup uses Modern C++ approach (static reference), the object is destroyed
-        // automatically when the application exits. We don't need a manual Destroy() method.
-
-        // 3. DELETE COPY CONSTRUCTOR:
-        // Prevents copying the Singleton via:
-        // AssetManager mgr2 = GetInstance();
+        // 2. DELETE COPY CONSTRUCTOR:
+        // Prevents the creation of a second instance via: AssetManager MyMgr = GetInstance();
         AssetManager(const AssetManager&) = delete;
 
-        // 4. DELETE ASSIGNMENT:
-        // Prevents assignment via:
-        // AssetManager mgr2 = GetInstance();
-        // This ensures the singleton cannot be overwritten or copied.
+        // 3. DELETE ASSIGNMENT OPERATOR:
+        // Prevents overwriting the singleton via: AssetManagerInstance = OtherManager;
         AssetManager& operator=(const AssetManager&) = delete;
 
+        // 4. DESTRUCTOR (Implicitly Private):
+        // Handled automatically by the static scope at application exit.
+
         // -------------------------------------------------------------------------
-        // SPECIFIC CACHES
+        // INTERNAL RESOURCE CACHES
+        // SCOPE: Private storage to prevent external direct manipulation.
         // -------------------------------------------------------------------------
-        // Separate maps for type safety and organization.
         std::unordered_map<std::string, int> TextureCache;
         std::unordered_map<std::string, int> SoundCache;
         std::unordered_map<std::string, int> FontCache;
     };
 
-    // ------------------------------------------------------------------------
-    // DEMO
-    // ------------------------------------------------------------------------
+    // =========================================================================
+    // DEMO IMPLEMENTATION
+    // =========================================================================
     void RunDemo();
 }
