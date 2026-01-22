@@ -5,30 +5,34 @@
 // =========================================================================
 // CREATIONAL DESIGN PATTERNS: Factory Method
 // =========================================================================
-// "Define an interface for creating an object, but let subclasses
+// "Define an interface for creating an object, but let subclasses 
 // decide which class to instantiate."
 //
 // THE GOAL:
-// Decouple object creation from usage. Instead of saying 'new Skeleton',
-// user asks a Factory to 'CreateEnemy'.
+// The Factory Method decouples the "Client" (Game Level) from the "Details" 
+// (Concrete Enemy Classes). Instead of hardcoding 'new Skeleton()', the 
+// client asks a Factory to produce an 'Enemy'. This allows the system to 
+// introduce new enemy types without modifying the core spawning logic.
 //
 // THE EXAMPLE:
-// An Enemy Spawning System.
-// 1. IEnemyFactory: Defines 'CreateEnemy()'.
-// 2. MeleeFactory (Melee): Creates Skeletons and Golems.
-// 3. RangedFactory (Ranged): Creates Mages and Archers.
+// A dynamic Spawning System with two specialized production lines:
+// 1. [MELEE FACTORY]: Produces Skeletons and Golems.
+// 2. [RANGED FACTORY]: Produces Mages and Archers.
 //
-// BENEFIT:
-// The Game Level doesn't know how to construct specific enemies.
-// It just calls 'Factory->CreateEnemy()'. The factory handles the 'new'.
+// THE BENEFIT:
+// * Flexibility: Add a 'BossFactory' later without breaking the GameLevel.
+// * Encapsulation: All complex construction logic (setting health, loading 
+//   meshes) is hidden inside the factory, not scattered in the game loop.
+// * Consistency: Ensures every enemy created by a specific factory follows 
+//   the same initialization rules.
 // =========================================================================
 
 namespace FTM
 {
-    // ------------------------------------------------------------------------
-    // 1. PRODUCT TYPES
-    // ------------------------------------------------------------------------
-    // These represent the actual game objects.
+    // =========================================================================
+    // THE PRODUCT (Base Class)
+    // ROLE: Defines the interface for the objects the factory creates.
+    // =========================================================================
     class Enemy
     {
     public:
@@ -37,74 +41,78 @@ namespace FTM
 
         std::string GetName() const { return Name; }
 
-        // A generic attack method so the enemy does something
+        // ROLE: Virtual method so the GameLevel can trigger behavior without
+        // knowing the specific subtype of the enemy.
         virtual void Attack() const { std::cout << "The " << Name << " attacks!\n"; }
 
     private:
         std::string Name;
     };
 
-    // ------------------------------------------------------------------------
-    // SKELETON DERIVED CLASSES
-    // ------------------------------------------------------------------------
-    class Skeleton : public Enemy
-    {
-    public:
-        // INLINE CONSTRUCTOR
-        // : Enemy("Skeleton") : Calls the BASE CLASS CONSTRUCTOR.
-        //    - "Skeleton" is passed to Enemy so Enemy can set its Name variable.
-        Skeleton() : Enemy("Skeleton") {}
-    };
+    // =========================================================================
+    // CONCRETE PRODUCTS
+    // ROLE: The actual objects being instantiated by the factories.
+    // =========================================================================
 
+    // MELEE UNITS
+    class Skeleton : public Enemy { public: Skeleton() : Enemy("Skeleton") {} };
     class Golem : public Enemy { public: Golem() : Enemy("Golem") {} };
+
+    // RANGED UNITS
     class SkeletonMage : public Enemy { public: SkeletonMage() : Enemy("Skeleton Mage") {} };
     class SkeletonArcher : public Enemy { public: SkeletonArcher() : Enemy("Skeleton Archer") {} };
 
-    // ------------------------------------------------------------------------
-    // 2. THE CREATOR INTERFACE
-    // ------------------------------------------------------------------------
-    // The Factory Method interface.
+    // =========================================================================
+    // THE CREATOR (Factory Interface)
+    // ROLE: Declares the Factory Method that returns an 'Enemy' pointer.
+    // =========================================================================
     class IEnemyFactory
     {
     public:
         virtual ~IEnemyFactory() = default;
 
-        // The Factory Method. It returns a pointer to Base Class (Enemy).
-        // The (Game Level) doesn't need to know if it's a Skeleton or Golem.
+        // THE FACTORY METHOD:
+        // Derived factories will override this to return specific concretions.
+        // Returns 'Enemy*' so the caller stays decoupled from specific types.
         virtual Enemy* CreateEnemy(int TypeID) = 0;
     };
 
-    // ------------------------------------------------------------------------
-    // 3. CONCRETE CREATORS (The Factories)
-    // ------------------------------------------------------------------------
+    // =========================================================================
+    // CONCRETE CREATORS (The Factories)
+    // ROLE: Overrides the factory method to return instances of products.
+    // =========================================================================
 
-    // Handles melee combatants (Skeleton, Golem)
+    // Handles production of Melee units based on a TypeID.
     class MeleeFactory : public IEnemyFactory
     {
     public:
         Enemy* CreateEnemy(int TypeID) override;
     };
 
-    // Handles ranged combatants (Mage, Archer)
+    // Handles production of Ranged units based on a TypeID.
     class RangedFactory : public IEnemyFactory
     {
     public:
         Enemy* CreateEnemy(int TypeID) override;
     };
 
-    // ------------------------------------------------------------------------
-    // 4. THE GAME LEVEL
-    // ------------------------------------------------------------------------
+    // =========================================================================
+    // THE CLIENT
+    // ROLE: Uses the factories to get products without knowing their classes.
+    // =========================================================================
     class GameLevel
     {
     public:
+        // Uses polymorphic creation: Using 'IEnemyFactory*' 
+        // regardless of whether it is Melee or Ranged.
         void SpawnEnemies();
+
     private:
-        IEnemyFactory* Factory;
+        IEnemyFactory* CurrentFactory;
     };
 
-    // ------------------------------------------------------------------------
-    // DEMO
-    // ------------------------------------------------------------------------
+    // =========================================================================
+    // DEMO IMPLEMENTATION
+    // =========================================================================
     void RunDemo();
 }

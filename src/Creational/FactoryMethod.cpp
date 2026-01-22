@@ -2,12 +2,12 @@
 
 namespace FTM
 {
-    // ------------------------------------------------------------------------
-    // MELEE FACTORY IMPLEMENTATION
-    // ------------------------------------------------------------------------
+    // =========================================================================
+    // MELEE FACTORY
+    // ROLE: Handles instantiation of physical, close-quarters combatants.
+    // =========================================================================
     Enemy* MeleeFactory::CreateEnemy(int TypeID)
     {
-        // Type 1 = Skeleton, Type 2 = Golem
         switch (TypeID)
         {
         case 1:
@@ -21,12 +21,12 @@ namespace FTM
         }
     }
 
-    // ------------------------------------------------------------------------
-    // RANGED FACTORY IMPLEMENTATION
-    // ------------------------------------------------------------------------
+    // =========================================================================
+    // RANGED FACTORY
+    // ROLE: Handles instantiation of magical or projectile-based combatants.
+    // =========================================================================
     Enemy* RangedFactory::CreateEnemy(int TypeID)
     {
-        // Type 1 = Skeleton Mage, Type 2 = Skeleton Archer
         switch (TypeID)
         {
         case 1:
@@ -40,165 +40,228 @@ namespace FTM
         }
     }
 
-    // ------------------------------------------------------------------------
-    // GAME LEVEL IMPLEMENTATION
-    // ------------------------------------------------------------------------
-
+    // =========================================================================
+    // HIGH LEVEL MODULE: GAME LEVEL
+    // ROLE: The Client that uses the factory abstraction.
+    // =========================================================================
     void GameLevel::SpawnEnemies()
     {
-        if (!Factory) return;
+        if (!CurrentFactory) return;
 
-        std::cout << "\n--- Spawning Wave ---\n";
+        HFL::SetColor(HFL::EColor::Yellow);
+        std::cout << "\n--- Spawning Wave via Abstract Factory Interface ---\n";
+        HFL::SetColor(HFL::EColor::Gray);
 
-        // Spawn two enemies from whatever factory is currently set
         for (int i = 1; i <= 2; ++i)
         {
-            Enemy* NewEnemy = Factory->CreateEnemy(i);
-            if (NewEnemy)
-            {
-                NewEnemy->Attack();
-                delete NewEnemy; // Cleanup for demo purposes
-            }
-        }
-        std::cout << "---------------------\n";
-    }
-
-    // ------------------------------------------------------------------------
-    // DEMO IMPLEMENTATION
-    // ------------------------------------------------------------------------
-    void RunDemo()
-    {
-        // Clear buffer
-        std::cin.clear();
-        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-    
-        // --- STEP 1: INTRODUCTION ---
-        HFL::ClearScreen();
-        HFL::PrintHeader("Factory Method Pattern");
-    
-        std::cout << "Definition:\n";
-        std::cout << "Define an interface for creating an object,\n";
-        std::cout << "but let subclasses decide which class to instantiate.\n\n";
-    
-        std::cout << "In This Demo:\n";
-        std::cout << "An Enemy Spawner system is built.\n";
-        std::cout << "Factories are used to handle 'new' command.\n";
-        std::cout << "The Spawner just calls 'Factory->CreateEnemy()'.\n";
-        std::cout << "The Spawner doesn't know about Skeletons or Golems.\n";
-    
-        HFL::WaitForInput();
-    
-        // --- STEP 2: THE SETUP ---
-        HFL::ClearScreen();
-        HFL::PrintHeader("Step 1: The Factories");
-    
-        std::cout << "We created two Factories to organize enemy types:\n\n";
-    
-        std::cout << "1. MeleeFactory:\n";
-        std::cout << "   - ID 1: Skeleton\n";
-        std::cout << "   - ID 2: Golem\n";
-    
-        std::cout << "2. RangedFactory:\n";
-        std::cout << "   - ID 1: Skeleton Mage\n";
-        std::cout << "   - ID 2: Skeleton Archer\n";
-    
-        std::cout << "\nThe Enemy Spawner doesn't know these details.\n";
-        std::cout << "It just delegates to 'Factory->CreateEnemy(ID)'.\n";
-    
-        HFL::WaitForInput();
-    
-        // --- STEP 3: INTERACTIVE SYSTEM ---
-    
-        MeleeFactory MeleeSpawner;
-        RangedFactory RangedSpawner;
-        IEnemyFactory* CurrentFactory = nullptr;
-    
-        bool InDemo = true;
-        while (InDemo)
-        {
-            HFL::ClearScreen();
-            HFL::PrintHeader("Enemy Spawner");
-    
-            // --- SELECT FACTORY ---
-            std::cout << "Select a Factory to use:\n";
-            std::cout << "1. MeleeFactory (Skeletons, Golems)\n";
-            std::cout << "2. RangedFactory (Mages, Archers)\n";
-            std::cout << "0. Exit Demo\n";
-            std::cout << "\nFactory: ";
-    
-            int FactoryChoice;
-            std::cin >> FactoryChoice;
-    
-            if (std::cin.fail()) { std::cin.clear(); std::cin.ignore(); continue; }
-    
-            if (FactoryChoice == 0) break;
-    
-            if (FactoryChoice == 1) CurrentFactory = &MeleeSpawner;
-            else if (FactoryChoice == 2) CurrentFactory = &RangedSpawner;
-    
-            if (!CurrentFactory) continue;
-    
-            // --- SELECT ENEMY TYPE ---
-            HFL::ClearScreen();
-            std::cout << "Factory Selected: " << (FactoryChoice == 1 ? "Melee" : "Ranged") << "\n\n";
-            std::cout << "Select an Enemy Type to spawn:\n";
-    
-            if (FactoryChoice == 1)
-            {
-                std::cout << "1. Skeleton\n";
-                std::cout << "2. Golem\n";
-            }
-            else if (FactoryChoice == 2)
-            {
-                std::cout << "1. Skeleton Mage\n";
-                std::cout << "2. Skeleton Archer\n";
-            }
-            std::cout << "0. Back to Factory Selection\n";
-            std::cout << "\nEnemy Type: ";
-    
-            int EnemyType;
-            std::cin >> EnemyType;
-    
-            if (std::cin.fail()) { std::cin.clear(); std::cin.ignore(); continue; }
-    
-            if (EnemyType == 0) continue; // Go back to Factory loop
-    
-            // --- SPAWN ---
-            Enemy* NewEnemy = CurrentFactory->CreateEnemy(EnemyType);
+            Enemy* NewEnemy = CurrentFactory->CreateEnemy(i);
             if (NewEnemy)
             {
                 NewEnemy->Attack();
                 delete NewEnemy;
-                std::cout << "[System] Enemy dies from boredom.\n";
             }
-            else
+        }
+        std::cout << "---------------------------------------------------\n";
+    }
+
+    // =========================================================================
+    // DEMO IMPLEMENTATION
+    // =========================================================================
+    void RunDemo()
+    {
+        std::cin.clear();
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+
+        // ======================== INTRODUCTION ========================
+        HFL::ClearScreen();
+        HFL::PrintHeader("FACTORY METHOD PATTERN");
+
+        HFL::PrintSection("THE DEFINITION");
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "Define an interface for creating an object, but let\n"
+            << "subclasses decide which class to instantiate.\n\n";
+
+        HFL::PrintSection("THE GOAL");
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The Factory Method lets a class defer instantiation to subclasses.\n"
+            << "This keeps the High-Level logic (Spawner) decoupled from the\n"
+            << "concrete Low-Level types (Skeletons, Golems, etc).\n\n";
+
+        HFL::PrintSection("THE EXAMPLE");
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "This demo features a Battle System with two specialized factories:\n\n";
+
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] THE ABSTRACTION: ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "IEnemyFactory defines the Create contract.\n";
+
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] THE CONCRETIONS: ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Melee and Ranged factory implementations.\n";
+
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] THE CLIENT:      ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "GameLevel spawns enemies without knowing their class.\n\n";
+
+        HFL::WaitForInput();
+
+        // ======================== THE ARCHITECTURE ========================
+        HFL::ClearScreen();
+        HFL::PrintHeader("THE ARCHITECTURE");
+
+        HFL::PrintSection("IMPLEMENTATION");
+
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] MeleeFactory (Concrete Creator)\n";
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "    PRODUCES:       ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Skeletons and Golems.\n";
+
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] RangedFactory (Concrete Creator)\n";
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "    PRODUCES:       ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Mages and Archers.\n";
+
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] GameLevel (The Client)\n";
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "    LOGIC:          ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Uses Factory->CreateEnemy() to stay Type Blind.\n\n";
+
+        HFL::SetColor(HFL::EColor::White);
+        HFL::WaitForInput();
+
+        // ======================== INITIALIZATION ========================
+        MeleeFactory MeleeSpawner;
+        RangedFactory RangedSpawner;
+        IEnemyFactory* CurrentFactory = nullptr;
+        int Skeletons = 0, Golems = 0, Mages = 0, Archers = 0;
+        int TotalSpawned = 0;
+
+        // ======================== SPAWNING LOOP ========================
+        while (true)
+        {
+            HFL::ClearScreen();
+            HFL::PrintHeader("ENEMY SPAWNER");
+
+            // --- DISPLAY METRICS ---
+            HFL::PrintSection("TOTAL STATISTICS");
+            HFL::SetColor(HFL::EColor::White);
+            std::cout << "Total Enemies: " << TotalSpawned << "\n\n";
+
+            HFL::SetColor(HFL::EColor::Gray);
+            std::cout << " [MELEE]  Skeletons: " << Skeletons << " | Golems:  " << Golems << "\n";
+            std::cout << " [RANGED] Mages:     " << Mages << " | Archers: " << Archers << "\n\n";
+
+            // --- MENU ---
+            HFL::PrintSection("SELECT TYPE");
+            HFL::SetColor(HFL::EColor::Green);
+            std::cout << " [1] "; HFL::SetColor(HFL::EColor::White); std::cout << "MELEE\n";
+            HFL::SetColor(HFL::EColor::Green);
+            std::cout << " [2] "; HFL::SetColor(HFL::EColor::White); std::cout << "RANGED\n\n";
+            HFL::SetColor(HFL::EColor::Green);
+            std::cout << " [0] "; HFL::SetColor(HFL::EColor::White); std::cout << "CONTINUE\n\n";
+
+            int FactoryChoice = HFL::GetValidMenuInput(2);
+            if (FactoryChoice == 0) break;
+
+            CurrentFactory = (FactoryChoice == 1) ? (IEnemyFactory*)&MeleeSpawner : (IEnemyFactory*)&RangedSpawner;
+
+            int SpawnCount = HFL::GetRandom(1, 7);
+
+            HFL::ClearScreen();
+            HFL::PrintHeader("SPAWNING ENEMIES");
+            HFL::SetColor(HFL::EColor::Yellow);
+            std::cout << "Requesting " << SpawnCount << " enemies from "
+                << (FactoryChoice == 1 ? "Melee" : "Ranged") << " Factory...\n\n";
+
+            HFL::SetColor(HFL::EColor::Gray);
+
+            for (int i = 0; i < SpawnCount; ++i)
             {
-                std::cout << "[System] Invalid Enemy Type ID.\n";
+                int RandomSubtype = HFL::GetRandom(1, 2);
+
+                HFL::Wait(0.4f);
+
+                Enemy* NewEnemy = CurrentFactory->CreateEnemy(RandomSubtype);
+                if (NewEnemy)
+                {
+                    TotalSpawned++;
+
+                    if (FactoryChoice == 1)
+                    {
+                        if (RandomSubtype == 1) Skeletons++;
+                        else Golems++;
+                    }
+                    else
+                    {
+                        if (RandomSubtype == 1) Mages++;
+                        else Archers++;
+                    }
+
+                    delete NewEnemy;
+                }
             }
-    
+
+            HFL::SetColor(HFL::EColor::Green);
+            std::cout << "\n>> Spawning complete.\n";
+            HFL::SetColor(HFL::EColor::White);
             HFL::WaitForInput();
         }
-    
-        // --- STEP 4: CONCLUSION ---
+
+        // ======================== CONCLUSION ========================
         HFL::ClearScreen();
-        HFL::PrintHeader("Conclusion");
-    
-        std::cout << "Summary of Factory Method:\n\n";
-    
-        std::cout << "1. Decoupling:\n";
-        std::cout << "   The Enemy Spawner is decoupled from 'new Skeleton'.\n";
-        std::cout << "   Creation logic is inside Melee/Ranged Factories.\n\n";
-    
-        std::cout << "2. Clean Code:\n";
-        std::cout << "   Spawner code is short and generic.\n";
-        std::cout << "   To add a 'Boss', we just edit the Factory, not the Spawner.\n\n";
-    
-        std::cout << "3. Other Uses:\n";
-        std::cout << "   Imagine you switch to 'WeaponFactory'.\n";
-        std::cout << "   The Spawner code wouldn't change. It would just call\n";
-        std::cout << "   WeaponFactory->CreateWeapon()'.\n\n";
-    
-        std::cout << std::setw(40) << "End of Demo\n";
+        HFL::PrintHeader("CONCLUSION");
+
+        HFL::PrintSection("ARCHITECTURE");
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "Applying the Factory Method confirms the following:\n\n";
+
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] DEFERRED INSTANTIATION: ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The logic never uses the 'new' keyword on concrete\n"
+            << "     enemies. It delegates the responsibility to specialized workers.\n";
+
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] TYPE BLINDNESS:         ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The High-level logic stays clean by only interacting with the\n"
+            << "     'IEnemyFactory' interface and 'Enemy' abstract product.\n";
+
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] EXTENSION WITHOUT IMPACT: ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Adding a 'BossFactory' or a new unit ID requires zero changes\n"
+            << "      to the dispatching loop, upholding the Open/Closed Principle.\n\n";
+
+        HFL::PrintSection("SUMMARY");
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "The Factory Method ensures that software is:\n\n";
+
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] ENCAPSULATED: ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Complex construction logic (and randomization) is hidden from the client.\n";
+
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] FLEXIBLE:    ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Factories can be swapped at runtime to change the 'flavor' of the game.\n";
+
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] SCALABLE: ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Concrete dependencies are centralized in factories, not scattered in logic.\n\n";
+
+        HFL::SetColor(HFL::EColor::White);
         HFL::WaitForInput();
     }
 }

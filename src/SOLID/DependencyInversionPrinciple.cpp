@@ -3,10 +3,6 @@
 namespace DIP
 {
     // =========================================================================
-    // LOW LEVEL IMPLEMENTATIONS
-    // =========================================================================
-
-    // =========================================================================
     // LOW LEVEL MODULE: TEXT FILE STORAGE
     // ROLE: Implements the contract for human-readable disk storage.
     // =========================================================================
@@ -362,7 +358,7 @@ namespace DIP
         CloudServerSave CloudStorage;
         GameEngine MyEngine;
 
-        // ======================== SYSTEM LOOP ========================
+        // ======================== GAME LOOP ========================
         while (true)
         {
             HFL::ClearScreen();
