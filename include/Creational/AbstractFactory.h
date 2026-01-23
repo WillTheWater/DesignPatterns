@@ -3,50 +3,45 @@
 #include "FunctionLibrary/HelperFunctionLibrary.h"
 
 // =========================================================================
-// CREATIONAL DESIGN PATTERNS: Abstract Factory
+// CREATIONAL DESIGN PATTERN: Abstract Factory
 // =========================================================================
-// "Provide an interface for creating families of related objects
+// "Provide an interface for creating families of related objects 
 // without specifying their concrete classes."
 //
 // THE GOAL:
-// Demonstrate how Abstract Factory models *NPC ecosystems*,
-// where multiple related objects must remain compatible.
+// Demonstrate how Abstract Factory models "NPC ecosystems," where multiple 
+// related objects (NPC, Combat, AI, Loot) must remain compatible based 
+// on a specific theme or biome.
 //
-// GAME CONTEXT:
-// NPCs spawned in different BIOMES (Forest, Desert, Swampland).
-// Each biome defines a coherent "family" of NPC components.
+// THE BENEFIT:
+// * Consistency: Ensures Forest NPCs don't use Swamp attacks or drop 
+//   Desert loot. Related objects are always created as a coherent "family."
+// * Decoupling: The NPCSpawner remains "biome-blind," interacting only 
+//   with high-level interfaces.
+// * Scalability: Adding a "Volcano Biome" only requires a new factory and 
+//   product set; the core spawning logic remains untouched.
 //
-// BENEFIT:
-// - Forest NPCs should NOT use Swamp attacks
-// - Desert NPCs should NOT drop forest herbs
-// - The Spawner should NOT care about biome-specific rules
-//
-// ABSTRACT FACTORY ENCAPSULATES:
-// - "What belongs together in each unique biome?"
+// THE EXAMPLE:
+// [IBiomeNPCFactory]: The Abstract Factory. Defines the creation contract.
+// [Forest/Desert/Swamp]: Concrete Factories. They enforce biome consistency.
+// [INPC/ICombat/IAI/ILoot]: Abstract Products defining the NPC's traits.
+// [NPCSpawner]: The Client. Uses the factory to populate the world.
 // =========================================================================
 
 namespace AFT
 {
-    // ------------------------------------------------------------------------
-    // 1. BASE NPC INTERFACE (What the game knows)
-    // ------------------------------------------------------------------------
-    // The Game Level and Spawner only know about INPC.
-    // They do NOT know what biome the NPCs came from.
+    // =========================================================================
+    // ABSTRACT PRODUCTS (The Interfaces)
+    // These define the "roles" within our NPC ecosystem.
+    // =========================================================================
+
     class INPC
     {
     public:
         virtual ~INPC() = default;
-
         virtual std::string GetName() const = 0;
     };
 
-    // ------------------------------------------------------------------------
-    // 2. BIOME-SPECIFIC ROLE INTERFACES
-    // ------------------------------------------------------------------------
-    // These interfaces represent *roles* inside a biome.
-    // Each biome must provide compatible implementations.
-
-    // --- Combat Behavior ---
     class ICombatBehavior
     {
     public:
@@ -54,7 +49,6 @@ namespace AFT
         virtual void Attack() const = 0;
     };
 
-    // --- Movement / AI Behavior ---
     class IAIBehavior
     {
     public:
@@ -62,7 +56,6 @@ namespace AFT
         virtual void Behavior() const = 0;
     };
 
-    // --- Drop Table ---
     class ILootTable
     {
     public:
@@ -70,20 +63,11 @@ namespace AFT
         virtual void DropLoot() const = 0;
     };
 
-    // ------------------------------------------------------------------------
-    // 3. THE ABSTRACT BIOME FACTORY
-    // ------------------------------------------------------------------------
-    // This is the CORE of the pattern.
-    //
-    // Each Biome Factory guarantees that:
-    // - Combat
-    // -  AI Behavior
-    // - Loot
-    // belong together and are compatible.
-    //
-    // The Spawner never asks:
-    // "Should this NPC attack with poison or fire?"
-    // That decision is defined by the factory.
+    // =========================================================================
+    // THE ABSTRACT FACTORY
+    // The "Contract" that ensures every biome provides a complete NPC family.
+    // =========================================================================
+
     class IBiomeNPCFactory
     {
     public:
@@ -95,10 +79,9 @@ namespace AFT
         virtual ILootTable* CreateLootTable() = 0;
     };
 
-    // ------------------------------------------------------------------------
-    // 4. CONCRETE PRODUCTS — FOREST BIOME
-    // ------------------------------------------------------------------------
-    // These classes are NEVER mixed with other biomes.
+    // =========================================================================
+    // CONCRETE PRODUCTS: FOREST BIOME
+    // =========================================================================
 
     class ForestNPC : public INPC
     {
@@ -109,33 +92,24 @@ namespace AFT
     class ForestCombat : public ICombatBehavior
     {
     public:
-        void Attack() const override
-        {
-            std::cout << "Attacks with sticks and stones.\n";
-        }
+        void Attack() const override;
     };
 
     class ForestBehavior : public IAIBehavior
     {
     public:
-        void Behavior() const override
-        {
-            std::cout << "Hides behind trees and wait to ambush.\n";
-        }
+        void Behavior() const override;
     };
 
     class ForestLoot : public ILootTable
     {
     public:
-        void DropLoot() const override
-        {
-            std::cout << "Drops healing herbs, magic stones and enchanted wood.\n";
-        }
+        void DropLoot() const override;
     };
 
-    // ------------------------------------------------------------------------
-    // 5. CONCRETE PRODUCTS — DESERT BIOME
-    // ------------------------------------------------------------------------
+    // =========================================================================
+    // CONCRETE PRODUCTS: DESERT BIOME
+    // =========================================================================
 
     class DesertNPC : public INPC
     {
@@ -146,37 +120,24 @@ namespace AFT
     class DesertCombat : public ICombatBehavior
     {
     public:
-        void Attack() const override
-        {
-            std::cout << "Throws fire and sand.\n";
-        }
+        void Attack() const override;
     };
 
     class DesertBehavior : public IAIBehavior
     {
     public:
-        void Behavior() const override
-        {
-            std::cout << "Uses hit-and-run tactics.\n";
-        }
+        void Behavior() const override;
     };
 
     class DesertLoot : public ILootTable
     {
     public:
-        void DropLoot() const override
-        {
-            std::cout << "Drops minerals and cloth.\n";
-        }
+        void DropLoot() const override;
     };
 
-    // ------------------------------------------------------------------------
-    // 6. EXTENDABILITY EXAMPLE
-    // ------------------------------------------------------------------------
-    // Creating a new biome factory follows the Dependency Injection Principle &
-    // the Open-Closed Principle.
-    //
-    // Step 1. Create a new Biome Type eg Swamp.
+    // =========================================================================
+    // CONCRETE PRODUCTS: SWAMP BIOME (Extensibility Example)
+    // =========================================================================
 
     class SwampNPC : public INPC
     {
@@ -184,53 +145,28 @@ namespace AFT
         std::string GetName() const override { return "Swamp Gator"; }
     };
 
-    // Step 2. Create the unique Attack, AI Behavior and Loot Table.
-
     class SwampCombat : public ICombatBehavior
     {
     public:
-        void Attack() const override
-        {
-            std::cout << "Spits poison and bites.\n";
-        }
+        void Attack() const override;
     };
 
     class SwampBehavior : public IAIBehavior
     {
     public:
-        void Behavior() const override
-        {
-            std::cout << "Chases endlessly in packs.\n";
-        }
+        void Behavior() const override;
     };
 
     class SwampLoot : public ILootTable
     {
     public:
-        void DropLoot() const override
-        {
-            std::cout << "Drops swamp scales and teeth.\n";
-        }
+        void DropLoot() const override;
     };
 
-    // Step 3. Create the Sub-factory
-
-    class SwampBiomeFactory : public IBiomeNPCFactory
-    {
-    public:
-        INPC* CreateNPC() override;
-        ICombatBehavior* CreateCombat() override;
-        IAIBehavior* CreateBehavior() override;
-        ILootTable* CreateLootTable() override;
-    };
-
-    // All of this plugs right into the spawner.
-
-    // ------------------------------------------------------------------------
-    // 7. CONCRETE BIOME FACTORIES
-    // ------------------------------------------------------------------------
-    // Each factory ENFORCES consistency.
-    // No invalid combinations are possible.
+    // =========================================================================
+    // CONCRETE FACTORIES
+    // These classes implement the creation logic for specific biomes.
+    // =========================================================================
 
     class ForestBiomeFactory : public IBiomeNPCFactory
     {
@@ -250,36 +186,36 @@ namespace AFT
         ILootTable* CreateLootTable() override;
     };
 
-    // ------------------------------------------------------------------------
-    // 8. THE CLIENT — NPC SPAWNER
-    // ------------------------------------------------------------------------
-    // The Spawner depends ONLY on the abstract factory.
-    //
-    // It does not:
-    // - Know what biome is active
-    // - Know what combat style is used
-    // - Know what loot drops
-    //
-    // This is Dependency Inversion in practice.
+    class SwampBiomeFactory : public IBiomeNPCFactory
+    {
+    public:
+        INPC* CreateNPC() override;
+        ICombatBehavior* CreateCombat() override;
+        IAIBehavior* CreateBehavior() override;
+        ILootTable* CreateLootTable() override;
+    };
+
+    // =========================================================================
+    // HIGH LEVEL MODULE: NPC SPAWNER
+    // The Client that operates on the Abstract Factory interface.
+    // =========================================================================
+
     class NPCSpawner
     {
     public:
+        NPCSpawner() = default;
+
+        // INJECTION POINT: Swaps the entire ecosystem at runtime.
         void SetBiomeFactory(IBiomeNPCFactory* NewFactory) { CurrentFactory = NewFactory; }
-        void SpawnNPC();
+
+        void SpawnNPC(); // Logic to create a consistent set of objects
 
     private:
         IBiomeNPCFactory* CurrentFactory = nullptr;
     };
 
-    // ------------------------------------------------------------------------
-    // 9. DEMO
-    // ------------------------------------------------------------------------
-    // Switching biomes automatically switches:
-    // - NPC visuals
-    // - Combat behavior
-    // - AI behavior
-    // - Loot tables
-    //
-    // WITHOUT modifying the Spawner.
+    // =========================================================================
+    // DEMO
+    // =========================================================================
     void RunDemo();
 }

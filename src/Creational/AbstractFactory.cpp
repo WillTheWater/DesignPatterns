@@ -2,234 +2,316 @@
 
 namespace AFT
 {
-    // ------------------------------------------------------------------------
-    // 3. CONCRETE FACTORIES IMPLEMENTATION
-    // ------------------------------------------------------------------------
+    // =========================================================================
+    // CONCRETE PRODUCTS: IMPLEMENTATION
+    // ROLE: Defining specific behaviors for each biome-related product.
+    // =========================================================================
 
-    // --- FOREST BIOME FACTORY ---
-    INPC* ForestBiomeFactory::CreateNPC()
-    {
-        std::cout << "[ForestBiomeFactory] Spawned a Forest NPC.\n";
-        return new ForestNPC();
-    }
+    // ======================== FOREST ========================
+    void ForestCombat::Attack() const { std::cout << ">> [Combat] Attacks with sticks and stones.\n"; }
+    void ForestBehavior::Behavior() const { std::cout << ">> [AI] Hides behind trees and waits to ambush.\n"; }
+    void ForestLoot::DropLoot() const { std::cout << ">> [Loot] Drops healing herbs and magic wood.\n"; }
 
-    ICombatBehavior* ForestBiomeFactory::CreateCombat()
-    {
-        std::cout << "[ForestBiomeFactory] Combat.\n";
-        return new ForestCombat();
-    }
+    // ======================== DESERT ========================
+    void DesertCombat::Attack() const { std::cout << ">> [Combat] Throws fire and blinding sand.\n"; }
+    void DesertBehavior::Behavior() const { std::cout << ">> [AI] Uses hit-and-run tactics across the dunes.\n"; }
+    void DesertLoot::DropLoot() const { std::cout << ">> [Loot] Drops rare minerals and desert cloth.\n"; }
 
-    IAIBehavior* ForestBiomeFactory::CreateBehavior()
-    {
-        std::cout << "[ForestBiomeFactory] Behavior (AI).\n";
-        return new ForestBehavior();
-    }
+    // ======================== SWAMP ========================
+    void SwampCombat::Attack() const { std::cout << ">> [Combat] Spits poison and performs a death-roll.\n"; }
+    void SwampBehavior::Behavior() const { std::cout << ">> [AI] Chases endlessly in packs through the muck.\n"; }
+    void SwampLoot::DropLoot() const { std::cout << ">> [Loot] Drops toxic scales and predator teeth.\n"; }
 
-    ILootTable* ForestBiomeFactory::CreateLootTable()
-    {
-        std::cout << "[ForestBiomeFactory] Loot Table.\n";
-        return new ForestLoot();
-    }
+    // =========================================================================
+    // CONCRETE FACTORIES: IMPLEMENTATION
+    // ROLE: Enforcing consistency by only creating related product families.
+    // =========================================================================
 
-    // --- DESERT BIOME FACTORY ---
-    INPC* DesertBiomeFactory::CreateNPC()
-    {
-        std::cout << "[DesertBiomeFactory] Spawned a Desert NPC.\n";
-        return new DesertNPC();
-    }
+    // ======================== FOREST BIOME FACTORY ========================
+    INPC* ForestBiomeFactory::CreateNPC() { return new ForestNPC(); }
+    ICombatBehavior* ForestBiomeFactory::CreateCombat() { return new ForestCombat(); }
+    IAIBehavior* ForestBiomeFactory::CreateBehavior() { return new ForestBehavior(); }
+    ILootTable* ForestBiomeFactory::CreateLootTable() { return new ForestLoot(); }
 
-    ICombatBehavior* DesertBiomeFactory::CreateCombat()
-    {
-        std::cout << "[DesertBiomeFactory] Desert Combat.\n";
-        return new DesertCombat();
-    }
+    // ======================== DESERT BIOME FACTORY ========================
+    INPC* DesertBiomeFactory::CreateNPC() { return new DesertNPC(); }
+    ICombatBehavior* DesertBiomeFactory::CreateCombat() { return new DesertCombat(); }
+    IAIBehavior* DesertBiomeFactory::CreateBehavior() { return new DesertBehavior(); }
+    ILootTable* DesertBiomeFactory::CreateLootTable() { return new DesertLoot(); }
 
-    IAIBehavior* DesertBiomeFactory::CreateBehavior()
-    {
-        std::cout << "[DesertBiomeFactory] Behavior (AI).\n";
-        return new DesertBehavior();
-    }
+    // ======================== SWAMP BIOME FACTORY ========================
+    INPC* SwampBiomeFactory::CreateNPC() { return new SwampNPC(); }
+    ICombatBehavior* SwampBiomeFactory::CreateCombat() { return new SwampCombat(); }
+    IAIBehavior* SwampBiomeFactory::CreateBehavior() { return new SwampBehavior(); }
+    ILootTable* SwampBiomeFactory::CreateLootTable() { return new SwampLoot(); }
 
-    ILootTable* DesertBiomeFactory::CreateLootTable()
-    {
-        std::cout << "[DesertBiomeFactory] Loot Table.\n";
-        return new DesertLoot();
-    }
-
-    // --- SWAMP EXTENSION FACTORY ---
-    INPC* SwampBiomeFactory::CreateNPC()
-    {
-        std::cout << "[SwampBiomeFactory] Spawned a Swamp NPC.\n";
-        return new SwampNPC();
-    }
-
-    ICombatBehavior* SwampBiomeFactory::CreateCombat()
-    {
-        std::cout << "[SwampBiomeFactory] Combat.\n";
-        return new SwampCombat();
-    }
-
-    IAIBehavior* SwampBiomeFactory::CreateBehavior()
-    {
-        std::cout << "[SwampBiomeFactory] Behavior (AI).\n";
-        return new SwampBehavior();
-    }
-
-    ILootTable* SwampBiomeFactory::CreateLootTable()
-    {
-        std::cout << "[SwampBiomeFactory] Loot Table.\n";
-        return new SwampLoot();
-    }
-
-    // ------------------------------------------------------------------------
-    // 4. CLIENT IMPLEMENTATION (THE SPAWNER)
-    // ------------------------------------------------------------------------
+    // =========================================================================
+    // CLIENT IMPLEMENTATION: NPC SPAWNER
+    // =========================================================================
 
     void NPCSpawner::SpawnNPC()
     {
-        std::cout << "\n--- Spawning NPC ---\n";
-        
-         INPC* NewNPC = CurrentFactory->CreateNPC();
-         if (NewNPC)
-         {
-             std::cout << "\nA " << NewNPC->GetName() << " appears!\n\n";
-             
-             CurrentFactory->CreateBehavior()->Behavior();
-             CurrentFactory->CreateCombat()->Attack();
+        if (!CurrentFactory)
+        {
+            HFL::SetColor(HFL::EColor::Red);
+            std::cout << "[Error] No Biome Factory set!\n";
+            return;
+        }
 
-             // --- PLAYER RESPONSE ---
-             std::cout << "\nYou strike back!\n";
-             std::cout << "The enemy is defeated.\n\n";
+        // The client creates multiple related objects without knowing their concrete types.
+        INPC* NewNPC = CurrentFactory->CreateNPC();
+        IAIBehavior* AI = CurrentFactory->CreateBehavior();
+        ICombatBehavior* Combat = CurrentFactory->CreateCombat();
+        ILootTable* Loot = CurrentFactory->CreateLootTable();
 
-             CurrentFactory->CreateLootTable()->DropLoot();
+        if (NewNPC)
+        {
+            HFL::SetColor(HFL::EColor::White);
+            std::cout << "\nA " << NewNPC->GetName() << " emerges from the shadows!\n";
 
-             delete NewNPC;
-         }
-        std::cout << "---------------------\n";
+            HFL::SetColor(HFL::EColor::Gray);
+            AI->Behavior();
+            Combat->Attack();
+
+            std::cout << "\n>> [Action] You defeat the " << NewNPC->GetName() << "!\n";
+            Loot->DropLoot();
+
+            // Cleanup local production
+            delete NewNPC;
+            delete AI;
+            delete Combat;
+            delete Loot;
+        }
     }
 
-    // ------------------------------------------------------------------------
-    // 5. DEMO IMPLEMENTATION (TRAVEL & ENCOUNTER)
-    // ------------------------------------------------------------------------
+    // =========================================================================
+    // DEMO IMPLEMENTATION
+    // =========================================================================
     void RunDemo()
     {
-        // Clear input buffer
         std::cin.clear();
         std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
-        // --- INTRODUCTION ---
+        // ======================== INTRODUCTION ========================
         HFL::ClearScreen();
-        HFL::PrintHeader("Abstract Factory Pattern — Biome Encounters");
+        HFL::PrintHeader("ABSTRACT FACTORY");
 
-        std::cout << "In this demo, you will TRAVEL between biomes.\n";
-        std::cout << "Each biome spawns an NPC with its own:\n";
-        std::cout << " - AI Behavior\n";
-        std::cout << " - Combat Style\n";
-        std::cout << " - Loot Table\n\n";
+        HFL::PrintSection("THE DEFINITION");
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "Provide an interface for creating families of related or dependent\n"
+            << "objects without specifying their concrete classes.\n\n";
 
-        std::cout << "The important part:\n";
-        std::cout << "The game logic never knows WHICH biome implementation is used.\n";
-        std::cout << "That decision is hidden behind an Abstract Factory.\n";
+        HFL::PrintSection("THE GOAL");
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The Abstract Factory models 'NPC Ecosystems'. In complex games, objects\n"
+            << "rarely exist in isolation. A Biome defines a consistent 'Family' of\n"
+            << "logic (AI, Combat, Loot). This pattern ensures that these components\n"
+            << "always remain compatible without hard-coding them into the spawner.\n\n";
+
+        HFL::PrintSection("THE EXAMPLE");
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "This demonstration simulates a World Generator with three distinct layers:\n\n";
+
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] THE CATALOG (ABSTRACT FACTORY): ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "IBiomeNPCFactory defines the blueprint.\n";
+
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] THE BIOMES (CONCRETIONS):       ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Forest, Desert, and Swamp sub-factories.\n";
+
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] THE SPAWNER (CLIENT):           ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The NPCSpawner that requests thematic units.\n\n";
+
+        HFL::PrintSection("THE BENEFIT");
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] CONSISTENCY:   ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Guarantees that Forest NPCs never use Swamp attacks.\n";
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] ENCAPSULATION: ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Creation logic is hidden; the client only sees high-level interfaces.\n";
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] FLEXIBILITY:   ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Adding a 'Volcano' biome requires zero changes to existing Spawner code.\n";
 
         HFL::WaitForInput();
 
-        // --- FACTORIES ---
+        // ======================== THE ARCHITECTURE ========================
+        HFL::ClearScreen();
+        HFL::PrintHeader("THE ARCHITECTURE");
+
+        HFL::PrintSection("THE ECOSYSTEM MODEL");
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Instead of creating a single object, create a 'Factory of Factories'.\n"
+            << "The Client holds a pointer to the Abstract interface, allowing it to\n"
+            << "reconfigure the entire game's NPC logic by swapping a single factory instance.\n\n";
+
+        HFL::PrintSection("IMPLEMENTATION");
+
+        // ======================== INTERFACES ========================
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] INPC / ICombat / IAI / ILoot (Abstract Products)\n";
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "    ROLE:           ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The Interfaces. Defines what an NPC 'is' and 'does'.\n";
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "    SCOPE:          ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Pure virtual functions for Attack(), Behavior(), and DropLoot().\n";
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "    RELATIONSHIP:   ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "These are the generic 'parts' that make up a complete NPC.\n\n";
+
+        // ======================== FACTORIES ========================
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] Forest / Desert / Swamp (Concrete Factories)\n";
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "    ROLE:           ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The Assemblers. They know which specific parts belong together.\n";
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "    SCOPE:          ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Implements IBiomeNPCFactory. Returns biome-specific concretions.\n";
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "    CONSTRAINT:     ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Enforces that a Desert Factory ONLY produces Desert components.\n\n";
+
+        // ======================== CLIENT ========================
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] NPCSpawner (The Client)\n";
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "    ROLE:           ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The Orchestrator. It populates the world based on the current biome.\n";
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "    SCOPE:          ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Uses Dependency Injection to receive a Biome Factory.\n";
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "    ADVANTAGE:      ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Spawner remains 100% clean of 'switch' statements and type-checks.\n\n";
+
+        HFL::SetColor(HFL::EColor::White);
+        HFL::WaitForInput();
+
+        // ======================== INITIALIZATION ========================
         ForestBiomeFactory ForestFactory;
         DesertBiomeFactory DesertFactory;
         SwampBiomeFactory  SwampFactory;
+        NPCSpawner WorldSpawner;
 
-        NPCSpawner Spawner;
-
-        bool InDemo = true;
-        while (InDemo)
+        // ======================== GAME LOOP ========================
+        while (true)
         {
-            // --- TRAVEL MENU ---
             HFL::ClearScreen();
-            HFL::PrintHeader("World Map");
+            HFL::PrintHeader("WORLD MAP: TRAVELER");
 
-            std::cout << "Where would you like to travel?\n\n";
-            std::cout << "1. Travel to the Forest\n";
-            std::cout << "2. Travel to the Desert\n";
-            std::cout << "3. Travel to the Swampland\n";
-            std::cout << "0. Return to Town (Exit Demo)\n";
-            std::cout << "\nDestination: ";
+            HFL::PrintSection("SELECT DESTINATION");
+            HFL::SetColor(HFL::EColor::Green);
+            std::cout << " [1] "; HFL::SetColor(HFL::EColor::White); std::cout << "THE FOREST\n";
+            HFL::SetColor(HFL::EColor::Green);
+            std::cout << " [2] "; HFL::SetColor(HFL::EColor::White); std::cout << "THE DESERT\n";
+            HFL::SetColor(HFL::EColor::Green);
+            std::cout << " [3] "; HFL::SetColor(HFL::EColor::White); std::cout << "THE SWAMPLAND\n\n";
+            HFL::SetColor(HFL::EColor::Green);
+            std::cout << " [0] "; HFL::SetColor(HFL::EColor::White); std::cout << "CONTINUE\n";
 
-            int Choice;
-            std::cin >> Choice;
+            int Choice = HFL::GetValidMenuInput(3);
+            if (Choice == 0) break;
 
-            if (std::cin.fail())
-            {
-                std::cin.clear();
-                std::cin.ignore();
-                continue;
-            }
+            IBiomeNPCFactory* SelectedFactory = nullptr;
 
-            if (Choice == 0)
-                break;
+            HFL::ClearScreen();
+            HFL::PrintHeader("TRAVELING");
 
-            // --- BIOME SELECTION ---
             if (Choice == 1)
             {
-                Spawner.SetBiomeFactory(&ForestFactory);
-                std::cout << "\nYou arrive in the Forest...\n";
-                std::cout << "The trees are dense and the air feels alive.\n";
+                SelectedFactory = &ForestFactory;
+                std::cout << "You trek into the dense woods. The air is cool and misty";
             }
             else if (Choice == 2)
             {
-                Spawner.SetBiomeFactory(&DesertFactory);
-                std::cout << "\nYou arrive in the Desert...\n";
-                std::cout << "The sun burns and sand stretches endlessly.\n";
+                SelectedFactory = &DesertFactory;
+                std::cout << "The heat is oppressive. Sand stings your eyes";
             }
             else if (Choice == 3)
             {
-                Spawner.SetBiomeFactory(&SwampFactory);
-                std::cout << "\nYou enter the Swampland...\n";
-                std::cout << "The ground is wet and something moves beneath the surface.\n";
+                SelectedFactory = &SwampFactory;
+                std::cout << "The ground sinks beneath your boots. Foul odors rise from the mud";
             }
-            else
+
+            if (SelectedFactory)
             {
-                continue;
+                HFL::WaitDots(0.5f);
+                WorldSpawner.SetBiomeFactory(SelectedFactory);
+                HFL::PrintSection("ENCOUNTER");
+                WorldSpawner.SpawnNPC();
             }
-
-            HFL::WaitForInput();
-
-            // --- ENCOUNTER ---
-            HFL::ClearScreen();
-            HFL::PrintHeader("Encounter!");
-
-            Spawner.SpawnNPC();
-
-            // --- DESIGN NOTE  ---
-            std::cout << "\n[Design Note]\n";
-            std::cout << "This entire encounter was defined by the biome.\n";
-            std::cout << "Only the Abstract Factory is changed.\n";
 
             HFL::WaitForInput();
         }
 
-        // --- STEP 4: CONCLUSION ---
+        // ======================== CONCLUSION ========================
         HFL::ClearScreen();
-        HFL::PrintHeader("Conclusion");
+        HFL::PrintHeader("CONCLUSION");
 
-        std::cout << "Summary of Abstract Factory:\n\n";
-        std::cout << "1. The Spawner (Client) was decoupled.\n";
-        std::cout << "   It didn't know how to construct a Swamp NPC.\n";
-        std::cout << "   It just asked 'Factory->CreateNPC()'.\n\n";
+        HFL::PrintSection("ARCHITECTURE");
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "The implementation of the Abstract Factory Pattern confirms the following:\n\n";
 
-        std::cout << "2. The Catalog (Abstract Factory) managed Extensions.\n";
-        std::cout << "   The 'Swamp Biome' sub-factory uses DIP.\n";
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] FAMILY CONSISTENCY:    ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The 'NPCSpawner' is guaranteed to receive a compatible set of\n"
+            << "    objects. It is impossible to spawn a 'Desert Raider' that\n"
+            << "    accidentally uses 'Forest AI' logic.\n";
 
-        std::cout << "3. Component Logic (Polymorphism):\n";
-        std::cout << "   Each NPC uses it's unique behaviors.\n\n";
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] CREATION DECOUPLING:   ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The logic for *how* to build an NPC ecosystem is removed from\n"
+            << "    the Game World and tucked away into specialized Factory classes.\n";
 
-        std::cout << "4. Extendability:\n";
-        std::cout << "   To add a 'Volcano' Biome later, just add a factory.\n";
-        std::cout << "   The Spawner code remains unchanged.\n\n";
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] INTERFACE RELIANCE:    ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The Client (Spawner) remains 'blind' to concrete classes like\n"
+            << "    'SwampGator' or 'ForestImp', preventing header pollution.\n\n";
 
-        std::cout << "This is how Abstract Factory works.\n";
+        HFL::PrintSection("SUMMARY");
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "The Abstract Factory Pattern ensures that software is:\n\n";
 
-        std::cout << std::setw(40) << "End of Demo\n";
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] COHESIVE: ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Related products are grouped together, ensuring thematic integrity.\n";
+
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] EXTENSIBLE: ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Adding new Biomes (Volcano, Tundra) only requires a new Factory\n"
+            << "    worker, leaving the high-level spawning logic untouched.\n";
+
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] PLUGGABLE: ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The entire 'look and feel' of an encounter can be swapped at\n"
+            << "    runtime by injecting a different Factory instance.\n\n";
+
+        HFL::SetColor(HFL::EColor::White);
         HFL::WaitForInput();
     }
-
 }

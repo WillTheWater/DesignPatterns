@@ -50,6 +50,7 @@ namespace HFL
 
     // Simple wait using std::chrono
     void Wait(float Seconds);
+    void WaitDots(float Seconds);
 
     // Random number generator std::random
     static std::random_device rd;

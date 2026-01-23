@@ -192,4 +192,9 @@ namespace HFL
         // Converts float seconds to a chrono duration and sleeps
         std::this_thread::sleep_for(std::chrono::duration<float>(Seconds));
     }
+    void WaitDots(float Seconds)
+    {
+        for (int i = 0; i < 3; ++i) { HFL::Wait(Seconds); std::cout << "."; }
+        std::cout << '\n';
+    }
 }
