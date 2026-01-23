@@ -2,234 +2,296 @@
 
 namespace PRO
 {
-    // ------------------------------------------------------------------------
+    // =========================================================================
     // BASE CLASS IMPLEMENTATION
-    // ------------------------------------------------------------------------
+    // =========================================================================
     Zombie::Zombie(std::string Name, int Health)
         : Name(Name), Health(Health)
     {
-        // Simulates loading Mesh/Texture from disk.
-        std::cout << ">> [System] Loading '" << Name << "' assets from disk...\n";
+        // Simulates an expensive operation (Loading Mesh/Texture/Sounds)
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << ">> [System] Disk I/O: Loading '" << Name << "' assets into RAM...\n";
     }
 
     void Zombie::Attack() const
     {
-        std::cout << "   *Shambling around*\n";
+        std::cout << "   *Generic shambling sounds*\n";
     }
 
-    // ------------------------------------------------------------------------
-    // CRAWLER IMPLEMENTATION
-    // ------------------------------------------------------------------------
+    // =========================================================================
+    // CONCRETE PROTOTYPES IMPLEMENTATION
+    // =========================================================================
+
+    // ======================== CRAWLER ========================
     Crawler::Crawler() : Zombie("Crawler", 20) {}
 
-    // COVARIANCE: Returns the specific type (Crawler*) instead of generic Zombie*.
-    // Keeping the exact type.
     Crawler* Crawler::Clone() const
     {
-        // DEEP COPY:
-        // 'new Crawler(*this)' creates a NEW Crawler and copies the Name/Health
-        // from 'this' object (The Prototype).
-        // 
-        // 1. Allocates memory for a NEW Crawler.
-        // 2. Looks at 'this' (Prototype).
-        // 3. Copies Name="Crawler" and Health=20 into the NEW Crawler.
-        // 4. Returns pointer to the NEW Crawler.
+        // DEEP COPY via Copy Constructor:
+        // 'new Crawler(*this)' allocates new memory and stamps the Prototype's
+        // current state (Name/Health) into the new object instantly.
         return new Crawler(*this);
-        // *this is the difference between calling the Constructor and calling
-        // the Copy Constructor.
     }
 
-    void Crawler::Attack() const
-    {
-        std::cout << "   *Crawls fast towards you!*\n";
-    }
+    void Crawler::Attack() const { std::cout << "   *Sprints on all fours and bites!*\n"; }
 
-    // ------------------------------------------------------------------------
-    // WALKER IMPLEMENTATION
-    // ------------------------------------------------------------------------
+    // ======================== WALKER ========================
     Walker::Walker() : Zombie("Walker", 100) {}
 
-    Walker* Walker::Clone() const
-    {
-        return new Walker(*this);
-    }
+    Walker* Walker::Clone() const { return new Walker(*this); }
 
-    void Walker::Attack() const
-    {
-        std::cout << "   *Walks slowly towards you...*\n";
-    }
+    void Walker::Attack() const { std::cout << "   *Walks slowly but relentlessly...*\n"; }
 
-    // ------------------------------------------------------------------------
-    // BLOATER IMPLEMENTATION
-    // ------------------------------------------------------------------------
+    // ======================== BLOATER ========================
     Bloater::Bloater() : Zombie("Bloater", 300) {}
 
-    Bloater* Bloater::Clone() const
-    {
-        return new Bloater(*this);
-    }
+    Bloater* Bloater::Clone() const { return new Bloater(*this); }
 
-    void Bloater::Attack() const
-    {
-        std::cout << "   *slams into you!*\n";
-    }
+    void Bloater::Attack() const { std::cout << "   *Slams into the ground, causing a gas cloud!*\n"; }
 
-    // ------------------------------------------------------------------------
+    // =========================================================================
     // DEMO IMPLEMENTATION
-    // ------------------------------------------------------------------------
+    // =========================================================================
     void RunDemo()
     {
-        // Clear buffer
         std::cin.clear();
         std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
-        // --- STEP 1: INTRODUCTION ---
+        // ======================== INTRODUCTION ========================
         HFL::ClearScreen();
-        HFL::PrintHeader("Prototype Pattern");
+        HFL::PrintHeader("PROTOTYPE PATTERN");
 
-        std::cout << "Definition:\n";
-        std::cout << "Specify the kinds of objects to create using a prototype instance,\n";
-        std::cout << "and create new objects by copying this prototype.\n\n";
+        HFL::PrintSection("THE DEFINITION");
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "Specify the kinds of objects to create using a prototype instance,\n"
+            << "and create new objects by copying this prototype.\n\n";
 
-        std::cout << "In This Demo:\n";
-        std::cout << "You can create a 'Zombie Horde'.\n";
-        std::cout << "By defining 'Prototypes' of zombies types.\n";
-        std::cout << "When they spawn it just CLONES the Prototype, it doesn't 'Create' new ones.\n";
-        std::cout << "This avoids re-loading assets for every instance.\n";
+        HFL::PrintSection("THE GOAL");
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "In games, initializing an actor is slow. It involves disk access,\n"
+            << "mesh parsing, and texture binding. The Prototype pattern creates one\n"
+            << "'Master' actor. Every subsequent spawn is a simple RAM-to-RAM copy,\n"
+            << "bypassing the expensive 'initialization' phase entirely.\n\n";
+
+        HFL::PrintSection("THE EXAMPLE");
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "Initialize three 'Master Prototypes' and then use them to\n"
+            << "instantly clone a massive horde of unique objects.\n\n";
+
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] THE PROTOTYPE (INTERFACE): ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Zombie defines the 'Clone()' contract.\n";
+
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] THE MASTERS (PROTOTYPES):  ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The unique instances loaded from 'Disk'.\n";
+
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] THE HORDE (CLONES):        ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Instances created via 'Clone()' in RAM.\n\n";
 
         HFL::WaitForInput();
 
-        // --- STEP 2: THE PROTOTYPES ---
+        // ======================== THE ARCHITECTURE ========================
         HFL::ClearScreen();
-        HFL::PrintHeader("Step 1: The Prototypes");
+        HFL::PrintHeader("THE ARCHITECTURE");
 
-        std::cout << "There are 3 types of Zombies.\n";
-        std::cout << "Each has its own 'Clone()' method that copies its data.\n\n";
+        HFL::PrintSection("COVARIANT RETURNS");
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "A derived Clone() returns its own specific type rather\n"
+            << "than the base type. This means Crawler::Clone() returns Crawler*,\n"
+            << "preserving type safety and avoiding unnecessary casting.\n\n";
 
-        std::cout << "1. Crawler (Fast, Low HP)\n";
-        std::cout << "   'Attack()': Crawl fast.\n";
-        std::cout << "   'Clone()': Returns Crawler* (Covariance)\n\n";
+        HFL::PrintSection("IMPLEMENTATION");
 
-        std::cout << "2. Walker (Slow, High HP)\n";
-        std::cout << "   'Attack()': Walk slow.\n";
-        std::cout << "   'Clone()': Returns Walker* (Covariance)\n\n";
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] Clone() vs New\n";
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "    NEW:            ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Runs full constructor logic (Disk access, Heavy logic).\n";
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "    CLONE:          ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Runs Copy Constructor (Bitwise/Deep copy of existing RAM).\n";
 
-        std::cout << "3. Bloater (Tank)\n";
-        std::cout << "   'Attack()': Slam.\n";
-        std::cout << "   'Clone()': Returns Bloater* (Covariance)\n\n";
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "\n[*] Prototype Management\n";
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "    ADVANTAGE:      ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "You can modify a Prototype at runtime (e.g., 'Enraged' state)\n"
+            << "                    and all subsequent clones will inherit that state.\n";
 
+        HFL::SetColor(HFL::EColor::White);
         HFL::WaitForInput();
 
-        // --- STEP 3: INTERACTIVE HORDE ---
 
-        // 1. Create the Masters (Load their assets once)
-        std::cout << "[System] Initializing Prototypes...\n";
-        // We use unique_ptr to manage the Masters automatically
-        std::unique_ptr<Crawler> CrawlerPrototype = std::make_unique<Crawler>();
-        std::unique_ptr<Walker> WalkerPrototype = std::make_unique<Walker>();
-        std::unique_ptr<Bloater> BloaterPrototype = std::make_unique<Bloater>();
 
-        // The Horde holds copies (raw pointers to clones)
-        std::vector<Zombie*> Horde;
-        int TotalCount = 0;
+        // ======================== INITIALIZATION ========================
+        HFL::ClearScreen();
+        HFL::PrintHeader("ZOMBIE ARMY");
 
-        bool InDemo = true;
-        while (InDemo)
+        // ======================== MASTER COPY ========================
+        auto CrawlerMaster = std::make_unique<Crawler>();
+        auto WalkerMaster = std::make_unique<Walker>();
+        auto BloaterMaster = std::make_unique<Bloater>();
+
+        // ======================== CLONES ========================
+        std::vector<std::unique_ptr<Zombie>> Horde;
+        int CrawlerCount = 0;
+        int WalkerCount = 0;
+        int BloaterCount = 0;
+
+        HFL::PrintSection("HORDE SPAWNER");
+
+        while (true)
         {
             HFL::ClearScreen();
-            HFL::PrintHeader("Zombie Horde Spawner");
+            HFL::PrintHeader("ZOMBIE HORDE SPAWNER");
 
-            std::cout << "\nCurrent Horde Size: " << TotalCount << "\n";
+            // ======================== ZOMBIE STATS ========================
+            HFL::PrintSection("HORDE COMPOSITION");
+            HFL::SetColor(HFL::EColor::White);
+            std::cout << "  [CRAWLERS]: "; HFL::SetColor(HFL::EColor::Green); std::cout << CrawlerCount << "\n";
+            HFL::SetColor(HFL::EColor::White);
+            std::cout << "  [WALKERS]:  "; HFL::SetColor(HFL::EColor::Green); std::cout << WalkerCount << "\n";
+            HFL::SetColor(HFL::EColor::White);
+            std::cout << "  [BLOATERS]: "; HFL::SetColor(HFL::EColor::Green); std::cout << BloaterCount << "\n";
 
-            std::cout << "Select a Prototype to Clone:\n\n";
-            std::cout << "1. Crawler\n";
-            std::cout << "2. Walker\n";
-            std::cout << "3. Bloater\n";
-            std::cout << "0. Exit Demo\n";
+            HFL::SetColor(HFL::EColor::Gray);
+            std::cout << "  ------------------------\n";
+            HFL::SetColor(HFL::EColor::White);
+            std::cout << "  TOTAL ZOMBIES: ";
+            HFL::SetColor(HFL::EColor::Green);
+            std::cout << Horde.size() << "\n\n";
 
-            std::cout << "\nChoice: ";
-            int Choice;
-            std::cin >> Choice;
+            HFL::PrintSection("SPAWN MENU");
+            HFL::SetColor(HFL::EColor::Green);
+            std::cout << " [1] "; HFL::SetColor(HFL::EColor::White); std::cout << "CRAWLER\n";
+            HFL::SetColor(HFL::EColor::Green);
+            std::cout << " [2] "; HFL::SetColor(HFL::EColor::White); std::cout << "WALKER\n";
+            HFL::SetColor(HFL::EColor::Green);
+            std::cout << " [3] "; HFL::SetColor(HFL::EColor::White); std::cout << "BLOATER\n\n";
+            HFL::SetColor(HFL::EColor::Green);
+            std::cout << " [0] "; HFL::SetColor(HFL::EColor::White); std::cout << "CONTINUE\n";
 
-            if (std::cin.fail()) { std::cin.clear(); std::cin.ignore(); continue; }
-
+            int Choice = HFL::GetValidMenuInput(3);
             if (Choice == 0) break;
 
-            Zombie* SelectedPrototype = nullptr;
+            Zombie* Prototype = nullptr;
             std::string TypeName = "";
 
-            // Select the Master
-            if (Choice == 1) { SelectedPrototype = CrawlerPrototype.get(); TypeName = "Crawler"; }
-            else if (Choice == 2) { SelectedPrototype = WalkerPrototype.get(); TypeName = "Walker"; }
-            else if (Choice == 3) { SelectedPrototype = BloaterPrototype.get(); TypeName = "Bloater"; }
+            if (Choice == 1) { Prototype = CrawlerMaster.get(); TypeName = "Crawler"; }
+            else if (Choice == 2) { Prototype = WalkerMaster.get(); TypeName = "Walker"; }
+            else if (Choice == 3) { Prototype = BloaterMaster.get(); TypeName = "Bloater"; }
 
-            if (SelectedPrototype)
+            if (Prototype)
             {
-                std::cout << "\nHow many " << TypeName << "s to spawn? ";
-                int Amount;
-                std::cin >> Amount;
+                std::cout << "\nHow many " << TypeName << "s to clone? (Max 100,000): ";
 
-                if (std::cin.fail() || Amount <= 0 || Amount > 100000) { std::cin.clear(); std::cin.ignore(); continue; }
+                long long RawInput;
+                std::cin >> RawInput;
 
-                // ----------------------------------------------------------
-                // THE CLONING PROCESS
-                // ----------------------------------------------------------
-                // Note: We DO NOT call "new Crawler()" here.
-                // We call "Clone()". The specific class handles the copy.
-                // This is the difference between the Constructor and Copy Constructor
-                std::cout << "\n>> [Spawner] Cloning " << Amount << " " << TypeName << "s...\n";
+                unsigned int FinalAmount = 0;
 
-                for (int i = 0; i < Amount; ++i)
+                if (std::cin.fail())
                 {
-                    Zombie* NewZombie = SelectedPrototype->Clone();
-                    Horde.push_back(NewZombie);
+                    std::cin.clear();
+                    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+                    std::cout << ">> [Error] Invalid input. No units spawned.\n";
+                }
+                else if (RawInput < 0)
+                {
+                    FinalAmount = 0;
+                    std::cout << ">> [System] Negative value detected. Defaulting to 0.\n";
+                }
+                else if (RawInput > 100000)
+                {
+                    FinalAmount = 100000;
+                    std::cout << ">> [System] Input exceeds safety limit. Capping at 100,000.\n";
+                }
+                else
+                {
+                    FinalAmount = static_cast<unsigned int>(RawInput);
                 }
 
-                TotalCount += Amount;
-                std::cout << ">> [Success] Horde Size is now: " << TotalCount << "\n";
+                HFL::SetColor(HFL::EColor::Gray);
+                std::cout << ">> [Spawner] Performing RAM-to-RAM memory stamp for " << FinalAmount << " zombies...\n";
 
-                // Let them attack to prove they are real objects
-                std::cout << ">> [Action] The horde attacks!\n";
+                for (int i = 0; i < FinalAmount; ++i)
+                {
+                    // THE CORE ACTION: Copying the RAM of the Master Prototype
+                    // Wraping the raw pointer from Clone() into a unique_ptr
+                    // ensures the memory is freed automatically when the vector is destroyed.
+                    Horde.push_back(std::unique_ptr<Zombie>(Prototype->Clone()));
+                }
+
+                if (Choice == 1) CrawlerCount += FinalAmount;
+                else if (Choice == 2) WalkerCount += FinalAmount;
+                else if (Choice == 3) BloaterCount += FinalAmount;
+
+                HFL::SetColor(HFL::EColor::Green);
+                std::cout << ">> [Success] " << FinalAmount << " " << TypeName << "(s) added to the horde!\n";
+
+                HFL::SetColor(HFL::EColor::Gray);
+                std::cout << ">> [Action] The last clone screams: ";
+                HFL::SetColor(HFL::EColor::White);
                 Horde.back()->Attack();
-
-                HFL::WaitForInput();
             }
+            HFL::WaitForInput();
         }
 
-        // --- STEP 4: CONCLUSION ---
+        // ======================== CONCLUSION ========================
         HFL::ClearScreen();
-        HFL::PrintHeader("Conclusion");
+        HFL::PrintHeader("CONCLUSION");
 
-        std::cout << "Why 'Cloning'?\n\n";
-        std::cout << "1. Construction is EXPENSIVE:\n";
-        std::cout << "   When you use 'new Crawler()':\n";
-        std::cout << "   - Calls the Constructor.\n";
-        std::cout << "   - Loads 'Crawler.png' from Disk.\n";
-        std::cout << "   - Allocates RAM.\n";
-        std::cout << "   Doing this 100 times is VERY slow.\n\n";
+        HFL::PrintSection("ARCHITECTURE & SOLID");
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "The implementation of the Prototype Pattern confirms the following:\n\n";
 
-        std::cout << "2. Cloning is INSTANT:\n";
-        std::cout << "   When you use 'Crawler.Clone()':\n";
-        std::cout << "   - Calls the Copy Constructor.\n";
-        std::cout << "   - Uses the 'Prototype's' RAM data.\n";
-        std::cout << "   - Stamps it into a new object.\n";
-        std::cout << "   - NO disk access. NO loading.\n\n";
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] DEPENDENCY INVERSION:  ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The Spawner depends on the 'Zombie' abstraction. It never\n"
+            << "    calls 'new Crawler()', inverting the dependency flow.\n";
 
-        std::cout << "Summary of Prototype:\n\n";
-        std::cout << "1. Efficiency:\n";
-        std::cout << "   Used 'Clone()' instead of 'New'.\n";
-        std::cout << "   This avoids 'Loading Assets' for every zombie.\n";
-        std::cout << "   It copies RAM instead of reloading from Disk.\n\n";
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] OPEN/CLOSED BOUNDARY:  ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Easy to add new Zombie types (Runners, Spitters) by creating\n"
+            << "    new classes without modifying the core Spawner logic.\n";
 
-        std::cout << "2. Covariant Return Types:\n";
-        std::cout << "   Crawler* Clone() returned a Crawler*, not a generic Zombie*.\n";
-        std::cout << "   Preserving the specific type.\n\n";
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] INTERFACE COVARIANCE:  ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Specific types are preserved during cloning, ensuring that\n"
+            << "    object-specific data is never lost during the copy.\n\n";
 
-        std::cout << "3. The Pattern:\n";
-        std::cout << "   Define 'Prototypes' and create copies.\n";
-        std::cout << "   Efficient spawning without repetitive initialization.\n";
+        HFL::PrintSection("SUMMARY");
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "The Prototype Pattern ensures that software is:\n\n";
 
-        std::cout << std::setw(40) << "End of Demo\n";
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] PERFORMANT: ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "RAM-to-RAM cloning bypasses expensive Disk I/O and constructors.\n";
+
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] DECOUPLED:  ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The high-level Spawner remains 'blind' to concrete zombie types.\n";
+
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] SCALABLE:   ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Complex initialization is localized to the Prototype's creation,\n"
+            << "    keeping the runtime spawning logic clean and predictable.\n\n";
+
+        HFL::SetColor(HFL::EColor::White);
         HFL::WaitForInput();
     }
 }

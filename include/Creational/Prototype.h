@@ -1,33 +1,44 @@
 #pragma once
 
 #include "FunctionLibrary/HelperFunctionLibrary.h"
+#include <memory>
+#include <vector>
+#include <string>
 
 // =========================================================================
-// CREATIONAL DESIGN PATTERNS: Prototype Pattern
+// CREATIONAL DESIGN PATTERNS: PROTOTYPE PATTERN
 // =========================================================================
 // "Specify the kinds of objects to create using a prototype instance, 
 // and create new objects by copying this prototype."
 //
 // THE GOAL:
-// Avoid expensive initialization. Don't load assets/files 100 times.
-// Load one Master, then Clone it.
+// Avoid expensive initialization. In game development, spawning an actor 
+// often involves heavy Disk I/O (loading meshes, textures, and sounds). 
+// The Prototype pattern loads one "Master" instance into RAM and then 
+// uses a 'Clone' method to stamp out new instances. This bypasses the 
+// constructor's heavy lifting by performing a RAM-to-RAM deep copy.
+//
+// THE BENEFIT:
+// * Performance: Instantly spawn massive hordes without frame-rate drops 
+//   caused by repetitive file loading.
+// * State Preservation: Clone a prototype that has already been modified 
+//   (e.g., an 'Enraged' Zombie) to create pre-configured variations.
+// * Reduced Coupling: The spawner doesn't need to know the concrete 
+//   classes; it only needs the "Master" and the 'Clone()' interface.
 //
 // THE EXAMPLE:
-// A Zombie Army Spawner.
-// 1. Prototype Interface: Defines 'Clone()'.
-// 2. Prototypes: Crawler, Walker, Bloater (The "Prototypes").
-// 3. Spawner: Clones the Prototype n times.
-//
-// BENEFIT:
-// Spawning 100 Zombies is instant because we don't reload their 
-// assets (simulated) every time. We just copy the data in RAM.
+// [Zombie]: The Abstraction. Defines the 'Clone()' and 'Attack()' contract.
+// [Crawler/Walker/Bloater]: The Concretions. They implement Clone() using 
+//         'Covariant Return Types' to return their specific type.
+// [Demo]: The Client. Manages the "Master" list and executes clones 
+//         based on user input without ever calling 'new Crawler()'.
 // =========================================================================
 
 namespace PRO
 {
-    // ------------------------------------------------------------------------
+    // =========================================================================
     // 1. THE BASE CLASS PROTOTYPE
-    // ------------------------------------------------------------------------
+    // =========================================================================
     class Zombie
     {
     public:
@@ -35,33 +46,31 @@ namespace PRO
         virtual ~Zombie() = default;
 
         // THE CORE METHOD: Returns a copy of itself.
-        // This is called 'Co-variant Return Types'.
-        // Crawler returns Crawler*, Walker returns Walker* etc...
+        // This utilizes 'Co-variant Return Types' in derived classes.
         virtual Zombie* Clone() const = 0;
 
         virtual void Attack() const;
         std::string GetName() const { return Name; }
 
     protected:
-        // Protected Constructor allows children to copy data.
+        // Protected Constructor allows the Copy Constructor (used in Clone)
+        // to pass data from the Prototype to the New Instance.
         Zombie() = default;
 
         std::string Name;
         int Health;
     };
 
-    // ------------------------------------------------------------------------
+    // =========================================================================
     // 2. CONCRETE PROTOTYPES
-    // ------------------------------------------------------------------------
+    // =========================================================================
 
     // Type 1: Fast, low health
     class Crawler : public Zombie
     {
     public:
         Crawler();
-
-        // Covariance: Returns Crawler*, not just Zombie*
-        Crawler* Clone() const override;
+        Crawler* Clone() const override; // Covariant return
         void Attack() const override;
     };
 
@@ -70,23 +79,21 @@ namespace PRO
     {
     public:
         Walker();
-
         Walker* Clone() const override;
         void Attack() const override;
     };
 
-    // Type 3: Fat, slow
+    // Type 3: Tank, slow
     class Bloater : public Zombie
     {
     public:
         Bloater();
-
         Bloater* Clone() const override;
         void Attack() const override;
     };
 
-    // ------------------------------------------------------------------------
-    // 3. DEMO
-    // ------------------------------------------------------------------------
+    // =========================================================================
+    // 3. DEMO INTERFACE
+    // =========================================================================
     void RunDemo();
 }
