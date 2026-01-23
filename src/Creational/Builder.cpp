@@ -2,9 +2,11 @@
 
 namespace BLD
 {
-    // ------------------------------------------------------------------------
-    // LEVEL PRODUCT IMPLEMENTATION
-    // ------------------------------------------------------------------------
+    // =========================================================================
+    // PRODUCT IMPLEMENTATION: LEVEL
+    // ROLE: A data container that stores the final structure.
+    // =========================================================================
+
     void Level::AddStructure(const std::string& StructureName)
     {
         Structures.push_back(StructureName);
@@ -12,23 +14,44 @@ namespace BLD
 
     void Level::PrintLevel() const
     {
-        std::cout << "=========================================\n";
-        std::cout << "           LEVEL MAP\n";
-        std::cout << "========================================\n";
-        for (const auto& s : Structures)
+        HFL::ClearScreen();
+        HFL::PrintHeader("LEVEL GENERATION REPORT");
+
+        HFL::PrintSection("MAP STRUCTURE");
+
+        if (Structures.empty())
         {
-            std::cout << s << "\n";
+            HFL::SetColor(HFL::EColor::Red);
+            std::cout << "  [Error] No structures found. Level is empty.\n";
         }
-        std::cout << "========================================\n";
+        else
+        {
+            for (const auto& s : Structures)
+            {
+                HFL::SetColor(HFL::EColor::Green);
+                std::cout << "  [+] ";
+                HFL::SetColor(HFL::EColor::White);
+                std::cout << s << "\n";
+            }
+        }
+
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "\n  ----------------------------------------\n";
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "  TOTAL COMPONENTS: ";
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << Structures.size() << "\n\n";
+
+        HFL::PrintSection("END OF GENERATION");
     }
 
-    // ------------------------------------------------------------------------
-    // DUNGEON BUILDER IMPLEMENTATION
-    // ------------------------------------------------------------------------
+    // =========================================================================
+    // CONCRETE BUILDER: DUNGEON
+    // ROLE: Implements the "Stone" style construction logic.
+    // =========================================================================
+
     DungeonBuilder::DungeonBuilder()
     {
-        // Reset() is called so every new build,
-        // the slate is clean (no old room data from the previous level).
         Reset();
     }
 
@@ -39,40 +62,31 @@ namespace BLD
 
     void DungeonBuilder::AddRoom(const std::string& Name)
     {
-        std::cout << "   [Dungeon] Adding Stone: " << Name << "...\n";
-        // This is a temporary "staging" list (TempParts).
-        // They are not added to the Level yet because they might need changes to the order.
-        TempParts.push_back(Name);
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "    -> [DungeonBuilder] Carving Stone: " << Name << "\n";
+        TempParts.push_back("Damp Stone " + Name);
     }
 
     void DungeonBuilder::AddStairs(const std::string& Direction)
     {
-        std::cout << "   [Dungeon] Adding " << Direction << " stairs...\n";
-        TempParts.push_back("Stone Stairs " + Direction);
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "    -> [DungeonBuilder] Adding Mossy Stairs: " << Direction << "\n";
+        TempParts.push_back("Stone Spiral Stairs (" + Direction + ")");
     }
 
     std::unique_ptr<Level> DungeonBuilder::Build()
     {
-        // CONSTRUCTION PHASE
-        // Once the Director defines the correct order (e.g., "Stairs Down"),
-        // the "TempParts" (The Blueprint) are used to create the final Level.
         auto NewLevel = std::make_unique<Level>();
-
-        for (const auto& Part : TempParts)
-        {
-            NewLevel->AddStructure("  " + Part + " ");
-        }
-
-        std::cout << ">> [DungeonBuilder] Dungeon Construction Complete.\n";
-        // CLEANUP PHASE
-        // After building, clear the staging list.
+        for (const auto& Part : TempParts) { NewLevel->AddStructure(Part); }
         Reset();
         return NewLevel;
     }
 
-    // ------------------------------------------------------------------------
-    // CASTLE BUILDER IMPLEMENTATION
-    // ------------------------------------------------------------------------
+    // =========================================================================
+    // CONCRETE BUILDER: CASTLE
+    // ROLE: Implements the "Marble" style construction logic.
+    // =========================================================================
+
     CastleBuilder::CastleBuilder()
     {
         Reset();
@@ -85,33 +99,31 @@ namespace BLD
 
     void CastleBuilder::AddRoom(const std::string& Name)
     {
-        std::cout << "   [Castle] Marble: " << Name << "...\n";
-        TempParts.push_back("Marble Hall " + Name);
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "    -> [CastleBuilder] Polishing Marble: " << Name << "\n";
+        TempParts.push_back("Royal Marble " + Name);
     }
 
     void CastleBuilder::AddStairs(const std::string& Direction)
     {
-        std::cout << "   [Castle] Adding Marble Staircase " << Direction << "...\n";
-        TempParts.push_back("Marble Stairs " + Direction);
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "    -> [CastleBuilder] Laying Carpet on Stairs: " << Direction << "\n";
+        TempParts.push_back("Grand Red-Carpeted Marble Stairs (" + Direction + ")");
     }
 
     std::unique_ptr<Level> CastleBuilder::Build()
     {
         auto NewLevel = std::make_unique<Level>();
-
-        for (const auto& Part : TempParts)
-        {
-            NewLevel->AddStructure(Part);
-        }
-
-        std::cout << ">> [CastleBuilder] Castle Construction Complete.\n";
+        for (const auto& Part : TempParts) { NewLevel->AddStructure(Part); }
         Reset();
         return NewLevel;
     }
 
-    // ------------------------------------------------------------------------
-    // LEVEL DIRECTOR IMPLEMENTATION
-    // ------------------------------------------------------------------------
+    // =========================================================================
+    // DIRECTOR IMPLEMENTATION: LEVEL DIRECTOR
+    // ROLE: Defines the "Recipes" (The Order of execution).
+    // =========================================================================
+
     LevelDirector::LevelDirector()
     {
         std::cout << "[Director] Waiting for Builder...\n";
@@ -119,183 +131,276 @@ namespace BLD
 
     void LevelDirector::SetBuilder(ILevelBuilder* NewBuilder)
     {
-        // The Director doesn't know HOW to build (Reset, AddRoom).
-        // It just holds a pointer to the (Builder) that knows.
+        // The Director depends on the ILevelBuilder abstraction.
         Builder = NewBuilder;
     }
 
-    // --- RECIPE 1: DUNGEON ---
     void LevelDirector::CreateDungeon()
     {
-        std::cout << ">> [Director] Executing Dungeon Recipe...\n";
+        HFL::PrintSection("DIRECTOR: EXECUTING 'DUNGEON' RECIPE");
+        HFL::SetColor(HFL::EColor::Yellow);
+        std::cout << "  [Step 1] Initializing Entrance";
+        HFL::WaitDots(0.4f);
+        Builder->AddRoom("Entrance Hall");
 
-        // Step 1: Add Main Room
-        Builder->AddRoom("Dungeon Entrance");
+        HFL::SetColor(HFL::EColor::Yellow);
+        std::cout << "  [Step 2] Adding Hazard Zones";
+        HFL::WaitDots(0.4f);
+        Builder->AddRoom("Spike Trap Corridor");
+        Builder->AddRoom("Torture Chamber");
 
-        // Step 2: Add Traps
-        Builder->AddRoom("Mess Pit");
-        Builder->AddRoom("Jail Chamber");
-
-        // Step 3: Add Stairs Down
+        HFL::SetColor(HFL::EColor::Yellow);
+        std::cout << "  [Step 3] Creating Verticality";
+        HFL::WaitDots(0.4f);
         Builder->AddStairs("Down");
 
-        // Step 4: Build
-        std::unique_ptr<Level> MyLevel = Builder->Build();
-
-        std::cout << ">> [Director] Dungeon Ready.\n\n";
-        // The Director now owns the finished Level.
-        // But note: It doesn't know it was a DungeonBuilder specifically.
-        // It just knows it's an ILevelBuilder.
+        HFL::WaitForInput();
+        std::unique_ptr<Level> Result = Builder->Build();
+        Result->PrintLevel();
     }
 
-    // --- RECIPE 2: CASTLE ---
     void LevelDirector::CreateCastle()
     {
-        std::cout << ">> [Director] Executing Castle Recipe...\n";
+        HFL::PrintSection("DIRECTOR: EXECUTING 'CASTLE' RECIPE");
+        HFL::SetColor(HFL::EColor::Yellow);
+        std::cout << "  [Step 1] Building Public Quarters";
+        HFL::WaitDots(0.4f);
+        Builder->AddRoom("Grand Ballroom");
 
-        // Step 1: Build Foundation
-        Builder->AddRoom("Throne Room");
-        Builder->AddRoom("Barracks");
+        HFL::SetColor(HFL::EColor::Yellow);
+        std::cout << "  [Step 2] Building Fortifications";
+        HFL::WaitDots(0.4f);
+        Builder->AddRoom("Watchtower Alpha");
+        Builder->AddRoom("Watchtower Beta");
 
-        // Step 2: Build Towers
-        Builder->AddRoom("North Tower");
-        Builder->AddRoom("South Tower");
-
-        // Step 3: Add Stairs Up
+        HFL::SetColor(HFL::EColor::Yellow);
+        std::cout << "  [Step 3] Creating Royal Access";
+        HFL::WaitDots(0.4f);
         Builder->AddStairs("Up");
 
-        // Step 4: Build
-        std::unique_ptr<Level> MyLevel = Builder->Build();
-
-        std::cout << ">> [Director] Castle Ready.\n\n";
+        HFL::WaitForInput();
+        std::unique_ptr<Level> Result = Builder->Build();
+        Result->PrintLevel();
     }
 
-    // ------------------------------------------------------------------------
+    // =========================================================================
     // DEMO IMPLEMENTATION
-    // ------------------------------------------------------------------------
+    // =========================================================================
+
     void RunDemo()
     {
-        // Clear buffer
         std::cin.clear();
         std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
-        // --- STEP 1: INTRODUCTION ---
+        // ======================== INTRODUCTION ========================
         HFL::ClearScreen();
-        HFL::PrintHeader("Builder Pattern");
+        HFL::PrintHeader("BUILDER PATTERN");
 
-        std::cout << "Definition:\n";
-        std::cout << "Separate the construction of a complex object from its representation.\n";
-        std::cout << "Allow construction step-by-step, rather than one giant constructor.\n\n";
+        HFL::PrintSection("THE DEFINITION");
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "Separate the construction of a complex object from its representation.\n"
+            << "This allows the same construction process to create different representations.\n\n";
 
-        std::cout << "In This Demo:\n";
-        std::cout << "There is a 'Level Director' (Architect).\n";
-        std::cout << "It wants to build levels, but it doesn't know HOW to build them.\n";
-        std::cout << "It tells the 'Level Builder' (Contractor) to do it.\n";
+        HFL::PrintSection("THE GOAL");
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The Builder Pattern addresses the 'Telescoping Constructor' anti-pattern.\n"
+            << "Instead of a massive constructor with dozens of optional parameters, it is\n"
+            << "delegated to the assembly of a specialized object that builds the product\n"
+            << "step-by-step, keeping the final product class clean and simple.\n\n";
+
+        HFL::PrintSection("THE EXAMPLE");
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "This demonstration features a Procedural Level Generator with three layers:\n\n";
+
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] THE ABSTRACTION (INTERFACE): ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "ILevelBuilder defines the available build steps.\n";
+
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] THE CONCRETIONS (WORKERS):   ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Dungeon and Castle Builders (implementing the style).\n";
+
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] THE DIRECTOR (ARCHITECT):    ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The LevelDirector that orchestrates the 'Recipe' order.\n\n";
+
+        HFL::PrintSection("THE BENEFIT");
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] STEP-BY-STEP:  ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Construction can be deferred, paused, or run recursively.\n";
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] IMMUTABILITY:  ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Products can be fully assembled before being returned to the client.\n";
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] SRP:           ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Singe Responsibility Principle Isolates complex assembly from the logic.\n";
 
         HFL::WaitForInput();
 
-        // --- STEP 2: THE PARTS ---
+        // ======================== THE ARCHITECTURE ========================
         HFL::ClearScreen();
-        HFL::PrintHeader("Step 1: The Roles");
+        HFL::PrintHeader("THE ARCHITECTURE");
 
-        std::cout << "The Builder Pattern involves 3 key roles:\n\n";
+        HFL::PrintSection("THE SEPARATION");
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "In the Builder pattern, the 'Director' owns the algorithm for HOW to\n"
+            << "assemble a level, but it is 'blind' to the materials used. By swapping\n"
+            << "the concrete Builder, we change the output without touching the recipe.\n\n";
 
-        std::cout << "1. The Product (The Level):\n";
-        std::cout << "   - The final result.\n";
-        std::cout << "   - It is 'Complex' but the code to create it is simplified.\n\n";
+        HFL::PrintSection("IMPLEMENTATION");
 
-        std::cout << "2. The Builder (The Worker):\n";
-        std::cout << "   - Knows HOW to build.\n";
-        std::cout << "   - Has methods like 'AddRoom' and 'Build'.\n";
-        std::cout << "   - There are 2 Builders: DungeonBuilder and CastleBuilder.\n\n";
+        // ======================== PRODUCT ========================
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] Level (The Product)\n";
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "    ROLE:           ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The resulting complex object. A simple data container.\n";
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "    SCOPE:          ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Stores the internal structures (Rooms, Stairs).\n";
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "    DEPENDENCY:     ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Knows nothing of the builders or the assembly process.\n\n";
 
-        std::cout << "3. The Director (The Architect):\n";
-        std::cout << "   - Knows WHAT to build and the ORDER.\n";
-        std::cout << "   - Doesn't know the implementation details of building.\n";
-        std::cout << "   - Just calls 'AddRoom' then 'Build'.\n";
+        // ======================== BUILDER ========================
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] ILevelBuilder (The Interface)\n";
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "    ROLE:           ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The blueprint/contract for construction steps.\n";
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "    SCOPE:          ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Defines AddRoom(), AddStairs(), and Build().\n";
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "    CONSTRAINT:     ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Must provide a consistent interface for the Director to use.\n\n";
 
+        // ======================== DIRECTOR ========================
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] LevelDirector (The Manager)\n";
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "    ROLE:           ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The High-Level Policy. It executes specific 'Recipes'.\n";
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "    SCOPE:          ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Calls builder methods in a specific sequence.\n";
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "    ADVANTAGE:      ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Can produce multiple variations of a product using one Director.\n\n";
+
+        HFL::SetColor(HFL::EColor::White);
         HFL::WaitForInput();
 
-        // --- STEP 3: INTERACTIVE CONSTRUCTOR ---
-
-        // Create the Workers
-        DungeonBuilder DungeonContractor;
-        CastleBuilder CastleContractor;
-
-        // Create the Architect
+        // ======================== INITIALIZATION ========================
+        DungeonBuilder DungeonWorker;
+        CastleBuilder CastleWorker;
         LevelDirector Architect;
 
-        bool InDemo = true;
-        while (InDemo)
+        while (true)
         {
             HFL::ClearScreen();
-            HFL::PrintHeader("Level Architect");
+            HFL::PrintHeader("BUILDER PATTERN");
 
-            std::cout << "Select a Builder:\n";
-            std::cout << "1. Dungeon Builder\n";
-            std::cout << "2. Castle Builder\n";
-            std::cout << "0. Exit Demo\n";
-            std::cout << "\nChoice: ";
+            HFL::PrintSection("PHASE 1: CHOOSE STYLE");
+            HFL::SetColor(HFL::EColor::White);
 
-            int Choice;
-            std::cin >> Choice;
+            HFL::SetColor(HFL::EColor::Green);
+            std::cout << " [1] "; HFL::SetColor(HFL::EColor::White); std::cout << "DUNGEON BUILDER\n";
+            HFL::SetColor(HFL::EColor::Green);
+            std::cout << " [2] "; HFL::SetColor(HFL::EColor::White); std::cout << "CASTLE BUILDER\n\n";
+            HFL::SetColor(HFL::EColor::Green);
+            std::cout << " [0] "; HFL::SetColor(HFL::EColor::White); std::cout << "CONTINUE\n";
 
-            if (std::cin.fail()) { std::cin.clear(); std::cin.ignore(); continue; }
-
+            int Choice = HFL::GetValidMenuInput(2);
             if (Choice == 0) break;
 
-            // INJECTION
-            if (Choice == 1) Architect.SetBuilder(&DungeonContractor);
-            if (Choice == 2) Architect.SetBuilder(&CastleContractor);
+            if (Choice == 1) Architect.SetBuilder(&DungeonWorker);
+            else Architect.SetBuilder(&CastleWorker);
 
-            // --- STEP 4: RECIEPE SELECTION ---
+            HFL::PrintSection("PHASE 2: CHOOSE DESIGN");
+            HFL::SetColor(HFL::EColor::Green);
+            std::cout << " [1] "; HFL::SetColor(HFL::EColor::White); std::cout << "DUNGEON RECIPE\n";
+            HFL::SetColor(HFL::EColor::Green);
+            std::cout << " [2] "; HFL::SetColor(HFL::EColor::White); std::cout << "CASTLE RECIPE\n\n";
+            HFL::SetColor(HFL::EColor::Green);
+            std::cout << " [0] "; HFL::SetColor(HFL::EColor::White); std::cout << "BACK\n";
+
+            int Recipe = HFL::GetValidMenuInput(2);
+            if (Recipe == 0) continue;
+
             HFL::ClearScreen();
-            HFL::PrintHeader("Select a Design");
+            HFL::PrintHeader("CONSTRUCTION LOG");
 
-            std::cout << "Choose a Construction Type:\n";
-            std::cout << "1. A Dungeon\n";
-            std::cout << "2. A Castle\n";
-            std::cout << "0. Back\n";
-            std::cout << "\nChoice: ";
+            if (Recipe == 1) Architect.CreateDungeon();
+            else Architect.CreateCastle();
 
-            int RecipeChoice;
-            std::cin >> RecipeChoice;
-
-            if (std::cin.fail()) { std::cin.clear(); std::cin.ignore(); continue; }
-
-            if (RecipeChoice == 0) continue;
-
-            if (RecipeChoice == 1)
-            {
-                Architect.CreateDungeon();
-                HFL::WaitForInput();
-            }
-            else if (RecipeChoice == 2)
-            {
-                Architect.CreateCastle();
-                HFL::WaitForInput();
-            }
+            HFL::WaitForInput();
         }
 
-        // --- STEP 5: CONCLUSION ---
+        // ======================== CONCLUSION ========================
         HFL::ClearScreen();
-        HFL::PrintHeader("Conclusion");
+        HFL::PrintHeader("CONCLUSION");
 
-        std::cout << "Summary:\n\n";
-        std::cout << "1. Director vs Builder:\n";
-        std::cout << "   The Director (Architect) knows the ORDER.\n";
-        std::cout << "   The Builder (Worker) knows HOW to build.\n\n";
+        HFL::PrintSection("ARCHITECTURE & SOLID");
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "The implementation of the Builder Pattern confirms the following:\n\n";
 
-        std::cout << "2. Separation of Concerns:\n";
-        std::cout << "   The 'Level' class (The Product) only holds the resulting data.\n";
-        std::cout << "   The 'Builder' classes handles the construction details.\n";
-        std::cout << "   The 'Director' class decides what should be built and by who.\n\n";
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] SINGLE RESPONSIBILITY: ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The Level class only stores data, the Director only manages\n"
+            << "    the order, and the Builder only handles construction.\n";
 
-        std::cout << "3. Builder Pattern:\n";
-        std::cout << "   Decouples the 'What' from the 'How'.\n";
-        std::cout << "   This makes code readable and easy to maintain.\n";
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] OPEN/CLOSED BOUNDARY:  ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Adding a 'ForestBuilder' or 'SpaceBuilder' requires zero\n"
+            << "    changes to the Director's existing recipes or logic.\n";
 
-        std::cout << std::setw(40) << "End of Demo\n";
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] INTERFACE ISOLATION:   ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The Director only knows the ILevelBuilder interface, preventing\n"
+            << "    leaks of concrete implementation details into the policy layer.\n\n";
+
+        HFL::PrintSection("SUMMARY");
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "The Builder Pattern ensures that software is:\n\n";
+
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] CONTROLLED: ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Step-by-step construction prevents 'incomplete' objects from leaking.\n";
+
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] VERSATILE: ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The same 'Recipe' (algorithm) can produce vastly different visual\n"
+            << "    representations by simply swapping the concrete worker.\n";
+
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] CLEAN:     ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Bypasses 'Constructor Bloat' by using semantic method names like\n"
+            << "    'AddRoom' instead of dozens of confusing bool/int parameters.\n\n";
+
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << std::setw(40) << "END OF DEMO\n";
         HFL::WaitForInput();
     }
 }

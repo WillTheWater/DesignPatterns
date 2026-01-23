@@ -3,47 +3,47 @@
 #include "FunctionLibrary/HelperFunctionLibrary.h"
 
 // =========================================================================
-// CREATIONAL DESIGN PATTERNS: Builder Pattern
+// CREATIONAL DESIGN PATTERNS: BUILDER PATTERN
 // =========================================================================
 // "Separate the construction of a complex object from its representation."
 //
 // THE GOAL:
 // Allow a Level to be constructed step-by-step (Room, Corridor, Stairs)
-// so we don't have one massive constructor with 50 arguments.
+// so ther isn't one massive constructor with 50 arguments.
+//
+// THE BENEFIT:
+// * Step-by-Step Construction: Control the sequence of creation precisely.
+// * Reusability: Use the same Director logic to build entirely different 
+//   visual styles by simply swapping the Concrete Builder.
+// * Isolation: The complex assembly logic is hidden from the final 
+//   Product (Level) and the Client.
 //
 // THE EXAMPLE:
-// A Procedural Level Generator.
-// 1. LevelBuilder: The Interface. Defines 'AddRoom', 'AddStairs'.
-// 2. DungeonBuilder: Builds a stone dungeon level.
-// 3. CastleBuilder: Builds a marble castle with towers.
-// 4. LevelDirector: Controls the which builder builds.
-//
-// BENEFIT:
-// The Director decides HOW to build.
-// The Builder knows WHAT to build.
-// The Level object just holds the data.
+// [Level]: The Product. A simple data container holding the final result.
+// [ILevelBuilder]: The Interface. Defines the steps (AddRoom, AddStairs).
+// [Dungeon/CastleBuilder]: The Workers. They implement the specific style.
+// [LevelDirector]: The Architect. Controls the order of the build steps.
 // =========================================================================
 
 namespace BLD
 {
-    // ------------------------------------------------------------------------
+    // =========================================================================
     // 1. THE PRODUCT (The Result)
-    // ------------------------------------------------------------------------
+    // =========================================================================
     class Level
     {
     public:
         void PrintLevel() const;
 
-        // Helper to add structure data (Mock)
         void AddStructure(const std::string& StructureName);
 
     private:
         std::vector<std::string> Structures;
     };
 
-    // ------------------------------------------------------------------------
+    // =========================================================================
     // 2. THE BUILDER INTERFACE (The Contractor)
-    // ------------------------------------------------------------------------
+    // =========================================================================
     class ILevelBuilder
     {
     public:
@@ -55,11 +55,10 @@ namespace BLD
         virtual std::unique_ptr<Level> Build() = 0;
     };
 
-    // ------------------------------------------------------------------------
+    // =========================================================================
     // 3. CONCRETE BUILDERS (The Workers)
-    // ------------------------------------------------------------------------
+    // =========================================================================
 
-    // Type A: Dungeon
     class DungeonBuilder : public ILevelBuilder
     {
     public:
@@ -74,7 +73,6 @@ namespace BLD
         std::vector<std::string> TempParts;
     };
 
-    // Type B: Castle
     class CastleBuilder : public ILevelBuilder
     {
     public:
@@ -89,9 +87,9 @@ namespace BLD
         std::vector<std::string> TempParts;
     };
 
-    // ------------------------------------------------------------------------
+    // =========================================================================
     // 4. THE DIRECTOR (The Architect)
-    // ------------------------------------------------------------------------
+    // =========================================================================
     class LevelDirector
     {
     public:
@@ -99,7 +97,6 @@ namespace BLD
 
         void SetBuilder(ILevelBuilder* NewBuilder);
 
-        // The Methods
         void CreateDungeon();
         void CreateCastle();
 
@@ -107,8 +104,8 @@ namespace BLD
         ILevelBuilder* Builder = nullptr;
     };
 
-    // ------------------------------------------------------------------------
+    // =========================================================================
     // 5. DEMO
-    // ------------------------------------------------------------------------
+    // =========================================================================
     void RunDemo();
 }
