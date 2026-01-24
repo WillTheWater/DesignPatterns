@@ -3,11 +3,13 @@
 namespace ADP
 {
     // =========================================================================
-    // ADAPEE IMPLEMENTATION
+    // LOW LEVEL MODULE: KEYBOARD (ADAPTEE)
+    // ROLE: Simulates the raw OS hardware driver speaking in KeyCodes.
     // =========================================================================
+
     bool Keyboard::IsKeyPressed(int KeyCode) const
     {
-
+        // Hardware signal simulation
         switch (KeyCode)
         {
         case 32:  // Space
@@ -15,17 +17,21 @@ namespace ADP
         case 65:  // A
         case 83:  // S
         case 68:  // D
-            std::cout << "   [OS] Reading Key " << KeyCode << " ... PRESSED\n";
+            HFL::SetColor(HFL::EColor::Gray);
+            std::cout << "   [OS-HW] Register " << KeyCode << " ... SIGNAL HIGH (Pressed)\n";
             return true;
         default:
-            std::cout << "   [OS] Reading Key " << KeyCode << " ... RELEASED\n";
+            HFL::SetColor(HFL::EColor::Gray);
+            std::cout << "   [OS-HW] Register " << KeyCode << " ... SIGNAL LOW (Released)\n";
             return false;
         }
     }
 
     // =========================================================================
-    // ADAPTER IMPLEMENTATION
+    // STRUCTURAL MODULE: KEYBOARD INPUT ADAPTER
+    // ROLE: Translates EInputAction (High-Level) into KeyCodes (Low-Level).
     // =========================================================================
+
     KeyboardInputAdapter::KeyboardInputAdapter(Keyboard* OSKeyboard)
         : OSKeyboard(OSKeyboard)
     {
@@ -33,183 +39,206 @@ namespace ADP
 
     bool KeyboardInputAdapter::IsActionPressed(EInputAction Action) const
     {
-        std::cout << "----------------------------------------\n";
-        std::cout << "        INPUT ADAPTER LOGIC\n";
-        std::cout << "----------------------------------------\n";
+        HFL::SetColor(HFL::EColor::Yellow);
+        HFL::PrintSection("INPUT ADAPTER TRANSLATION");
 
         int KeyCode = -1;
+        std::string MappingName = "";
 
+        // The Translation Logic: Mapping Actions to Hardware Keys
         switch (Action)
         {
         case EInputAction::Forward:
-            std::cout << "   [Adapter] Forward -> W (87)\n";
+            std::cout << "   [Adapter] Action: Forward -> Key: W\n";
             KeyCode = 87;
             break;
         case EInputAction::MoveLeft:
-            std::cout << "   [Adapter] Left -> A (65)\n";
+            std::cout << "   [Adapter] Action: MoveLeft -> Key: A\n";
             KeyCode = 65;
             break;
         case EInputAction::MoveDown:
-            std::cout << "   [Adapter] Back -> S (83)\n";
+            std::cout << "   [Adapter] Action: MoveDown -> Key: S\n";
             KeyCode = 83;
             break;
         case EInputAction::MoveRight:
-            std::cout << "   [Adapter] Right -> D (68)\n";
+            std::cout << "   [Adapter] Action: MoveRight -> Key: D\n";
             KeyCode = 68;
             break;
         case EInputAction::Jump:
-            std::cout << "   [Adapter] Jump -> Space (32)\n";
+            std::cout << "   [Adapter] Action: Jump -> Key: Space\n";
             KeyCode = 32;
             break;
         default:
-            std::cout << "   [Adapter] Invalid Action\n";
+            std::cout << "   [Adapter] Action: Unknown -> No Mapping Found\n";
             return false;
         }
 
+        // Delegating the work to the Adaptee (The Hardware)
         bool bPressed = OSKeyboard->IsKeyPressed(KeyCode);
 
         if (bPressed)
         {
-            if (Action == EInputAction::Jump)
-                std::cout << "   >> [Game Logic] jump!\n";
-            else
-                std::cout << "   >> [Game Logic] Move\n";
+            HFL::SetColor(HFL::EColor::Green);
+            std::cout << "   >> [Game Logic] Action Validated: Execute Gameplay Code\n";
         }
 
-        std::cout << "----------------------------------------\n";
+        HFL::SetColor(HFL::EColor::Yellow);
+        std::cout << "--------------------------------------------------\n";
+
         return bPressed;
     }
 
     // =========================================================================
     // DEMO IMPLEMENTATION
     // =========================================================================
+
     void RunDemo()
     {
-        // Clear buffer
+        // Clear input buffer
         std::cin.clear();
         std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
-        // --- STEP 1: INTRODUCTION ---
+        // ======================== INTRODUCTION ========================
         HFL::ClearScreen();
-        HFL::PrintHeader("Adapter Pattern");
+        HFL::PrintHeader("ADAPTER PATTERN");
 
-        std::cout << "Definition:\n";
-        std::cout << "Match interfaces of incompatible classes.\n";
-        std::cout << "Create a translator between different interfaces.\n\n";
+        HFL::PrintSection("THE DEFINITION");
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "Match interfaces of incompatible classes.\n"
+            << "Create a translator between different interfaces.\n\n";
 
-        std::cout << "In This Demo:\n";
-        std::cout << "Game Logic (Actions) are bound to OS Hardware (Keys).\n";
-        std::cout << "Mapping specific WASD keys to Movement Actions.\n";
-        std::cout << "The Game Logic doesn't know about KeyCodes.\n";
+        HFL::PrintSection("THE GOAL");
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The Adapter Pattern bridges the gap between the Game Logic (Actions)\n"
+            << "and the OS Hardware (KeyCodes). By implementing a Target Interface,\n"
+            << "the Adapter allows the Game Logic to stay 'pure' and unaware of\n"
+            << "specific hardware implementation details.\n\n";
+
+        HFL::PrintSection("THE PLAYERS");
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] TARGET INTERFACE: "; HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "IInputDevice (The contract the Boss expects).\n";
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] THE ADAPTEE:      "; HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Keyboard (The hardware speaking a foreign language).\n";
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] THE ADAPTER:      "; HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "KeyboardInputAdapter (The bilingual translator).\n\n";
 
         HFL::WaitForInput();
 
-        // --- STEP 2: THE INCOMPATIBILITY ---
+        // ======================== THE ARCHITECTURE ========================
         HFL::ClearScreen();
-        HFL::PrintHeader("Step 1: The Incompatibility");
+        HFL::PrintHeader("THE ARCHITECTURE");
 
-        std::cout << "There are two systems that don't speak the same language.\n\n";
+        HFL::PrintSection("STEP 1: THE INCOMPATIBILITY");
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The Client wants to call: IsActionPressed(Jump).\n"
+            << "The Hardware only understands: IsKeyPressed(32).\n";
+        HFL::SetColor(HFL::EColor::Red);
+        std::cout << "[!] Result: Direct communication is impossible due to type mismatch.\n\n";
 
-        std::cout << "1. Game Logic (The Client) wants Actions:\n";
-        std::cout << "   enum EInputAction { Jump, Attack, Forward, Backwards... }\n";
-        std::cout << "   It calls: IsActionPressed(MoveUp)\n\n";
+        HFL::PrintSection("STEP 2: THE ADAPTER SOLUTION");
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "1. Create 'KeyboardInputAdapter' implementing IInputDevice.\n"
+            << "2. Wrap the 'Keyboard' object inside the Adapter.\n"
+            << "3. Map 'Jump' to '32' inside the override method.\n\n";
 
-        std::cout << "2. OS Keyboard (The Hardware) returns KeyCodes:\n";
-        std::cout << "   bool IsKeyPressed(int KeyCode)\n";
-        std::cout << "   It returns: 32 (Space), 87 (Up), 83 (Down)...\n\n";
-
-        std::cout << "THE PROBLEM:\n";
-        std::cout << "   'MoveUp' (Action) cannot be passed to 'IsKeyPressed' (Key).\n";
-        std::cout << "   The types don't match.\n";
-        std::cout << "   Hardcoded keys into Game Logic, prevents support for other input methods.\n";
-
+        HFL::SetColor(HFL::EColor::White);
         HFL::WaitForInput();
 
-        // --- STEP 3: THE ADAPTER SOLUTION ---
-        HFL::ClearScreen();
-        HFL::PrintHeader("Step 2: The Adapter Solution");
-
-        std::cout << "Create a 'KeyboardInputAdapter' class.\n\n";
-
-        std::cout << "1. It Implements IInputDevice (Target Interface).\n";
-        std::cout << "   This makes it compatible with Game Logic.\n\n";
-
-        std::cout << "2. It 'Has-A' (Wraps) a Keyboard (Adaptee).\n";
-        std::cout << "   It holds the raw OS Keyboard object.\n\n";
-
-        std::cout << "3. The 'IsActionPressed' method acts as a Translator:\n";
-        std::cout << "   - Input: MoveUp (Action)\n";
-        std::cout << "   - Logic: 'If (Action == MoveUp) return IsKeyPressed(W)'\n";
-
-        HFL::WaitForInput();
-
-        // --- STEP 4: INTERACTIVE SYSTEM ---
-
+        // ======================== INITIALIZATION ========================
         auto KeyboardDevice = std::make_unique<Keyboard>();
         auto Adapter = std::make_unique<KeyboardInputAdapter>(KeyboardDevice.get());
-        IInputDevice* Input = Adapter.get();
+        IInputDevice* Input = Adapter.get(); // Polymorphic Interface
 
-        bool bRunning = true;
-        while (bRunning)
+        // ======================== INTERACTIVE LOOP ========================
+        while (true)
         {
             HFL::ClearScreen();
-            HFL::PrintHeader("WASD Input Adapter");
+            HFL::PrintHeader("INPUT ADAPTER");
 
-            std::cout << "Choose Action:\n";
-            std::cout << "W - Move Up\n";
-            std::cout << "A - Move Left\n";
-            std::cout << "S - Move Down\n";
-            std::cout << "D - Move Right\n";
-            std::cout << "Space - Jump\n";
-            std::cout << "0 - Exit\n\n";
-            std::cout << "Input: ";
+            HFL::PrintSection("PHYSICAL INPUTS (MAPPED ACTIONS)");
+            HFL::SetColor(HFL::EColor::Green);
+            std::cout << " [W] "; HFL::SetColor(HFL::EColor::White); std::cout << "MOVE FORWARD\n";
+            HFL::SetColor(HFL::EColor::Green);
+            std::cout << " [A] "; HFL::SetColor(HFL::EColor::White); std::cout << "MOVE LEFT\n";
+            HFL::SetColor(HFL::EColor::Green);
+            std::cout << " [S] "; HFL::SetColor(HFL::EColor::White); std::cout << "MOVE DOWN\n";
+            HFL::SetColor(HFL::EColor::Green);
+            std::cout << " [D] "; HFL::SetColor(HFL::EColor::White); std::cout << "MOVE RIGHT\n";
+            HFL::SetColor(HFL::EColor::Green);
+            std::cout << " [Space] "; HFL::SetColor(HFL::EColor::White); std::cout << "JUMP\n\n";
+            HFL::SetColor(HFL::EColor::Green);
+            std::cout << " [0] "; HFL::SetColor(HFL::EColor::White); std::cout << "EXIT DEMO\n\n";
 
+            std::cout << "Press Key: ";
             char Choice;
             std::cin >> std::noskipws >> Choice;
             std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
-            if (Choice == '0')
-                break;
+            if (Choice == '0') break;
 
             EInputAction Action = EInputAction::None;
-
             switch (Choice)
             {
-            case 'w': case 'W': Action = EInputAction::Forward; break;
-            case 'a': case 'A': Action = EInputAction::MoveLeft; break;
-            case 's': case 'S': Action = EInputAction::MoveDown; break;
+            case 'w': case 'W': Action = EInputAction::Forward;   break;
+            case 'a': case 'A': Action = EInputAction::MoveLeft;  break;
+            case 's': case 'S': Action = EInputAction::MoveDown;  break;
             case 'd': case 'D': Action = EInputAction::MoveRight; break;
-            case ' ':           Action = EInputAction::Jump; break;
+            case ' ':           Action = EInputAction::Jump;      break;
             default:            continue;
             }
 
-            std::cout << ">> [Game Logic] Querying input device...\n";
+            HFL::PrintSection("PROCESS FLOW");
+            std::cout << ">> [GameEngine] Querying IInputDevice Interface";
+            HFL::WaitDots(0.5);
             Input->IsActionPressed(Action);
 
             HFL::WaitForInput();
         }
 
-        // --- STEP 5: CONCLUSION ---
+        // ======================== CONCLUSION ========================
         HFL::ClearScreen();
-        HFL::PrintHeader("Conclusion");
+        HFL::PrintHeader("CONCLUSION");
 
-        std::cout << "Summary of Adapter Pattern:\n\n";
+        HFL::PrintSection("ARCHITECTURE");
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "The implementation of the Adapter Pattern confirms the following:\n\n";
 
-        std::cout << "1. Translation:\n";
-        std::cout << "   Game Logic calls (Action).\n";
-        std::cout << "   Adapter translated this to (KeyCode).\n";
-        std::cout << "   OS Keyboard performed the read.\n\n";
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] INTERFACE UNIFICATION: ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The engine only talks to 'IInputDevice'. It doesn't care if the\n"
+            << "    source is a Keyboard, a Gamepad, or a Network Stream.\n";
 
-        std::cout << "2. Decoupling:\n";
-        std::cout << "   Game Logic is independent of KeyCodes.\n";
-        std::cout << "   A Gamepad Adapter can be added easily.\n";
-        std::cout << "   Game Logic would never change.\n\n";
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] REUSABILITY:           ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The 'Keyboard' class (Adaptee) was never modified. We adapted\n"
+            << "    it externally, preserving third-party or legacy code integrity.\n";
 
-        std::cout << "3. Structure:\n";
-        std::cout << "   Uses an Enum (EInputAction) for clarity.\n";
-        std::cout << "   Adapter used Switch(Map) to translate Actions.\n";
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] DECOUPLING:            ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "KeyCodes (like '87' for W) are isolated inside the Adapter.\n"
+            << "    High-level logic uses clean, readable enums like 'Forward'.\n\n";
 
-        std::cout << std::setw(40) << "End of Demo\n";
+        HFL::PrintSection("SUMMARY");
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "The Adapter Pattern ensures that software is:\n\n";
+
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] COMPATIBLE: "; HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Incompatible APIs can work together seamlessly.\n";
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] EXTENSIBLE: "; HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Adding support for a VR Controller just means writing one new Adapter.\n";
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] CLEAN:      "; HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Prevents low-level hardware from leaking into game systems.\n\n";
+
+        HFL::SetColor(HFL::EColor::White);
         HFL::WaitForInput();
     }
 }
