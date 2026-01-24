@@ -3,281 +3,464 @@
 namespace FAC
 {
     // =========================================================================
-    // CONCRETE SUBSYSTEMS
+    // CONCRETE SUBSYSTEMS (The Low-Level Workers)
+    // ROLE: Perform specific, isolated tasks. They do not know about each other.
     // =========================================================================
+
     bool Validator::Validate(const GameData& Data) const
     {
-        std::cout << "[Validator] Checking Name... ";
-        if (Data.Name.empty()) {
+        std::cout << "[Validator] Checking integrity of " << Data.Name;
+        HFL::WaitDots(0.6f);
+        if (Data.Name.empty() || Data.Level < 0)
+        {
+            HFL::SetColor(HFL::EColor::Red);
             std::cout << "FAILED.\n";
+            HFL::SetColor(HFL::EColor::Gray);
             return false;
         }
+        HFL::SetColor(HFL::EColor::Green);
         std::cout << "OK.\n";
+        HFL::SetColor(HFL::EColor::Gray);
         return true;
     }
 
-    std::string Serializer::Serialize(const GameData& Data) const
+    std::string JsonSerializer::Serialize(const GameData& Data) const
     {
-        std::stringstream ss;
-        ss << Data.Name << "," << Data.Level << "," << Data.XP << "," << Data.Gold;
-        std::cout << "[Serializer] Data formatted to CSV.\n";
-        return ss.str();
+        // The library knows how to convert GameData directly to a json object
+        json J = Data;
+
+        std::cout << "[Serializer] Macro-driven serialization complete.\n";
+        return J.dump(4);
     }
 
-    GameData Serializer::Deserialize(const std::string& Content) const
+    GameData JsonSerializer::Deserialize(const std::string& Content) const
     {
-        std::stringstream ss(Content);
-        std::string name;
-        int lvl, gold;
-        float xp;
+        try
+        {
+            json J = json::parse(Content);
 
-        std::getline(ss, name, ',');
-        ss >> lvl;
-        ss.ignore();
-        ss >> xp;
-        ss.ignore();
-        ss >> gold;
-
-        return GameData(name, lvl, xp, gold);
+            // This implicitly calls the generated from_json()
+            std::cout << "[Serializer] Macro-driven deserialization successful.\n";
+            return J.get<GameData>();
+        }
+        catch (json::exception& e)
+        {
+            std::cerr << "[Serializer] Macro Parse Error: " << e.what() << "\n";
+            return GameData();
+        }
     }
 
     // =========================================================================
-    // FACADE IMPLEMENTATION
+    // STORAGE IMPLEMENTATION
+    // =========================================================================
+
+    void LocalDiskStorage::Write(const std::string& Filename, const std::string& Content) const
+    {
+        std::filesystem::path Path = HFL::GetSaveDirectory("FAC") / Filename;
+        std::ofstream File(Path);
+        if (File.is_open())
+        {
+            File << Content;
+            std::cout << "[Storage] IO Write successful to: " << Filename << "\n";
+        }
+    }
+
+    std::string LocalDiskStorage::Read(const std::string& Filename) const
+    {
+        std::filesystem::path Path = HFL::GetSaveDirectory("FAC") / Filename;
+        std::ifstream File(Path);
+        if (!File.is_open()) return "";
+
+        std::stringstream Buffer;
+        Buffer << File.rdbuf();
+        std::cout << "[Storage] IO Read successful from: " << Filename << "\n";
+        return Buffer.str();
+    }
+
+    // =========================================================================
+    // FACADE IMPLEMENTATION (The Master Switch)
+    // ROLE: Orchestrate the subsystems into a single, cohesive workflow.
     // =========================================================================
 
     bool SaveSystemFacade::Save(int SlotID, const GameData& Data)
     {
-        std::cout << "\n--- FACADE: Starting Save Process (Slot " << SlotID << ") ---\n";
+        HFL::PrintSection("FACADE: INITIATING SAVE WORKFLOW");
+        HFL::SetColor(HFL::EColor::Gray);
 
-        // 1. Instantiate Subsystems
-        IValidator* validator = new Validator();
-        ISerializer* serializer = new Serializer();
-        IStorage* storage = new LocalDiskStorage();
+        // ======================== DEPENDENCY MANAGEMENT ========================
+        Validator Check;
+        JsonSerializer Format;
+        LocalDiskStorage Disk;
 
-        // 2. Workflow
-        if (!validator->Validate(Data))
+        // ======================== LOGIC ========================
+        if (!Check.Validate(Data))
         {
-            std::cout << "Save ABORTED: Validation failed.\n";
-            delete validator; delete serializer; delete storage;
+            HFL::SetColor(HFL::EColor::Red);
+            std::cout << ">> [Facade] Aborting: Data validation failed.\n";
             return false;
         }
 
-        std::string dataString = serializer->Serialize(Data);
-        std::string filename = "SaveSlot_" + std::to_string(SlotID) + ".sav";
+        std::string FormattedData = Format.Serialize(Data);
+        std::string Filename = "SaveSlot_" + std::to_string(SlotID) + ".sav";
 
-        storage->Write(filename, dataString);
+        Disk.Write(Filename, FormattedData);
 
-        // Cleanup
-        delete validator;
-        delete serializer;
-        delete storage;
-
-        std::cout << "--- FACADE: Save Complete ---\n\n";
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "\n>> [Facade] Save complete for Slot " << SlotID << ".\n";
         return true;
     }
 
     bool SaveSystemFacade::Load(int SlotID, GameData& Data)
     {
-        std::cout << "\n--- FACADE: Starting Load Process (Slot " << SlotID << ") ---\n";
-        bool LoadSuccessful = false;
+        HFL::PrintSection("FACADE: INITIATING LOAD WORKFLOW");
+        HFL::SetColor(HFL::EColor::Gray);
 
-        ISerializer* serializer = new Serializer();
-        IStorage* storage = new LocalDiskStorage();
+        JsonSerializer Format;
+        LocalDiskStorage Disk;
 
-        std::string filename = "SaveSlot_" + std::to_string(SlotID) + ".sav";
+        std::string Filename = "SaveSlot_" + std::to_string(SlotID) + ".sav";
+        std::string RawData = Disk.Read(Filename);
 
-        // Read data
-        std::string rawContent = storage->Read(filename);
-
-        if (!rawContent.empty())
+        if (RawData.empty())
         {
-            // Deserialize
-            Serializer* Ser = dynamic_cast<Serializer*>(serializer);
-            if (Ser)
-            {
-                Data = Ser->Deserialize(rawContent);
-
-                std::cout << "---------------------------------\n";
-                std::cout << "     LOAD SUCCESSFUL!\n";
-                std::cout << "---------------------------------\n";
-                std::cout << " Name:  " << Data.Name << "\n";
-                std::cout << " Level: " << Data.Level << "\n";
-                std::cout << " XP:    " << Data.XP << "\n";
-                std::cout << " Gold:  " << Data.Gold << "\n";
-                std::cout << "---------------------------------\n";
-                LoadSuccessful = true;
-            }
-        }
-        else
-        {
-            std::cout << "Load FAILED: File empty or missing.\n";
-            LoadSuccessful = false;
+            HFL::SetColor(HFL::EColor::Red);
+            std::cout << ">> [Facade] Aborting: No data found in slot " << SlotID << ".\n";
+            return false;
         }
 
-        delete serializer;
-        delete storage;
+        Data = Format.Deserialize(RawData);
 
-        std::cout << "--- FACADE: Load Complete ---\n\n";
-        return LoadSuccessful;
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << ">> [Facade] Successfully restored " << Data.Name << ".\n";
+        return true;
     }
 
     // =========================================================================
-    // DEMO
+    // DEMO IMPLEMENTATION
     // =========================================================================
 
     void RunDemo()
     {
-        // Seed randomness
-        std::srand((unsigned int)time(NULL));
-
-        // Clear buffer
+        std::srand(static_cast<unsigned int>(time(NULL)));
         std::cin.clear();
         std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
-        // --- STEP 1: INTRODUCTION ---
+        // ======================== INTRODUCTION ========================
         HFL::ClearScreen();
-        HFL::PrintHeader("Facade Pattern (Save System)");
+        HFL::PrintHeader("FACADE DESIGN PATTERN");
 
-        std::cout << "Definition:\n";
-        std::cout << "Provide a simplified interface to a complex subsystem.\n";
-        std::cout << "Hide complexity behind a single, easy-to-use API.\n\n";
+        HFL::PrintSection("THE DEFINITION");
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "Provide a unified interface to a set of interfaces in a subsystem.\n"
+            << "The Facade defines a higher-level interface that makes the\n"
+            << "subsystem easier to use.\n\n";
 
-        std::cout << "In This Demo:\n";
-        std::cout << "There is a SaveSystemFacade class.\n";
-        std::cout << "It hides multiple subsystems involved in saving and loading.\n";
-        std::cout << "The client interacts with ONE object instead of many.\n";
+        HFL::PrintSection("THE GOAL");
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The Facade Pattern is about 'Simplification through Encapsulation'.\n"
+            << "It acts as a front-facing entry point that masks the complexity of\n"
+            << "multiple low-level subsystems (Validation, Serialization, Disk I/O),\n"
+            << "providing the client with a single 'Master Switch' for complex tasks.\n\n";
+
+        HFL::PrintSection("THE EXAMPLE");
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "This demonstration features a complex RPG Save System with three hidden workers:\n\n";
+
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] THE VALIDATOR:       ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Ensures data integrity before any permanent disk changes.\n";
+
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] THE JSON SERIALIZER: ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Uses nlohmann/json to map RPG stats into a data string.\n";
+
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] THE STORAGE ENGINE:  ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Handles cross-platform file paths and physical I/O streams.\n\n";
+
+        HFL::PrintSection("THE BENEFIT");
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] LEAST KNOWLEDGE: ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The client (Game Engine) has zero dependency on JSON headers or file streams.\n";
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] WORKFLOW SAFETY: ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The Facade enforces a strict order: Validate -> Serialize -> Write.\n";
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] MAINTENANCE:     ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Updating the JSON library or save format only requires changing one class.\n";
 
         HFL::WaitForInput();
 
-        // --- STEP 2: THE RULES ---
+        // ======================== THE ARCHITECTURE ========================
         HFL::ClearScreen();
-        HFL::PrintHeader("Step 1: The Architecture");
+        HFL::PrintHeader("THE ARCHITECTURE");
 
-        std::cout << "To recognize a Facade, there are 4 key ideas:\n\n";
 
-        std::cout << "1. Simple Public Interface:\n";
-        std::cout << "   The facade exposes a small number of clear functions.\n";
-        std::cout << "   Example: SaveGame() or LoadGame().\n\n";
 
-        std::cout << "2. Hides Subsystem Complexity:\n";
-        std::cout << "   The client does NOT talk to serializers, files, or validators.\n";
-        std::cout << "   All coordination happens inside the facade.\n\n";
+        HFL::PrintSection("THE 'MASTER SWITCH'");
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Without a Facade, the Client must manage the lifecycles and interactions\n"
+            << "of three different classes just to save the game. With a Facade, the\n"
+            << "complexity is 'flattened' into a single, intuitive API call.\n\n";
 
-        std::cout << "3. Subsystems Remain Independent:\n";
-        std::cout << "   The facade does not replace subsystems.\n";
-        std::cout << "   They still exist and can be used directly if needed.\n\n";
+        HFL::PrintSection("IMPLEMENTATION");
 
-        std::cout << "4. Decoupling:\n";
-        std::cout << "   Changes to subsystems (e.g., changing from CSV to JSON)\n";
-        std::cout << "   typically don't require changes to the client code.\n";
+        // ======================== SUBSYSTEMS ========================
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] Hidden Subsystems (The Workers)\n";
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "    ROLE:           ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Specialized specialists. They do one thing (Validate or Save) perfectly.\n";
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "    VISIBILITY:     ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Completely unknown to the high-level Game Logic.\n\n";
 
+        // ======================== THE FACADE ========================
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] SaveSystemFacade (The Unified Interface)\n";
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "    ROLE:           ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The Orchestrator. It knows which worker to call and in what order.\n";
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "    SIMPLICITY:     ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Exposes only two methods: Save() and Load().\n";
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "    DECOUPLING:     ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Shields the client from the nlohmann/json macro-heavy details.\n\n";
+
+        HFL::SetColor(HFL::EColor::White);
         HFL::WaitForInput();
 
-        // --- STEP 3: INTERACTIVE DEMO ---
+        // ======================== INITIALIZATION ========================
+        SaveSystemFacade SaveSystem;
+        GameData ActiveHero; // This persists throughout the loop
+        bool bIsDataLoaded = false;
 
-        SaveSystemFacade facade;
-        bool bIsRunning = true;
-
-        while (bIsRunning)
+        // ======================== GAME LOOP ========================
+        while (true)
         {
             HFL::ClearScreen();
-            HFL::PrintHeader("Save System Manager");
+            HFL::PrintHeader("CHARACTER CREATOR");
 
-            std::cout << "1. Save Game\n";
-            std::cout << "2. Load Game\n";
-            std::cout << "3. Exit Demo\n";
-            std::cout << "\n>> ";
+            // ======================== DATA DISPLAY ========================
+            HFL::PrintSection("ACTIVE CHARACTER");
 
-            int choice;
-            std::cin >> choice;
-
-            if (std::cin.fail()) {
-                std::cin.clear();
-                std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-                continue;
-            }
-
-            if (choice == 3)
+            if (!bIsDataLoaded)
             {
-                bIsRunning = false;
-                break;
+                HFL::SetColor(HFL::EColor::Gray);
+                std::cout << " [No Character Loaded - Create or Load to begin]\n\n";
             }
-
-            int slotID;
-            std::cout << "Enter Save Slot ID (1-3): ";
-            std::cin >> slotID;
-
-            if (std::cin.fail()) {
-                std::cin.clear();
-                std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-                continue;
-            }
-
-            if (choice == 1)
+            else
             {
-                std::string name;
-                int lvl;
+                // --- 1. IDENTITY & CORE ---
+                HFL::SetColor(HFL::EColor::White);
+                std::cout << "  NAME:      "; HFL::SetColor(HFL::EColor::Green);
+                std::cout << std::left << std::setw(18) << ActiveHero.Name;
+                HFL::SetColor(HFL::EColor::White);
+                std::cout << "  LEVEL:     "; HFL::SetColor(HFL::EColor::Green);
+                std::cout << ActiveHero.Level << "\n";
 
+                HFL::SetColor(HFL::EColor::White);
+                std::cout << "  XP:        "; HFL::SetColor(HFL::EColor::Green);
+                std::cout << std::left << std::setw(18) << std::fixed << std::setprecision(1) << ActiveHero.XP;
+                HFL::SetColor(HFL::EColor::White);
+                std::cout << "  GOLD:      "; HFL::SetColor(HFL::EColor::Green);
+                std::cout << ActiveHero.Gold << "\n";
+
+                // --- 2. COMBAT ATTRIBUTES ---
+                HFL::SetColor(HFL::EColor::Gray);
+                std::cout << "  --------------------------------------------------\n";
+                HFL::SetColor(HFL::EColor::White);
+                std::cout << "  HEALTH:    "; HFL::SetColor(HFL::EColor::Red);
+                std::cout << std::left << std::setw(18) << ActiveHero.Health;
+                HFL::SetColor(HFL::EColor::White);
+                std::cout << "  MANA:      "; HFL::SetColor(HFL::EColor::Cyan); // Using Cyan for Mana
+                std::cout << ActiveHero.Mana << "\n";
+
+                HFL::SetColor(HFL::EColor::White);
+                std::cout << "  STR: " << ActiveHero.Strength << " | AGI: " << ActiveHero.Agility << " | INT: " << ActiveHero.Intelligence << "\n";
+
+                // --- 3. EQUIPMENT & WORLD ---
+                HFL::SetColor(HFL::EColor::Gray);
+                std::cout << "  --------------------------------------------------\n";
+                HFL::SetColor(HFL::EColor::White);
+                std::cout << "  WEAPON:    "; HFL::SetColor(HFL::EColor::Yellow);
+                std::cout << std::left << std::setw(18) << ActiveHero.PrimaryWeapon;
+                HFL::SetColor(HFL::EColor::White);
+                std::cout << "  ARMOR:     "; HFL::SetColor(HFL::EColor::Yellow);
+                std::cout << ActiveHero.ArmorClass << "\n";
+
+                HFL::SetColor(HFL::EColor::White);
+                std::cout << "  POTIONS:   "; HFL::SetColor(HFL::EColor::White);
+                std::cout << std::left << std::setw(18) << ActiveHero.PotionsCount;
+                HFL::SetColor(HFL::EColor::White);
+                std::cout << "  PLAYTIME:  "; HFL::SetColor(HFL::EColor::Gray);
+                std::cout << (int)ActiveHero.PlayTimeSeconds << "s\n";
+
+                // --- 4. POSITION (The Nested Array) ---
+                HFL::SetColor(HFL::EColor::White);
+                std::cout << "  POSITION:  "; HFL::SetColor(HFL::EColor::Gray);
+                std::cout << "[" << std::fixed << std::setprecision(2)
+                    << ActiveHero.Position3D[0][0] << ", "
+                    << ActiveHero.Position3D[0][1] << ", "
+                    << ActiveHero.Position3D[0][2] << "]\n\n";
+
+                HFL::SetColor(HFL::EColor::Gray);
+            }
+
+            // 2. MENU UI
+            HFL::PrintSection("COMMANDS");
+            HFL::SetColor(HFL::EColor::Green);
+            std::cout << " [1] "; HFL::SetColor(HFL::EColor::White); std::cout << "CREATE NEW CHARACTER\n";
+            HFL::SetColor(HFL::EColor::Green);
+            std::cout << " [2] "; HFL::SetColor(HFL::EColor::White); std::cout << "SAVE\n";
+            HFL::SetColor(HFL::EColor::Green);
+            std::cout << " [3] "; HFL::SetColor(HFL::EColor::White); std::cout << "LOAD\n\n";
+            HFL::SetColor(HFL::EColor::Green);
+            std::cout << " [0] "; HFL::SetColor(HFL::EColor::White); std::cout << "CONTINUE\n\n";
+
+            int Choice = HFL::GetValidMenuInput(3);
+            if (Choice == 0) break;
+
+            if (Choice == 1) // CREATE
+            {
+                HFL::PrintSection("CHARACTER CREATION");
+                std::string Name;
                 std::cout << "Enter Character Name: ";
-                std::cin >> name;
-                std::cout << "Enter Level: ";
-                std::cin >> lvl;
+                std::cin >> Name;
 
-                // Generate Random XP (0-100 with 2 decimals)
-                float randomXP = static_cast<float>(rand() % 10000) / 100.0f;
-                // Generate Random Gold (0-500)
-                int randomGold = rand() % 500;
+                std::cout << "Generating RPG Stats and World Position";
+                HFL::WaitDots(0.5);
 
-                GameData playerData(name, lvl, randomXP, randomGold);
+                ActiveHero.Name = Name;
+                ActiveHero.Level = 1;
+                ActiveHero.XP = 0.0f;
+                ActiveHero.Gold = 100 + (rand() % 400);
 
-                std::cout << "\n-- Generating Random Stats --\n";
-                std::cout << "   XP: " << randomXP << "\n";
-                std::cout << "   Gold: " << randomGold << "\n";
+                ActiveHero.Strength = 8 + (rand() % 12);
+                ActiveHero.Agility = 8 + (rand() % 12);
+                ActiveHero.Intelligence = 8 + (rand() % 12);
+                ActiveHero.Health = 100 + (ActiveHero.Strength * 5);
+                ActiveHero.Mana = 50 + (ActiveHero.Intelligence * 5);
 
-                facade.Save(slotID, playerData);
+                ActiveHero.PrimaryWeapon = (ActiveHero.Strength > 15) ? "Club" : "Stick";
+                ActiveHero.ArmorClass = 10 + (ActiveHero.Agility / 4);
+                ActiveHero.PotionsCount = 1 + (rand() % 3);
+
+                float RandomX = (float)(rand() % 1000) / 10.0f;
+                float RandomZ = (float)(rand() % 1000) / 10.0f;
+                ActiveHero.Position3D[0] = { RandomX, 0.0f, RandomZ };
+
+                ActiveHero.PlayTimeSeconds = 0.0f;
+
+                bIsDataLoaded = true;
+
+                HFL::SetColor(HFL::EColor::Green);
+                std::cout << '\n' << Name << " has been created.\n";
+
                 HFL::WaitForInput();
             }
-            else if (choice == 2)
+            else if (Choice == 2) // SAVE
             {
-                GameData loadedData;
-                if (facade.Load(slotID, loadedData))
-                {
-                    /*std::cout << "---------------------------------\n";
-                    std::cout << "     LOAD SUCCESSFUL!\n";
-                    std::cout << "---------------------------------\n";
-                    std::cout << " Name:  " << loadedData.Name << "\n";
-                    std::cout << " Level: " << loadedData.Level << "\n";
-                    std::cout << " XP:    " << std::fixed << std::setprecision(2) << loadedData.XP << "\n";
-                    std::cout << " Gold:  " << loadedData.Gold << "\n";
-                    std::cout << "---------------------------------\n";*/
+                if (!bIsDataLoaded) {
+                    HFL::SetColor(HFL::EColor::Red);
+                    std::cout << "!! Error: No active character to save.\n";
                     HFL::WaitForInput();
+                    continue;
                 }
-                else
-                {
-                    HFL::WaitForInput();
+
+                HFL::PrintSection("SLOT SELECTION");
+                std::cout << "Save to Slot (1-3): ";
+                int SlotID = HFL::GetValidMenuInput(3);
+
+                HFL::SetColor(HFL::EColor::Gray);
+                std::cout << "Facade: Orchestrating subsystems"; HFL::WaitDots(0.5);
+
+                if (SaveSystem.Save(SlotID, ActiveHero)) {
+                    std::cout << ">> Disk Write Successful.\n";
                 }
+                HFL::WaitForInput();
+            }
+            else if (Choice == 3) // LOAD
+            {
+                HFL::PrintSection("SLOT SELECTION");
+                std::cout << "Load from Slot (1-3): ";
+                int SlotID = HFL::GetValidMenuInput(3);
+
+                HFL::SetColor(HFL::EColor::Gray);
+                std::cout << "Facade: Accessing Storage and Parsing JSON"; HFL::WaitDots(0.5);
+
+                if (SaveSystem.Load(SlotID, ActiveHero)) {
+                    bIsDataLoaded = true;
+                    HFL::SetColor(HFL::EColor::Green);
+                    std::cout << "\n>> Character restored successfully.\n";
+                }
+                else {
+                    HFL::SetColor(HFL::EColor::Red);
+                    std::cout << "\n>> Load Failed: Slot is empty or corrupt.\n";
+                }
+                HFL::WaitForInput();
             }
         }
 
-        // --- STEP 4: CONCLUSION ---
+        // ======================== CONCLUSION ========================
         HFL::ClearScreen();
-        HFL::PrintHeader("Conclusion");
+        HFL::PrintHeader("CONCLUSION");
 
-        std::cout << "Summary of Facade:\n\n";
-        std::cout << "1. A interactable Simplified Interface.\n";
-        std::cout << "   Only needs to call 'Save()' and 'Load()'.\n\n";
+        HFL::PrintSection("ARCHITECTURE");
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "The implementation of the Facade Pattern confirms the following:\n\n";
 
-        std::cout << "2. Complexity was Hidden.\n";
-        std::cout << "   The Facade handled Validation, Serialization, and File I/O.\n";
-        std::cout << "   To add 'Compression', it would inside\n";
-        std::cout << "   the Facade, and the Demo code would remain unchanged.\n\n";
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] COMPLEXITY SHIELDING: ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The client handles a single 'GameData' struct. The Facade manages\n"
+            << "    the nlohmann/json macro-logic and variable mappings internally.\n";
 
-        std::cout << "3. Subsystems are Decoupled.\n";
-        std::cout << "   The Validator doesn't know about the Storage.\n";
-        std::cout << "   The Serializer doesn't know about the Validator.\n";
-        std::cout << "   The Facade acts as the coordinator.\n\n";
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] SUBSYSTEM ORCHESTRATION: ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The 'Validator', 'Serializer', and 'Storage' workers are kept distinct.\n"
+            << "    The Facade ensures they collaborate in the correct logical sequence.\n";
 
-        std::cout << std::setw(40) << "End of Demo\n";
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] ZERO HEADER POLLUTION: ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The client logic remains pure. It has no knowledge of <fstream>,\n"
+            << "    <nlohmann/json.hpp>, or cross-platform filesystem paths.\n\n";
+
+        HFL::PrintSection("SUMMARY");
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "The Facade Pattern ensures that software is:\n\n";
+
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] SIMPLE:    ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "One call handles everything.\n";
+
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] PROTECTIVE:";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Data corruption is prevented by enforcing validation before disk I/O.\n";
+
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] ADAPTIVE:  ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Swapping JSON for XML or Binary only requires changing the Facade,\n"
+            << "    leaving the high-level Game Loop 100% untouched.\n\n";
+
+        HFL::SetColor(HFL::EColor::White);
         HFL::WaitForInput();
     }
 }
