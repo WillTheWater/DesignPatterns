@@ -244,7 +244,7 @@ namespace FAC
 
         // ======================== INITIALIZATION ========================
         SaveSystemFacade SaveSystem;
-        GameData ActiveHero; // This persists throughout the loop
+        GameData ActiveHero;
         bool bIsDataLoaded = false;
 
         // ======================== GAME LOOP ========================
@@ -263,7 +263,7 @@ namespace FAC
             }
             else
             {
-                // --- 1. IDENTITY & CORE ---
+                // ======================== IDENTITY & CORE ========================
                 HFL::SetColor(HFL::EColor::White);
                 std::cout << "  NAME:      "; HFL::SetColor(HFL::EColor::Green);
                 std::cout << std::left << std::setw(18) << ActiveHero.Name;
@@ -278,20 +278,20 @@ namespace FAC
                 std::cout << "  GOLD:      "; HFL::SetColor(HFL::EColor::Green);
                 std::cout << ActiveHero.Gold << "\n";
 
-                // --- 2. COMBAT ATTRIBUTES ---
+                // ======================== COMBAT ATTRIBUTES ========================
                 HFL::SetColor(HFL::EColor::Gray);
                 std::cout << "  --------------------------------------------------\n";
                 HFL::SetColor(HFL::EColor::White);
                 std::cout << "  HEALTH:    "; HFL::SetColor(HFL::EColor::Red);
                 std::cout << std::left << std::setw(18) << ActiveHero.Health;
                 HFL::SetColor(HFL::EColor::White);
-                std::cout << "  MANA:      "; HFL::SetColor(HFL::EColor::Cyan); // Using Cyan for Mana
+                std::cout << "  MANA:      "; HFL::SetColor(HFL::EColor::Cyan);
                 std::cout << ActiveHero.Mana << "\n";
 
                 HFL::SetColor(HFL::EColor::White);
                 std::cout << "  STR: " << ActiveHero.Strength << " | AGI: " << ActiveHero.Agility << " | INT: " << ActiveHero.Intelligence << "\n";
 
-                // --- 3. EQUIPMENT & WORLD ---
+                // ======================== EQUIPMENT & WORLD ========================
                 HFL::SetColor(HFL::EColor::Gray);
                 std::cout << "  --------------------------------------------------\n";
                 HFL::SetColor(HFL::EColor::White);
@@ -308,7 +308,7 @@ namespace FAC
                 std::cout << "  PLAYTIME:  "; HFL::SetColor(HFL::EColor::Gray);
                 std::cout << (int)ActiveHero.PlayTimeSeconds << "s\n";
 
-                // --- 4. POSITION (The Nested Array) ---
+                // ======================== POSITION ========================
                 HFL::SetColor(HFL::EColor::White);
                 std::cout << "  POSITION:  "; HFL::SetColor(HFL::EColor::Gray);
                 std::cout << "[" << std::fixed << std::setprecision(2)
@@ -319,7 +319,6 @@ namespace FAC
                 HFL::SetColor(HFL::EColor::Gray);
             }
 
-            // 2. MENU UI
             HFL::PrintSection("COMMANDS");
             HFL::SetColor(HFL::EColor::Green);
             std::cout << " [1] "; HFL::SetColor(HFL::EColor::White); std::cout << "CREATE NEW CHARACTER\n";
@@ -333,7 +332,7 @@ namespace FAC
             int Choice = HFL::GetValidMenuInput(3);
             if (Choice == 0) break;
 
-            if (Choice == 1) // CREATE
+            if (Choice == 1)
             {
                 HFL::PrintSection("CHARACTER CREATION");
                 std::string Name;
@@ -371,7 +370,7 @@ namespace FAC
 
                 HFL::WaitForInput();
             }
-            else if (Choice == 2) // SAVE
+            else if (Choice == 2)
             {
                 if (!bIsDataLoaded) {
                     HFL::SetColor(HFL::EColor::Red);
@@ -392,7 +391,7 @@ namespace FAC
                 }
                 HFL::WaitForInput();
             }
-            else if (Choice == 3) // LOAD
+            else if (Choice == 3)
             {
                 HFL::PrintSection("SLOT SELECTION");
                 std::cout << "Load from Slot (1-3): ";

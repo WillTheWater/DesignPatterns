@@ -2,10 +2,18 @@
 
 namespace BRG
 {
-    // --- KEYBOARD DEVICE ---
+    // =========================================================================
+    // CONCRETE IMPLEMENTATIONS (The Hardware Bridges)
+    // ROLE: Specialized workers that handle device-specific translation.
+    // They "bridge" the gap between raw hardware signals and game commands.
+    // =========================================================================
+
+    // ======================== KEYBOARD ========================
     ECommand KeyboardDevice::Translate(int KeyCode) const
     {
-        std::cout << ">> [Keyboard] Checking Key Code: " << KeyCode << "\n";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << ">> [Keyboard] Mapping Key Code: " << KeyCode << " to Action";
+        HFL::WaitDots(0.3f);
 
         switch (KeyCode)
         {
@@ -19,13 +27,15 @@ namespace BRG
 
     std::string KeyboardDevice::GetDeviceName() const
     {
-        return "Physical Keyboard";
+        return "Keyboard";
     }
 
-    // --- JOYPAD DEVICE ---
+    // ======================== JOYPAD ========================
     ECommand JoypadDevice::Translate(int Axis) const
     {
-        std::cout << ">> [Joypad] Reading Axis: " << Axis << "\n";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << ">> [Joypad] Parsing Axis Input: " << Axis;
+        HFL::WaitDots(0.3f);
 
         switch (Axis)
         {
@@ -39,13 +49,15 @@ namespace BRG
 
     std::string JoypadDevice::GetDeviceName() const
     {
-        return "Physical Joypad";
+        return "Joypad";
     }
 
-    // --- GAMEPAD DEVICE ---
+    // ======================== GAMEPAD ========================
     ECommand GamepadDevice::Translate(int ButtonID) const
     {
-        std::cout << ">> [Gamepad] Reading Button ID: " << ButtonID << "\n";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << ">> [Gamepad] Reading Button Buffer: " << ButtonID;
+        HFL::WaitDots(0.3f);
 
         switch (ButtonID)
         {
@@ -63,148 +75,207 @@ namespace BRG
     }
 
     // =========================================================================
-    // 3. DEMO IMPLEMENTATION
+    // DEMO IMPLEMENTATION
     // =========================================================================
+
     void RunDemo()
     {
-        // Clear buffer
         std::cin.clear();
         std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
-        // --- STEP 1: INTRODUCTION ---
+        // ======================== INTRODUCTION ========================
         HFL::ClearScreen();
-        HFL::PrintHeader("Bridge Pattern (Input System)");
+        HFL::PrintHeader("BRIDGE DESIGN PATTERN");
 
-        std::cout << "Definition:\n";
-        std::cout << "Decouple an abstraction from its implementation.\n";
-        std::cout << "Allow the two to vary independently.\n\n";
+        HFL::PrintSection("THE DEFINITION");
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "Decouple an abstraction from its implementation so that the\n"
+            << "two can vary independently.\n\n";
 
-        std::cout << "In This Demo:\n";
-        std::cout << "The Game Logic (WASD Commands).\n";
-        std::cout << "With Physical Input Hardware (Keyboard, Joypad, Gamepad).\n";
-        std::cout << "That uses a Bridge to map Hardware to Commands.\n";
-        std::cout << "With the ability to swap Hardware without effecting Game Logic.\n";
+        HFL::PrintSection("THE GOAL");
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The Bridge Pattern is about 'Separation of Concerns'.\n"
+            << "Allowing high-level Game Logic (The Abstraction)\n"
+            << "and low-level Input Hardware (The Implementation) separately,\n"
+            << "linking them via a stable interface (The Bridge).\n\n";
+
+        HFL::PrintSection("THE EXAMPLE");
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "Hardware independent Input Mapping System where:\n\n";
+
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] THE ABSTRACTION: ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "A 'GameInput' class that only cares about ECommands.\n";
+
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] THE BRIDGE:      ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The 'IInputDevice' interface that translates raw data.\n";
+
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] THE HARDWARE:    ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Concrete classes for Keyboard, Joypad, and Gamepad.\n\n";
 
         HFL::WaitForInput();
 
-        // --- STEP 2: THE ARCHITECTURE ---
+        // ======================== THE ARCHITECTURE ========================
         HFL::ClearScreen();
-        HFL::PrintHeader("Step 1: The Architecture");
+        HFL::PrintHeader("THE ARCHITECTURE");
 
-        std::cout << "There are 3 distinct layers:\n\n";
+        HFL::PrintSection("INDEPENDENT VARIATION");
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "By placing a 'Bridge' between the Logic and the Hardware, it avoids\n"
+            << "an exponential explosion of classes. The Game Logic can change its\n"
+            << "internal structure without needing to know how a Joypad is wired.\n\n";
 
-        std::cout << "1. The Abstraction (Game Logic):\n";
-        std::cout << "   - Defines the (ECommand) input actions.\n";
-        std::cout << "   - The Game Logic only knows about Commands.\n";
-        std::cout << "   - It doesn't know about hardware buttons.\n\n";
+        HFL::PrintSection("IMPLEMENTATION");
 
-        std::cout << "2. The Implementations (The Hardware):\n";
-        std::cout << "   - Keyboard: The Bridge for WASD.\n";
-        std::cout << "   - Joypad: The Bridge for Axis.\n";
-        std::cout << "   - Gamepad: The Bridge for Buttons.\n\n";
+        // ======================== THE ABSTRACTION ========================
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] GameInput (The Abstraction)\n";
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "    ROLE:           ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The high-level UI/Logic. It only speaks in 'Commands'.\n";
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "    FLEXIBILITY:    ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Can switch its internal hardware reference at runtime.\n\n";
 
-        std::cout << "THE BRIDGE LOGIC:\n";
-        std::cout << "1. Game Logic sends Commands.\n";
-        std::cout << "2. Keyboard translates 'Foreward' -> 'W' Key.\n";
-        std::cout << "3. Joypad translates 'Foreward' -> 'Up Axis'.\n";
-        std::cout << "4. Gamepad translates 'Foreward' -> 'Up Stick'.\n\n";
+        // ======================== THE IMPLEMENTORS ========================
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] Input Devices (The Implementors)\n";
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "    ROLE:           ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Platform-specific workers. They handle the messy raw data.\n";
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "    DECOUPLING:     ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "They don't know about the game; they only know how to translate.\n\n";
 
+        HFL::SetColor(HFL::EColor::White);
         HFL::WaitForInput();
 
-        // --- STEP 3: INTERACTIVE SYSTEM ---
-
-        // Create the Bridges (Hardware)
+        // ======================== INITIALIZATION ========================
         KeyboardDevice MyKeyboard;
         JoypadDevice MyJoypad;
         GamepadDevice MyGamepad;
+        GameInput InputAbstraction(&MyKeyboard);
 
-        // Pointers to allow switching Bridges
-        IInputDevice* ActiveDevice = &MyKeyboard;
-
-        bool InDemo = true;
-        while (InDemo)
+        // ======================== INTERACTIVE LOOP ========================
+        while (true)
         {
             HFL::ClearScreen();
-            HFL::PrintHeader("Bridge Pattern (Input Mapper)");
+            HFL::PrintHeader("INPUT MAPPING");
 
-            std::cout << "Select a Hardware Bridge:\n";
-            std::cout << "1. Keyboard\n";
-            std::cout << "2. Joypad\n";
-            std::cout << "3. Gamepad\n";
-            std::cout << "0. Exit Demo\n";
-            std::cout << "\nChoice: ";
+            HFL::PrintSection("CURRENT CONFIGURATION");
+            HFL::SetColor(HFL::EColor::White);
+            std::cout << "  ACTIVE DEVICE:  ";
+            HFL::SetColor(HFL::EColor::Green);
+            std::cout << InputAbstraction.GetActiveDeviceName() << "\n\n";
 
-            int Choice;
-            std::cin >> Choice;
+            HFL::PrintSection("HARDWARE SELECTION");
+            HFL::SetColor(HFL::EColor::Green);
+            std::cout << " [1] "; HFL::SetColor(HFL::EColor::White); std::cout << "KEYBOARD\n";
+            HFL::SetColor(HFL::EColor::Green);
+            std::cout << " [2] "; HFL::SetColor(HFL::EColor::White); std::cout << "JOYPAD\n";
+            HFL::SetColor(HFL::EColor::Green);
+            std::cout << " [3] "; HFL::SetColor(HFL::EColor::White); std::cout << "GAMEPAD\n\n";
 
-            if (std::cin.fail()) { std::cin.clear(); std::cin.ignore(); continue; }
+            HFL::PrintSection("COMMAND MENU");
+            HFL::SetColor(HFL::EColor::Cyan);
+            std::cout << " [4] "; HFL::SetColor(HFL::EColor::White); std::cout << "MOVE FORWARD\n";
+            HFL::SetColor(HFL::EColor::Cyan);
+            std::cout << " [5] "; HFL::SetColor(HFL::EColor::White); std::cout << "MOVE BACKWARDS\n";
+            HFL::SetColor(HFL::EColor::Cyan);
+            std::cout << " [6] "; HFL::SetColor(HFL::EColor::White); std::cout << "MOVE RIGHT\n";
+            HFL::SetColor(HFL::EColor::Cyan);
+            std::cout << " [7] "; HFL::SetColor(HFL::EColor::White); std::cout << "MOVE LEFT\n\n";
 
+            HFL::SetColor(HFL::EColor::Red);
+            std::cout << " [0] "; HFL::SetColor(HFL::EColor::White); std::cout << "CONTINUE\n\n";
+
+            int Choice = HFL::GetValidMenuInput(7);
             if (Choice == 0) break;
 
-            // SWITCH THE BRIDGE (DEPENDENCY INVERSION)
-            // The Game Logic (User) talks to "ActiveDevice" (Abstraction).
-            // Change "ActiveDevice" to point to different Hardware (Implementation).
-            if (Choice == 1) ActiveDevice = &MyKeyboard;
-            else if (Choice == 2) ActiveDevice = &MyJoypad;
-            else if (Choice == 3) ActiveDevice = &MyGamepad;
+            if (Choice == 1) InputAbstraction.SetDevice(&MyKeyboard);
+            else if (Choice == 2) InputAbstraction.SetDevice(&MyJoypad);
+            else if (Choice == 3) InputAbstraction.SetDevice(&MyGamepad);
 
-            std::cout << "\nActive Device: " << ActiveDevice->GetDeviceName() << "\n";
-
-            // --- STEP 4: COMMAND INPUT ---
-            HFL::PrintHeader("Select a Command");
-
-            std::cout << "1. Foreward\n";
-            std::cout << "2. Backwards\n";
-            std::cout << "3. Right\n";
-            std::cout << "4. Left\n";
-            std::cout << "0. Back to Hardware Selection\n";
-            std::cout << "\nChoice: ";
-
-            int CommandChoice;
-            std::cin >> CommandChoice;
-
-            if (std::cin.fail()) { std::cin.clear(); std::cin.ignore(); continue; }
-
-            if (CommandChoice == 0) continue; // Go back to Hardware selection
-
-            if (CommandChoice >= 1 && CommandChoice <= 4)
+            if (Choice >= 4 && Choice <= 7)
             {
-                std::cout << "\n>> [Game Logic] Sending Raw Input ID: " << CommandChoice << "\n";
+                int RawSignal = Choice - 3;
 
-                ECommand Result = ActiveDevice->Translate(CommandChoice);
+                HFL::PrintSection("PROCESSING INPUT");
+                HFL::SetColor(HFL::EColor::White);
+                std::cout << ">> [Game Logic] Requesting translation for raw signal: " << RawSignal << "\n";
 
-                if (Result == ECommand::Forward) std::cout << ">> [Game Logic] Forward!\n";
-                else if (Result == ECommand::Backwards) std::cout << ">> [Game Logic] Backwards!\n";
-                else if (Result == ECommand::Right) std::cout << ">> [Game Logic] Right!\n";
-                else if (Result == ECommand::Left) std::cout << ">> [Game Logic] Left!\n";
+                ECommand Result = InputAbstraction.HandleInput(RawSignal);
 
+                HFL::SetColor(HFL::EColor::Green);
+                std::cout << ">> [Action] Executing: ";
+
+                switch (Result)
+                {
+                case ECommand::Forward:   std::cout << "Character Moves Forward\n"; break;
+                case ECommand::Backwards: std::cout << "Character Moves Backwards\n"; break;
+                case ECommand::Right:     std::cout << "Character Moves Right\n"; break;
+                case ECommand::Left:      std::cout << "Character Moves Left\n"; break;
+                default:                  std::cout << "No Action Mapped\n"; break;
+                }
                 HFL::WaitForInput();
             }
-
         }
 
-        // --- STEP 5: CONCLUSION ---
+        // ======================== CONCLUSION ========================
         HFL::ClearScreen();
-        HFL::PrintHeader("Conclusion");
+        HFL::PrintHeader("CONCLUSION");
 
-        std::cout << "Summary of Bridge Pattern:\n\n";
-        std::cout << "1. Decoupling (The Abstraction):\n";
-        std::cout << "   The Game Logic (Client) only knows EComands.\n";
-        std::cout << "   It doesn't know what hardware it uses.\n\n";
+        HFL::PrintSection("ARCHITECTURE");
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "The implementation of the Bridge Pattern confirms the following:\n\n";
 
-        std::cout << "2. Independent Variation (The Hardware):\n";
-        std::cout << "   When swapping devices.\n";
-        std::cout << "   The Bridge translates commands.\n";
-        std::cout << "   The Game Logic code is not changed.\n\n";
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] INDEPENDENT SCALING:    ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Could add a 'VR Controller' hardware implementations without\n"
+            << "    ever modifying the high-level 'GameInput' abstraction.\n";
 
-        std::cout << "3. Structure (The Connection):\n";
-        std::cout << "   Uses 'IInputDevice' (The Abstraction).\n";
-        std::cout << "   The hardware becomes (The Bridges).\n";
-        std::cout << "   Which are connected via 'ActiveDevice' pointer (The Wiring).\n\n";
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] RUNTIME FLEXIBILITY:    ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The Abstraction can swap its internal implementation pointer instantly,\n"
+            << "    allowing players to change hardware without restarting the logic.\n";
 
-        std::cout << "This is the Bridge Pattern.\n";
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] ABSTRACTION PURITY:     ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The Game Logic remains pure. It only understands 'ECommand', with\n"
+            << "    zero knowledge of raw codes, axes, or platform-specific APIs.\n\n";
 
-        std::cout << std::setw(40) << "End of Demo\n";
+        HFL::PrintSection("SUMMARY");
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "The Bridge Pattern ensures that software is:\n\n";
+
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] DECOUPLED: ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The 'Logic' is separated from the 'Hardware'.\n";
+
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] EXTENSIBLE:";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Adding new platforms doesn't cause a 'Class Explosion'.\n";
+
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] CLEAN:     ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Maintains the Single Responsibility Principle across hierarchies.\n\n";
+
+        HFL::SetColor(HFL::EColor::White);
         HFL::WaitForInput();
     }
 }

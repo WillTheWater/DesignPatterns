@@ -3,37 +3,35 @@
 #include "FunctionLibrary/HelperFunctionLibrary.h"
 
 // =========================================================================
-// STRUCTURAL DESIGN PATTERNS: Bridge
+// STRUCTURAL DESIGN PATTERN: Bridge
 // =========================================================================
 // "Decouple an abstraction from its implementation so that the two can vary independently."
 //
 // THE GOAL:
 // Bind "Game Logic" (Movement Commands) to "Input Hardware" (Keyboard, Joypad, Gamepad).
+// This prevents a combinatorial explosion of classes when adding new hardware
+// or new game commands.
+//
+// THE BENEFIT:
+// * Independence: High-level logic and low-level hardware can evolve separately.
+// * Runtime Switching: Swap the physical input source (e.g., switching from 
+//   Keyboard to Gamepad) without the Game Logic needing to be recompiled.
+// * Extensibility: Adding a "VR Controller" implementation requires zero 
+//   changes to the core GameInput abstraction.
 //
 // THE EXAMPLE:
-// An Input Mapping System.
-// 1. Abstraction (GameInput): Defines how the game requests actions.
-// 2. Implementor Interface (IInputDevice): Defines how raw input is translated.
-// 3. Implementations (The Hardware): Keyboard, Joypad, Gamepad.
-//
-// THE SCENARIO:
-// The Game Logic says "Process Input".
-// The Abstraction delegates to the active Hardware.
-// - Keyboard reads key codes.
-// - Joypad reads axis values.
-// - Gamepad reads button IDs.
-// Each device translates raw input into a game command.
-//
-// BENEFIT:
-// Add new input hardware without changing Game Logic.
-// The Abstraction and Implementations vary independently.
+// [ECommand]: The shared language. An enum representing player intent.
+// [IInputDevice]: The Implementor. Defines how raw hardware signals are translated.
+// [GameInput]: The Abstraction. The high-level interface used by the game engine.
+// [Devices]: Keyboard, Joypad, and Gamepad implementations.
 // =========================================================================
 
 namespace BRG
 {
-    // ------------------------------------------------------------------------
-    // 1. THE ABSTRACTION DOMAIN (Game Commands)
-    // ------------------------------------------------------------------------
+    // =========================================================================
+    // THE ABSTRACTION DOMAIN
+    // ROLE: Defines the high-level intent of the system.
+    // =========================================================================
     enum class ECommand
     {
         Forward,
@@ -43,11 +41,11 @@ namespace BRG
         None
     };
 
-    // ------------------------------------------------------------------------
-    // 2. THE IMPLEMENTOR INTERFACE (Bridge Interface)
-    // ------------------------------------------------------------------------
-    // This interface represents the hardware side of the bridge.
-    // It knows how to translate raw input into game commands.
+    // =========================================================================
+    // THE IMPLEMENTOR INTERFACE (The Bridge)
+    // ROLE: Defines the hardware-side contract. It handles the "translation"
+    // of raw machine data into the shared Abstraction Domain (ECommand).
+    // =========================================================================
     class IInputDevice
     {
     public:
@@ -58,11 +56,11 @@ namespace BRG
         virtual std::string GetDeviceName() const = 0;
     };
 
-    // ------------------------------------------------------------------------
-    // 3. THE ABSTRACTION (Game Logic Side)
-    // ------------------------------------------------------------------------
-    // This is what the game uses.
-    // It delegates input handling to the selected hardware implementation.
+    // =========================================================================
+    // THE ABSTRACTION
+    // ROLE: The High-Level Policy. This is the "face" of the input system
+    // used by the Game Engine. It maintains a reference to the Bridge.
+    // =========================================================================
     class GameInput
     {
     public:
@@ -71,11 +69,14 @@ namespace BRG
         {
         }
 
+        // The Bridge allows the change implementation at runtime.
         void SetDevice(IInputDevice* InDevice)
         {
             Device = InDevice;
         }
 
+        // DELEGATION: The abstraction doesn't handle input itself; 
+        // it asks the current implementor to do it.
         ECommand HandleInput(int RawInput) const
         {
             return Device ? Device->Translate(RawInput) : ECommand::None;
@@ -90,10 +91,12 @@ namespace BRG
         IInputDevice* Device;
     };
 
-    // ------------------------------------------------------------------------
-    // 4. THE IMPLEMENTATIONS (Hardware Devices)
-    // ------------------------------------------------------------------------
+    // =========================================================================
+    // THE IMPLEMENTATIONS (The Low-Level Details)
+    // ROLE: Specific hardware drivers that implement the IInputDevice contract.
+    // =========================================================================
 
+    // ======================== KEYBOARD ========================
     class KeyboardDevice : public IInputDevice
     {
     public:
@@ -101,6 +104,7 @@ namespace BRG
         std::string GetDeviceName() const override;
     };
 
+    // ======================== JOYPAD ========================
     class JoypadDevice : public IInputDevice
     {
     public:
@@ -108,6 +112,7 @@ namespace BRG
         std::string GetDeviceName() const override;
     };
 
+    // ======================== GAMEPAD ========================
     class GamepadDevice : public IInputDevice
     {
     public:
@@ -115,8 +120,8 @@ namespace BRG
         std::string GetDeviceName() const override;
     };
 
-    // ------------------------------------------------------------------------
-    // 5. DEMO
-    // ------------------------------------------------------------------------
+    // =========================================================================
+    // DEMO IMPLEMENTATION
+    // =========================================================================
     void RunDemo();
 }
