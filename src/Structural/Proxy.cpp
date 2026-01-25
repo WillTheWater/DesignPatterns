@@ -3,110 +3,82 @@
 namespace PRX
 {
     // =========================================================================
-    // SERVER CONNECTION (The Requestor / The Network)
+    // LOW LEVEL MODULE: SERVER CONNECTION
+    // ROLE: Simulates the network layer and high-latency asset streaming.
     // =========================================================================
-    // This class represents the link to the "Asset Server".
-    // In a real app, this would use TCP/IP or HTTP.
-    // For this demo, we simulate network latency with 'std::this_thread::sleep_for'.
 
     std::unique_ptr<RealTexture> ServerConnection::DownloadAsset(int AssetID)
     {
-        std::cout << ">> [Network] Connecting to Server...\n";
-        // Simulate Network Latency (Slow!)
-        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-    
-        std::cout << ">> [Network] Downloading Asset ID: " << AssetID << "...\n";
-        std::this_thread::sleep_for(std::chrono::milliseconds(500));
-    
-        // Create the Heavy RealTexture (This is the expensive part).
-        std::string Name = "Texture_" + std::to_string(AssetID);
-        auto Texture = std::make_unique<RealTexture>(Name, 512, 512);
-    
-        std::cout << ">> [Network] Download Complete.\n";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << ">> [Network] Opening Streaming Channel";
+        HFL::WaitDots(0.2);
+
+        HFL::Wait(0.6);
+
+        std::cout << ">> [Network] Transferring ID: " << AssetID;
+        HFL::WaitDots(0.4);
+
+        std::string Name = "HighRes_Tex_" + std::to_string(AssetID);
+        auto Texture = std::make_unique<RealTexture>(Name, 4096, 4096);
+
+        std::cout << ">> [Network] 100% Downloaded.\n";
         return Texture;
     }
 
     // =========================================================================
-    // THE REAL SUBJECT (The Heavy Object - The Server)
+    // LOW LEVEL MODULE: THE REAL SUBJECT
+    // ROLE: The heavy resource (Texture) that consumes significant RAM.
     // =========================================================================
 
     RealTexture::RealTexture(std::string Name, int Width, int Height)
-        : Name{Name}
-        , Width{Width}
-        , Height{Height}
+        : Name{ Name }, Width{ Width }, Height{ Height }
     {
-        std::cout << "[System] RealTexture Created (Heavy Object).\n";
+        HFL::SetColor(HFL::EColor::Yellow);
+        std::cout << "[System] Memory Allocated: " << Name << " (" << Width << "x" << Height << ")\n";
+    }
+
+    RealTexture::~RealTexture()
+    {
+        HFL::SetColor(HFL::EColor::Red);
+        std::cout << "[System] RealTexture '" << Name << "' released (RAM Reclaimed).\n";
     }
 
     // =========================================================================
-    // PROXY IMPLEMENTATION (The Logic)
+    // ABSTRACTION LAYER: THE VIRTUAL PROXY
+    // ROLE: Acts as a lightweight placeholder (Stub) for the Real Subject.
+    // It defers the "Creation Cost" until the data is actually requested.
     // =========================================================================
 
-    RemoteTextureProxy::RemoteTextureProxy(int AssetID)
-        : AssetID{AssetID}
+    RemoteTextureProxy::RemoteTextureProxy(int AssetID) : AssetID{ AssetID }
     {
-        std::cout << "[System] RemoteTextureProxy Created (Lightweight).\n";
-
-        // 1. Create the Requestor (The Network Link)
+        // The Proxy owns the requester, but NOT the heavy texture.
         Requestor = std::make_unique<ServerConnection>();
-
-        // 2. RealSubject is NULL (Lazy Initialization)
-        // The Proxy starts empty. It does not call 'DownloadAsset()' yet.
-        std::cout << "[System] Proxy is empty. (Lazy Initialization)\n";
     }
 
-    // This is where the "Proxy Logic" happens.
     int RemoteTextureProxy::GetWidth()
     {
-        // The Game Logic calls GetWidth().
+        // Lazy Initialization: Check if the real object already exists.
+        if (RealSubject) return RealSubject->GetWidth();
 
-        if (RealSubject)
-        {
-            // CASE 1: CACHED HIT
-            // The RealTexture is already loaded.
-            // We return data instantly. No network latency.
-            std::cout << ">> [Proxy] Returning Cached Width (Instant).\n";
-            return RealSubject->GetWidth();
-        }
-        else
-        {
-            // CASE 2: CACHE MISS
-            // The RealTexture is NULL. We need to get it.
-            std::cout << ">> [Proxy] Cache Miss! No RealTexture loaded.\n";
+        HFL::SetColor(HFL::EColor::Cyan);
+        std::cout << ">> [Proxy] Data not found in Local RAM. Triggering Remote Fetch...\n";
 
-            // The Proxy acts as a go-between. It asks the Requestor (Server).
-            if (Requestor)
-            {
-                // This call is slow (Network Latency).
-                // But it only happens ONCE.
-                std::cout << ">> [Proxy] Delegating to ServerConnection...\n";
-                RealSubject = std::move(Requestor->DownloadAsset(123));
-
-                std::cout << ">> [Proxy] RealTexture received. Caching it...\n";
-            }
-            else
-            {
-                std::cout << "[Error] No ServerConnection attached to Proxy.\n";
-                return 0;
-            }
-
-            // Now we have the data, we can return it.
-            return RealSubject->GetWidth();
-        }
+        // Materialize the subject only when needed.
+        RealSubject = std::move(Requestor->DownloadAsset(AssetID));
+        return RealSubject->GetWidth();
     }
 
     int RemoteTextureProxy::GetHeight()
     {
-        // Same Lazy Logic as GetWidth()
-        if (RealSubject) return RealSubject->GetHeight();
-        else
-        {
-            if (Requestor)
-            {
-                RealSubject = std::move(Requestor->DownloadAsset(123));
-            }
-            return 0;
-        }
+        // Re-use existing logic to ensure lazy-loading happens.
+        if (!RealSubject) GetWidth();
+        return RealSubject ? RealSubject->GetHeight() : 0;
+    }
+
+    bool RemoteTextureProxy::IsLoaded() const
+    {
+        // Internal state check for the UI to prove lazy loading is working.
+        return RealSubject != nullptr;
     }
 
     // =========================================================================
@@ -114,165 +86,289 @@ namespace PRX
     // =========================================================================
     void RunDemo()
     {
-        // Clear buffer
         std::cin.clear();
         std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
-        // --- STEP 1: INTRODUCTION ---
+        // ======================== INTRODUCTION ========================
         HFL::ClearScreen();
-        HFL::PrintHeader("Proxy Pattern (Remote Assets)");
+        HFL::PrintHeader("PROXY PATTERN");
 
-        std::cout << "Definition:\n";
-        std::cout << "Provide a surrogate or placeholder for another object to control access to it.\n";
-        std::cout << "Control access to an expensive object.\n\n";
+        HFL::PrintSection("THE DEFINITION");
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "A Proxy provides a surrogate or placeholder for another object.\n"
+            << "It controls access to the original object, allowing you to perform\n"
+            << "actions before or after the request reaches the real subject.\n\n";
 
-        std::cout << "In This Demo:\n";
-        std::cout << "Simulate a 'Game Engine' downloading textures from a 'Server'.\n";
-        std::cout << "1. RealTexture: The heavy image that lives on the Server.\n";
-        std::cout << "2. RemoteTextureProxy: The lightweight stub in the Game.\n";
-        std::cout << "3. Lazy Loading: The Proxy only downloads the texture when looked at.\n";
+        HFL::PrintSection("THE GOAL");
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The Virtual Proxy aims to optimize resource-heavy systems by deferring\n"
+            << "the cost of object creation. By using a lightweight 'stand-in', the\n"
+            << "application remains responsive, loading expensive data only when\n"
+            << "the user or system explicitly requests it (Lazy Loading).\n\n";
+
+        HFL::PrintSection("THE EXAMPLE");
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "This demonstration features a Remote Asset Catalog with three layers:\n\n";
+
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] THE SUBJECT (INTERFACE): ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "ITexture defines the shared API for images.\n";
+
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] THE REAL SUBJECT:        ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The 4K Texture that requires heavy network/RAM usage.\n";
+
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] THE VIRTUAL PROXY:       ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The 'Smart Wrapper' that manages the download state.\n\n";
+
+        HFL::PrintSection("THE BENEFIT");
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] EFFICIENCY:    ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The game starts instantly; 0kb transferred during initialization.\n";
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] SMART LOADING: ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Assets materialize only when accessed, saving bandwidth.\n";
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] LIFECYCLE:     ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The Proxy encapsulates the complexity of remote fetching logic.\n";
 
         HFL::WaitForInput();
 
-        // --- STEP 2: THE ARCHITECTURE ---
+        // ======================== THE ARCHITECTURE ========================
         HFL::ClearScreen();
-        HFL::PrintHeader("The Architecture");
+        HFL::PrintHeader("THE ARCHITECTURE");
 
-        std::cout << "3 Key Roles:\n\n";
+        HFL::PrintSection("THE SURROGATE");
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Normally, a Client talks directly to a Heavy Object. In this pattern,\n"
+            << "these is a Middleman. The Client thinks it's talking to the Texture,\n"
+            << "but it's actually talking to a Proxy that isn't loaded yet.\n\n";
 
-        std::cout << "1. ITexture (The Target Interface):\n";
-        std::cout << "   - Defines 'GetWidth', 'GetHeight'.\n";
-        std::cout << "   - The Game Logic uses this.\n";
-        std::cout << "   - It doesn't know if it's talking to a RealTexture or a Proxy.\n\n";
+        HFL::PrintSection("IMPLEMENTATION");
 
-        std::cout << "2. RealTexture (The RealSubject):\n";
-        std::cout << "   - The heavy image data.\n";
-        std::cout << "   - Loading it takes 'Network Time' (1.5s simulated).\n\n";
+        // ======================== INTERFACE ========================
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] ITexture (Interface)\n";
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "    ROLE:           ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The Contract. Ensures Proxy and Real Object look identical to the Client.\n";
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "    SCOPE:          ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Defines GetWidth() and GetHeight().\n";
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "    MANDATE:        ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Must be used by the Client to allow for transparent substitution.\n\n";
 
-        std::cout << "3. RemoteTextureProxy (The Proxy):\n";
-        std::cout << "   - Implements ITexture (Looks like a texture to the Game).\n";
-        std::cout << "   - Is 'Lightweight'. It holds a pointer to a ServerConnection.\n";
-        std::cout << "   - RealSubject is NULL initially (Lazy).\n\n";
+        // ======================== REAL SUBJECT ========================
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] RealTexture (Heavy Object)\n";
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "    ROLE:           ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The Actual Data. Contains the raw pixels and memory buffers.\n";
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "    SCOPE:          ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Handles actual file I/O and GPU memory allocation.\n";
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "    COST:           ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "High latency to create; high RAM footprint while alive.\n\n";
 
-        std::cout << "THE FLOW:\n";
-        std::cout << "1. Game creates RemoteTextureProxies (Instant).\n";
-        std::cout << "2. Game calls Proxy->GetWidth().\n";
-        std::cout << "3. Proxy checks: Do I have RealTexture? No.\n";
-        std::cout << "4. Proxy asks ServerConnection to Download(RealTexture).\n";
-        std::cout << "5. ServerConnection returns RealTexture (Wait 1.5s).\n";
-        std::cout << "6. Proxy Caches RealTexture. Game gets Width.\n";
-        std::cout << "7. Next time Game calls Proxy->GetWidth(), it returns instantly.\n\n";
+        // ======================== PROXY ========================
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] RemoteTextureProxy (The Middleman)\n";
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "    ROLE:           ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The Lazy Loader. Holds a pointer to the Real Subject.\n";
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "    SCOPE:          ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Intercepts calls. If RealSubject is null, it downloads it first.\n";
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "    ADVANTAGE:      ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Controls the 'When' and 'How' of resource acquisition.\n\n";
 
+        HFL::SetColor(HFL::EColor::White);
         HFL::WaitForInput();
 
-        // --- STEP 3: INTERACTIVE SYSTEM ---
+        // ======================== INITIALIZATION ========================
+        std::vector<std::unique_ptr<ITexture>> AssetLibrary;
+        const int CatalogSize = 10;
 
-        bool InDemo = true;
-
-        // Persistent proxy
-        std::unique_ptr<ITexture> TextureProxy;
-
-        while (InDemo)
+        // ======================== MAIN LOOP ========================
+        while (true)
         {
             HFL::ClearScreen();
-            HFL::PrintHeader("Remote Asset Manager (Proxy Demo)");
+            HFL::PrintHeader("VIRTUAL ASSET MANAGER");
 
-            std::cout << "Proxy Status: ";
-            if (!TextureProxy)
-                std::cout << "NONE (No Proxy Created)\n";
+            HFL::PrintSection("RAM STATUS (PROXIES VS REAL)");
+            if (AssetLibrary.empty())
+            {
+                HFL::SetColor(HFL::EColor::Red);
+                std::cout << " [!] Catalog Not Initialized. Press [1] to build library.\n";
+            }
             else
-                std::cout << "ACTIVE (May Be Loaded or Cached)\n";
-
-            std::cout << "\nSelect an Action:\n";
-            std::cout << "1. Create Texture Proxy (Instant, Lightweight)\n";
-            std::cout << "2. Access Texture Width (Triggers Lazy Download)\n";
-            std::cout << "3. Access Texture Width Again (Cache Hit)\n";
-            std::cout << "0. Exit Demo\n";
-            std::cout << "\nChoice: ";
-
-            int Choice;
-            std::cin >> Choice;
-
-            if (std::cin.fail())
             {
-                std::cin.clear();
-                std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-                continue;
-            }
-
-            if (Choice == 0)
-                break;
-
-            switch (Choice)
-            {
-            case 1:
-            {
-                std::cout << "\n[Action] Creating RemoteTextureProxy...\n";
-                TextureProxy = std::make_unique<RemoteTextureProxy>(999);
-                std::cout << ">> Proxy created instantly. No network call made.\n";
-                break;
-            }
-
-            case 2:
-            {
-                if (!TextureProxy)
+                int LoadedCount = 0;
+                std::cout << " ";
+                for (int i = 0; i < (int)AssetLibrary.size(); ++i)
                 {
-                    std::cout << "\n[Error] No proxy exists. Create one first.\n";
-                    break;
+                    auto* P = static_cast<RemoteTextureProxy*>(AssetLibrary[i].get());
+                    if (P->IsLoaded())
+                    {
+                        HFL::SetColor(HFL::EColor::Green);
+                        std::cout << "[REAL] ";
+                        LoadedCount++;
+                    }
+                    else
+                    {
+                        HFL::SetColor(HFL::EColor::Gray);
+                        std::cout << "[PRXY] ";
+                    }
+
+                    if ((i + 1) % 5 == 0) std::cout << "\n ";
                 }
 
-                std::cout << "\n[Action] First access to texture data.\n";
-                std::cout << ">> Expect network latency...\n";
-
-                int Width = TextureProxy->GetWidth();
-                std::cout << ">> Texture Width: " << Width << "\n";
-                break;
+                HFL::SetColor(HFL::EColor::White);
+                std::cout << "\n Statistics: " << LoadedCount << "/" << AssetLibrary.size()
+                    << " Assets fully materialized in memory.\n";
             }
 
-            case 3:
+            HFL::PrintSection("COMMANDS");
+            HFL::SetColor(HFL::EColor::Green);
+            std::cout << " [1] "; HFL::SetColor(HFL::EColor::White); std::cout << "Reset & Initialize (Instant Setup)\n";
+            HFL::SetColor(HFL::EColor::Green);
+            std::cout << " [2] "; HFL::SetColor(HFL::EColor::White); std::cout << "Inspect Asset (Lazy Load specific index)\n";
+            HFL::SetColor(HFL::EColor::Green);
+            std::cout << " [0] "; HFL::SetColor(HFL::EColor::White); std::cout << "CONTINUE\n";
+
+            int Choice = HFL::GetValidMenuInput(2);
+            if (Choice == 0) break;
+
+            if (Choice == 1)
             {
-                if (!TextureProxy)
+                HFL::PrintSection("ACTION: FLUSHING & RE-INITIALIZING");
+
+                if (!AssetLibrary.empty())
                 {
-                    std::cout << "\n[Error] No proxy exists. Create one first.\n";
-                    break;
+                    std::cout << "Reclaiming RAM from existing assets...\n";
+                    AssetLibrary.clear();
+                    std::this_thread::sleep_for(std::chrono::milliseconds(500));
                 }
 
-                std::cout << "\n[Action] Second access to texture data.\n";
-                std::cout << ">> Expect instant response (cached).\n";
+                std::cout << "Generating " << CatalogSize << " lightweight proxies";
+                HFL::WaitDots(0.2);
 
-                int Width = TextureProxy->GetWidth();
-                std::cout << ">> Texture Width: " << Width << " (Cached)\n";
-                break;
+                for (int i = 0; i < CatalogSize; ++i)
+                {
+                    AssetLibrary.push_back(std::make_unique<RemoteTextureProxy>(500 + i));
+                }
+
+                HFL::SetColor(HFL::EColor::Green);
+                std::cout << " DONE!\n";
+                HFL::WaitForInput();
             }
+            else if (Choice == 2)
+            {
+                if (AssetLibrary.empty())
+                {
+                    HFL::SetColor(HFL::EColor::Red);
+                    std::cout << "\n[Error] Catalog is empty. Initialize first!\n";
+                    HFL::WaitForInput();
+                    continue;
+                }
 
-            default:
-                std::cout << "\n[Error] Invalid choice.\n";
-                break;
+                HFL::PrintSection("CHOOSE ASSET TO VIEW");
+                std::cout << "Enter Asset Number (1 to " << AssetLibrary.size() << "): ";
+                int UserIndex;
+                if (!(std::cin >> UserIndex)) {
+                    std::cin.clear();
+                    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+                    continue;
+                }
+
+                int VectorIndex = UserIndex - 1;
+
+                if (VectorIndex >= 0 && VectorIndex < (int)AssetLibrary.size())
+                {
+                    HFL::PrintSection("DISPLAYING ASSET");
+
+                    // Accessing data through the Proxy interface
+                    int W = AssetLibrary[VectorIndex]->GetWidth();
+                    int H = AssetLibrary[VectorIndex]->GetHeight();
+
+                    HFL::SetColor(HFL::EColor::White);
+                    std::cout << "\nAsset Info: " << W << "x" << H << "px\n";
+                    std::cout << "Status: Success. Only this asset was fetched from the server.\n";
+                }
+                else
+                {
+                    HFL::SetColor(HFL::EColor::Red);
+                    std::cout << "Invalid index selection.\n";
+                }
+                HFL::WaitForInput();
             }
-
-            HFL::WaitForInput();
         }
 
-
-        // --- STEP 4: CONCLUSION ---
+        // ======================== CONCLUSION ========================
         HFL::ClearScreen();
-        HFL::PrintHeader("Conclusion");
+        HFL::PrintHeader("CONCLUSION");
 
-        std::cout << "Summary:\n\n";
-        std::cout << "1. Lazy Initialization:\n";
-        std::cout << "   Created 1 Proxy instantly. The RealTexture was NOT created.\n";
-        std::cout << "   Only downloaded the RealTexture when GetWidth() was called.\n\n";
+        HFL::PrintSection("STRUCTURAL OBSERVATIONS");
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "The implementation of the Virtual Proxy confirms the following:\n\n";
 
-        std::cout << "2. Virtual Proxy:\n";
-        std::cout << "   The Game Logic didn't know it was talking to a Server.\n";
-        std::cout << "   The Proxy handled the network request transparently.\n\n";
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] TRANSPARENT SUBSTITUTION: ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The Client logic interacts only with 'ITexture'. It remains\n"
+            << "    completely unaware whether it is talking to a Proxy or a Real Subject.\n";
 
-        std::cout << "3. Performance:\n";
-        std::cout << "   The first call took 1.5s (Simulated Network).\n";
-        std::cout << "   The second call took <1ms (Cached).\n";
-        std::cout << "   This allows instant Game Start times.\n";
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] ENCAPSULATED COMPLEXITY:  ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The 'messy' details of network latency, streaming, and caching are\n"
+            << "    hidden inside the Proxy, keeping the Asset Library logic clean.\n";
 
-        std::cout << std::setw(40) << "End of Demo\n";
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] RESOURCE MANAGEMENT:      ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "By utilizing std::unique_ptr, the Proxy ensures that when it is\n"
+            << "    destroyed, the heavy RealSubject is also safely purged from RAM.\n\n";
+
+        HFL::PrintSection("SUMMARY");
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "The Proxy Pattern ensures that software is:\n\n";
+
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] RESPONSIVE: ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Boot times are near-instant because we defer the cost of initialization.\n";
+
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] EFFICIENT:  ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "System resources (RAM/Bandwidth) are only allocated for data actually used.\n";
+
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] PREDICTABLE: ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Access to sensitive or heavy resources is centralized through a single gatekeeper.\n\n";
+
+        HFL::SetColor(HFL::EColor::White);
         HFL::WaitForInput();
     }
 }

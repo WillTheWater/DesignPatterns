@@ -14,25 +14,24 @@
 //
 // THE EXAMPLE:
 // A Remote Texture Asset System.
-// 1. RealTexture: The heavy object that holds pixel data.
-//    Loading it is slow (Simulated).
-// 2. RemoteTextureProxy (The Proxy): The lightweight object the Game holds.
-//    It looks like a Texture, but it's empty until needed.
-// 3. ServerConnection: The network interface.
-//    The Proxy uses this to download the heavy RealTexture from the "Server".
+// [ITexture]: The interface both the "Real Texture" and "Proxy" implement.
+// [RealTexture]: The heavy object (Server-side) holding raw pixel data.
+// [RemoteTextureProxy]: The lightweight placeholder the Game Logic holds.
+// [ServerConnection]: The network handler the Proxy uses to fetch data.
 //
-// BENEFIT:
-// 1. Performance: Create 100 Texture Proxies instantly.
-//    Pay the cost of downloading only when actually used.
+// THE BENEFIT:
+// * Performance: Create 100 Texture Proxies instantly without memory overhead.
+// * Efficiency: Pay the cost of downloading/loading only when actually used.
+// * Control: The Proxy can handle cache logic or "Loading..." states.
 // =========================================================================
 
 namespace PRX
 {
-    // ------------------------------------------------------------------------
-    // 1. THE TARGET INTERFACE (The Contract)
-    // ------------------------------------------------------------------------
-    // This is the interface both the "Real Texture" (Server) and "Proxy" (Client) implement.
+    // =========================================================================
+    // THE ABSTRACTION (The Interface)
+    // Defines the contract for both the Real Subject and the Proxy.
     // The Game Logic only knows about this interface.
+    // =========================================================================
     class ITexture
     {
     public:
@@ -42,18 +41,17 @@ namespace PRX
         virtual int GetHeight() = 0;
     };
 
-    // ------------------------------------------------------------------------
-    // 2. THE REAL SUBJECT (The Heavy Object - The Server)
-    // ------------------------------------------------------------------------
-    // In a real engine, this class lives on the Server machine.
-    // It represents a high-resolution image.
-    // Loading this data is "Expensive".
+    // =========================================================================
+    // THE REAL SUBJECT (The Heavy Object)
+    // Represents a high-resolution image. In a real scenario, this lives
+    // on a server or deep in the disk. Loading this is "Expensive".
+    // =========================================================================
     class RealTexture : public ITexture
     {
     public:
         RealTexture(std::string Name, int Width, int Height);
+        ~RealTexture();
 
-        // The RealSubject implements the interface.
         int GetWidth() override { return Width; }
         int GetHeight() override { return Height; }
 
@@ -63,54 +61,46 @@ namespace PRX
         int Height;
     };
 
-    // ------------------------------------------------------------------------
-    // 3. THE PROXY (The Placeholder / The Client)
-    // ------------------------------------------------------------------------
-    // This class represents the "Catalog Entry" or "Stub".
-    // It implements the interface so the Game can treat it like a real texture.
-    // However, it does NOT load the heavy RealTexture immediately.
-    // It delegates to a "Requestor" (ServerConnection) to get the data.
+    // =========================================================================
+    // THE REQUESTOR (The Network Link)
+    // This class represents the connection to the asset server.
+    // It is used by the Proxy to "download" the heavy RealSubject.
+    // =========================================================================
+    class ServerConnection
+    {
+    public:
+        // The heavy method that simulates network latency and asset creation.
+        std::unique_ptr<RealTexture> DownloadAsset(int AssetID);
+    };
+
+    // =========================================================================
+    // THE PROXY (The Placeholder)
+    // Implements the interface so the Game Logic can treat it like a real texture.
+    // It delegates to the ServerConnection only when data is requested.
+    // =========================================================================
     class RemoteTextureProxy : public ITexture
     {
     public:
-        // The Proxy is created with a "Ticket" (An ID to request from server).
-        // In a real app, this might be a file path or a GUID.
+        // The Proxy is created with a "Ticket" (ID/GUID) rather than raw data.
         RemoteTextureProxy(int AssetID);
 
-        // The Game Logic calls this method.
-        // The Proxy checks: "Do I have the real object? If not, ask Server."
+        // LAZY LOADING: Checks if RealSubject exists; if not, triggers download.
+        bool IsLoaded() const;
         int GetWidth() override;
         int GetHeight() override;
 
     private:
         int AssetID;
-        // The "Lazy" pointer. It is null until the first time data is requested.
+
+        // The "Lazy" pointer. Null until the first request.
         std::unique_ptr<RealTexture> RealSubject;
 
-        // The Requestor. The Proxy uses this to "download" the RealSubject.
-        std::unique_ptr<class ServerConnection> Requestor;
+        // The helper used to fetch the real object.
+        std::unique_ptr<ServerConnection> Requestor;
     };
 
-    // ------------------------------------------------------------------------
-    // 4. THE REQUESTOR (The Server / The Heavy Machinery)
-    // ------------------------------------------------------------------------
-    // This class represents the network connection to the asset server.
-    // It is the "Adaptee" that the Proxy (RemoteTextureProxy) uses.
-    class ServerConnection
-    {
-    public:
-        ServerConnection()
-        {
-            std::cout << "[System] ServerConnection (Network Link) Established.\n";
-        }
-
-        // This is the heavy method that actually does the work.
-        // The Proxy calls this to get the 'RealTexture' data.
-        std::unique_ptr<RealTexture> DownloadAsset(int AssetID);
-    };
-
-    // ------------------------------------------------------------------------
-    // 4. DEMO
-    // ------------------------------------------------------------------------
+    // =========================================================================
+    // DEMO
+    // =========================================================================
     void RunDemo();
 }
