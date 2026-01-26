@@ -3,36 +3,36 @@
 #include "FunctionLibrary/HelperFunctionLibrary.h"
 
 // =========================================================================
-// STRUCTURAL DESIGN PATTERNS: Decorator
+// STRUCTURAL DESIGN PATTERN: Decorator
 // =========================================================================
 // "Attach additional responsibilities to an object dynamically."
 //
 // THE GOAL:
-// Add features (Skins, Stats) to an object without changing its class.
+// Provide a flexible alternative to sub-classing for extending functionality. 
+// Instead of creating a 'FireSword' class, we 'wrap' a BasicSword in a 
+// FireDecorator at runtime.
+//
+// THE BENEFIT:
+// * Flexibility: Responsibilities can be added or removed at runtime.
+// * Composability: Multiple decorators can be stacked (Fire + Ice + Poison).
+// * Single Responsibility: Complex behavior is broken into small, 
+//   incremental classes rather than one "God Class" with every feature.
 //
 // THE EXAMPLE:
-// A "RPG Weapon" Enchantment System.
-// 1. Base Component (IWeapon): Defines 'GetDamage()' and 'GetName()'.
-// 2. Leaf (BasicSword): The raw item (The Component).
-// 3. Decorators (Fire, Ice, Frost): Wrapper classes.
-//    They "Wrap" a Weapon, add their own effect, and pass calls down.
-//
-// THE SCENARIO:
-// We have a 'BasicSword' (Damage: 10).
-// We apply 'Fire Enchantment'. It adds +10 Damage.
-// We apply 'Ice Enchantment' (Stacking on Fire). It adds -5 Speed (Slow).
-//
-// BENEFIT:
-// You can mix and match Enchantments (Fire + Ice) without changing 'BasicSword'.
+// [IWeapon]: The Component interface. Defines GetDamage() and GetName().
+// [BasicSword]: The Concrete Component. The base object being decorated.
+// [IEnchantment]: The Base Decorator. Maintains a reference to a weapon.
+// [Fire/Ice/Poison]: Concrete Decorators. They add specific logic to the
+//   wrapped weapon's calls.
 // =========================================================================
 
 namespace DEC
 {
-    // ------------------------------------------------------------------------
-    // 1. THE COMPONENT (The Target Interface)
-    // ------------------------------------------------------------------------
-    // This is the "Contract" that both Items and Wrappers follow.
-    // It defines what a Weapon DOES, not how it looks.
+    // =========================================================================
+    // THE COMPONENT (The Interface)
+    // ROLE: Defines the common interface for both the core objects and 
+    // the decorators that will wrap them.
+    // =========================================================================
     class IWeapon
     {
     public:
@@ -42,10 +42,10 @@ namespace DEC
         virtual std::string GetName() const = 0;
     };
 
-    // ------------------------------------------------------------------------
-    // 2. THE CONCRETE COMPONENT (The Leaf)
-    // ------------------------------------------------------------------------
-    // This is the "Part". The raw Item.
+    // =========================================================================
+    // THE CONCRETE COMPONENT (The Leaf)
+    // ROLE: The core object that can have responsibilities added to it.
+    // =========================================================================
     class BasicSword : public IWeapon
     {
     public:
@@ -59,68 +59,60 @@ namespace DEC
         std::string Name;
     };
 
-    // ------------------------------------------------------------------------
-    // 3. THE ABSTRACT DECORATOR (The Wrapper Interface)
-    // ------------------------------------------------------------------------
-    // This is the "Label".
-    // It inherits from IWeapon, so it *IS-A* Weapon.
-    // It wraps another IWeapon to add features.
+    // =========================================================================
+    // THE BASE DECORATOR (The Wrapper)
+    // ROLE: Maintains a pointer to an IWeapon and conforms to the IWeapon 
+    // interface, allowing it to be "transparent" to the client.
+    // =========================================================================
     class IEnchantment : public IWeapon
     {
     public:
-        // The Decorator holds a pointer to the Item it decorates.
-        // Passing 'RawItem' into the constructor use for ownership.
+        // Decorator takes ownership of the item it wraps
         IEnchantment(std::unique_ptr<IWeapon> RawItem);
 
     protected:
-        // The wrapped object is 'protected' so Decorators can access it.
+        // Protected so concrete decorators can access the underlying item
         std::unique_ptr<IWeapon> WrappedItem;
     };
 
-    // ------------------------------------------------------------------------
-    // 4. THE CONCRETE DECORATORS (The Stickers / Wrappers)
-    // ------------------------------------------------------------------------
+    // =========================================================================
+    // CONCRETE DECORATORS (The Effects)
+    // ROLE: Add state or behavior to the component. They call the wrapped 
+    // object and then "decorate" the result.
+    // =========================================================================
 
-    // --- A. FIRE ENCHANTMENT ---
-    // Wraps a weapon and adds Fire Damage (+20).
+    // ======================== FIRE ENCHANTMENT (+20 Damage) ========================
     class FireEnchantment : public IEnchantment
     {
     public:
         FireEnchantment(std::unique_ptr<IWeapon> RawItem);
 
-        // THE DECORATOR LOGIC
-        // Adds its own effect
         int GetDamage() const override;
-
         std::string GetName() const override { return "Burning " + WrappedItem->GetName(); }
     };
 
-    // --- B. ICE ENCHANTMENT ---
-    // Wraps a weapon and adds Cold Damage (+10).
+    // ======================== ICE ENCHANTMENT (+10 Damage) ========================
     class IceEnchantment : public IEnchantment
     {
     public:
         IceEnchantment(std::unique_ptr<IWeapon> RawItem);
 
         int GetDamage() const override;
-
         std::string GetName() const override { return "Frozen " + WrappedItem->GetName(); }
     };
 
-    // --- C. POISON ENCHANTMENT ---
-    // Wraps a weapon and adds Poison (+15 Damage).
+    // ======================== POISON ENCHANTMENT (+15 Damage) ========================
     class PoisonEnchantment : public IEnchantment
     {
     public:
         PoisonEnchantment(std::unique_ptr<IWeapon> RawItem);
 
         int GetDamage() const override;
-
         std::string GetName() const override { return "Poisoned " + WrappedItem->GetName(); }
     };
 
-    // ------------------------------------------------------------------------
-    // 5. DEMO
-    // ------------------------------------------------------------------------
+    // =========================================================================
+    // DEMO IMPLEMENTATION
+    // =========================================================================
     void RunDemo();
 }

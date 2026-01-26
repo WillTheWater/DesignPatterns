@@ -345,20 +345,20 @@ namespace FAC
                 ActiveHero.Name = Name;
                 ActiveHero.Level = 1;
                 ActiveHero.XP = 0.0f;
-                ActiveHero.Gold = 100 + (rand() % 400);
+                ActiveHero.Gold = HFL::GetRandom(100, 500);
 
-                ActiveHero.Strength = 8 + (rand() % 12);
-                ActiveHero.Agility = 8 + (rand() % 12);
-                ActiveHero.Intelligence = 8 + (rand() % 12);
+                ActiveHero.Strength = HFL::GetRandom(8, 20);
+                ActiveHero.Agility = HFL::GetRandom(8, 20);
+                ActiveHero.Intelligence = HFL::GetRandom(8, 20);
                 ActiveHero.Health = 100 + (ActiveHero.Strength * 5);
                 ActiveHero.Mana = 50 + (ActiveHero.Intelligence * 5);
 
                 ActiveHero.PrimaryWeapon = (ActiveHero.Strength > 15) ? "Club" : "Stick";
                 ActiveHero.ArmorClass = 10 + (ActiveHero.Agility / 4);
-                ActiveHero.PotionsCount = 1 + (rand() % 3);
+                ActiveHero.PotionsCount = HFL::GetRandom(1, 4);
 
-                float RandomX = (float)(rand() % 1000) / 10.0f;
-                float RandomZ = (float)(rand() % 1000) / 10.0f;
+                float RandomX = HFL::GetRandom(0.0f, 100.0f);
+                float RandomZ = HFL::GetRandom(0.0f, 100.0f);
                 ActiveHero.Position3D[0] = { RandomX, 0.0f, RandomZ };
 
                 ActiveHero.PlayTimeSeconds = 0.0f;
