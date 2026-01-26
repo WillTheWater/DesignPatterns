@@ -4,80 +4,55 @@ namespace COM
 {
     // =========================================================================
     // LEAF IMPLEMENTATIONS (Single Items)
+    // ROLE: Primitive objects. They do not contain children and return 
+    // their own base values directly.
     // =========================================================================
-    // These are "Parts". They do not contain anything else.
 
     Coin::Coin(int GoldAmount)
-        : Value(GoldAmount), Name("Coin " + std::to_string(GoldAmount))
+        : Value(GoldAmount), Name("Coins")
     {
     }
 
-    Weapon::Weapon(int GoldAmount, std::string Name)
-        : Value(GoldAmount), Name(Name)
-    {
-    }
-
-    Potion::Potion(int GoldAmount, std::string Name)
+    Item::Item(int GoldAmount, std::string Name)
         : Value(GoldAmount), Name(Name)
     {
     }
 
     // =========================================================================
     // COMPOSITE IMPLEMENTATION (The Chest)
+    // ROLE: Orchestrates children. Implements recursion to treat a 
+    // collection of items as a single unit.
     // =========================================================================
-    // The Chest is the "Composite". It contains a list of items.
 
     Chest::Chest(std::string Name)
         : BaseValue(0), Name(Name)
     {
-        std::cout << "[System] Chest '" << Name << "' Created.\n";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "[System] Container '" << Name << "' initialized.\n";
     }
 
     void Chest::AddItem(std::unique_ptr<IInventoryItem> Item)
     {
-        // "Has-A" Relationship.
-        // The Chest "owns" the item.
-        // When Chest is destroyed, items inside are destroyed.
+        // Ownership Transfer: The Composite now manages the lifecycle of the Leaf.
         Items.push_back(std::move(Item));
     }
 
-    // THE CORE LOGIC: RECURSION
-    // This is the most important method in the Composite pattern.
-    // It sums up values of itself PLUS children.
     int Chest::GetValue() const
     {
-        std::cout << "\n----------------------------------------\n";
-        std::cout << "   Calculating Value for Chest '" << Name << "'...\n";
-        std::cout << "----------------------------------------\n";
+        int TotalValue = BaseValue;
 
-        int TotalValue = 0;
-
-        // 1. Add Self Value (The Weight of the Chest)
-        TotalValue += BaseValue;
-        std::cout << "   [Self] Chest Weight: " << BaseValue << "\n";
-
-        // 2. Add Children Values (The Contents)
-        // We iterate through every item inside the Chest.
-        // Note: We iterate by reference (const auto&) for performance.
         for (const auto& Item : Items)
         {
-            // IMPORTANT: POLYMORPHISM
-            // We call 'item->GetValue()'.
-            // Since 'item' IS-A 'IInventoryItem', this works.
-            // If 'item' is a Coin, it returns 1.
-            // If 'item' is a Weapon, it returns 500.
-            // If 'item' is ANOTHER CHEST (Composite), this triggers recursion!
-            // The other Chest starts calculating its own total.
             int ItemValue = Item->GetValue();
-
-            std::cout << "   [Child] Found item: " << Item->GetName() << " (Value: " << ItemValue << ")\n";
             TotalValue += ItemValue;
+
+            HFL::SetColor(HFL::EColor::White);
+            std::cout << "     [Item]: ";
+            HFL::SetColor(HFL::EColor::Gray);
+            std::cout << std::left << std::setw(20) << Item->GetName();
+            HFL::SetColor(HFL::EColor::Green);
+            std::cout << " Value: " << ItemValue << " Gold\n";
         }
-
-        std::cout << "----------------------------------------\n";
-        std::cout << "   [RESULT] Total Value of Chest '" << Name << "': " << TotalValue << " Gold\n";
-        std::cout << "----------------------------------------\n\n";
-
         return TotalValue;
     }
 
@@ -87,231 +62,328 @@ namespace COM
 
     Player::Player()
     {
-        std::cout << "[System] Player Created.\n";
-
-        // Create the Main Inventory
-        MainInventory = std::make_unique<Chest>("Player Inventory");
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "[System] Player joined the world.\n";
+        MainInventory = std::make_unique<Chest>("Main Inventory");
     }
 
     void Player::AddToInventory(std::unique_ptr<IInventoryItem> Item)
     {
-        // The Player acts as a manager. It adds items to the Inventory.
-        std::cout << ">> [Player] Adding " << Item->GetName() << " to Inventory...\n";
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[Player] Looted: " << Item->GetName() << "\n";
         MainInventory->AddItem(std::move(Item));
     }
 
     void Player::LootChest(Chest* TargetChest)
     {
-        std::cout << ">> [Player] Attempting to loot chest...\n";
+        HFL::PrintSection("LOOTING");
 
-        if (!TargetChest)
-        {
-            std::cout << "   [Error] Target Chest is null.\n";
-            return;
-        }
-        if (TargetChest->GetItems().empty())
-        {
-            std::cout << "   [Info] Chest is already empty.\n";
-            return;
-        }
+        if (!TargetChest) return;
 
-        std::cout << "   [Info] Taking items from Chest...\n";
+        // Instead of unpacking the chest, this treats the chest as an IInventoryItem.
+        // To do this, it wraps the raw pointer back into a unique_ptr.
 
-        // LOOTING LOGIC (Move Logic)
-        // We "move" items from TargetChest to MainInventory.
-
-        // 1. Calculate Total Loot Value
-        // This calls GetValue() on TargetChest, which triggers Recursion.
         int LootValue = TargetChest->GetValue();
 
-        // 2. Transfer items (Simulation)
-        for (int i = static_cast<int>(TargetChest->GetItems().size()) - 1; i >= 0; --i)
+        for (auto& item : TargetChest->GetItems())
         {
-            // After this move, MainInventory owns the item.
-            MainInventory->AddItem(std::move(TargetChest->GetItems()[i]));
+            MainInventory->AddItem(std::move(item));
         }
-
-        // 3. Clear Target Chest
         TargetChest->GetItems().clear();
 
-        std::cout << "   [Success] Looted " << LootValue << " Gold worth of items!\n";
+        HFL::SetColor(HFL::EColor::Yellow);
+        std::cout << "\n>> [Success] Transferred " << LootValue << " Gold worth of items to player.\n";
     }
 
     void Player::PrintTotalValue()
     {
-        // The Player just asks MainInventory for its total value.
-        // It doesn't need to know if there are Sub-Chests.
-        // The MainInventory handles the Recursion.
-        if (MainInventory)
+        int TotalGold = MainInventory->GetValue();
+
+        if (TotalGold <= 0)
         {
-            int TotalGold = MainInventory->GetValue();
-            std::cout << "\n>> [Player] Current Inventory Value: " << TotalGold << " Gold\n";
+            HFL::SetColor(HFL::EColor::Green);
+            std::cout << "\n\t\t\tEMPTY\n\n";
+        }
+        else
+        {
+            HFL::SetColor(HFL::EColor::Green);
+            std::cout << "\n\t\t\t" << "TOTAL: " << TotalGold << " Gold\n\n";
         }
     }
 
     // =========================================================================
     // DEMO IMPLEMENTATION
     // =========================================================================
+
     void RunDemo()
     {
-        // Clear buffer
         std::cin.clear();
         std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
-        // --- STEP 1: INTRODUCTION ---
+        // ======================== INTRODUCTION ========================
         HFL::ClearScreen();
-        HFL::PrintHeader("Composite Pattern (Chest Inventory)");
+        HFL::PrintHeader("COMPOSITE DESIGN PATTERN");
 
-        std::cout << "Definition:\n";
-        std::cout << "Compose objects into tree structures to represent part-whole hierarchies.\n";
-        std::cout << "Allow treating single objects (Leafs) and groups (Composites) uniformly.\n\n";
+        HFL::PrintSection("THE DEFINITION");
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "Compose objects into tree structures to represent part-whole hierarchies.\n"
+            << "Composite lets clients treat individual objects and compositions uniformly.\n\n";
 
-        std::cout << "In This Demo:\n";
-        std::cout << "Simulates an Inventory System.\n";
-        std::cout << "1. Leaves: Coins, Weapons, Potions (Single Items).\n";
-        std::cout << "2. Composites: Chests (Bags of Items).\n";
-        std::cout << "   Chests can contain other Chests (Nested Trees).\n";
-        std::cout << "3. Player (The Client): Holds a 'MainInventory' Chest.\n";
+        HFL::PrintSection("THE GOAL");
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The Composite Pattern is about 'Recursive Aggregation'.\n"
+            << "It allows building complex hierarchies (Chests within Chests)\n"
+            << "while keeping the Client logic simple. The Client calls GetValue()\n"
+            << "once, and the pattern handles the traversal of the entire tree.\n\n";
+
+        HFL::PrintSection("THE EXAMPLE");
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "This demonstration features a Recursive Inventory System with tree nodes:\n\n";
+
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] THE LEAVES:          ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Primitive items (Coins, Items) that return a direct value.\n";
+
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] THE COMPOSITE:       ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Containers (Chests) that hold other items or even other chests.\n";
+
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] THE RECURSION:       ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The mechanism that drills down through the 'tree' to sum values.\n\n";
+
+        HFL::PrintSection("THE BENEFIT");
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] UNIFORMITY:      ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The Client treats a single Coin and a massive Chest exactly the same.\n";
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] TREE STRUCTURE:  ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Supports infinite nesting (e.g., a Bag inside a Chest inside a Vault).\n";
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] SCALABILITY:     ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "New item types can be added without changing the tree-traversal logic.\n";
 
         HFL::WaitForInput();
 
-        // --- STEP 2: THE ARCHITECTURE ---
+        // ======================== THE ARCHITECTURE ========================
         HFL::ClearScreen();
-        HFL::PrintHeader("Step 1: The Part-Whole Hierarchy");
+        HFL::PrintHeader("THE ARCHITECTURE");
 
-        std::cout << "Define an 'IInventoryItem' interface (The Contract).\n";
-        std::cout << "It has 'GetValue()' which returns the Gold worth.\n\n";
+        HFL::PrintSection("THE 'PART-WHOLE' RELATIONSHIP");
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "In most systems, there is a seperation between an object and a container.\n"
+            << "Composite 'flattens' this distinction by making the container (the Whole)\n"
+            << "implement the same interface as the object (the Part).\n\n";
 
-        std::cout << "1. Leaves (The Parts):\n";
-        std::cout << "   - Coin: Value is 1.\n";
-        std::cout << "   - Weapon: Value is 500.\n";
-        std::cout << "   - Potion: Value is 50.\n\n";
+        HFL::PrintSection("IMPLEMENTATION");
 
-        std::cout << "2. Composites (The Wholes):\n";
-        std::cout << "   - Chest: Contains items (Has-A relationship).\n";
-        std::cout << "   - Chest 'GetValue()' sums up:\n";
-        std::cout << "     a. Its own weight (Empty chest = 0).\n";
-        std::cout << "     b. The value of EVERY item inside it.\n\n";
+        // ======================== THE LEAVES ========================
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] Leaf Nodes (Coins, Items, etc...)\n";
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "    ROLE:           ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "End-points. They do not have children and return raw data.\n";
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "    INTERFACE:      ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Implements GetValue() to return its specific gold worth.\n\n";
 
-        std::cout << "THE RECURSION MAGIC:\n";
-        std::cout << "   When MainInventory->GetValue(), it asks every Chest inside.\n";
-        std::cout << "   If those chests contain other chests, they sum up too!\n";
-        std::cout << "   This allows infinite nesting (Trees).\n\n";
+        // ======================== THE COMPOSITE ========================
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] Composite Node (The Chest)\n";
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "    ROLE:           ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The Container. It stores a list of pointers to 'IInventoryItem'.\n";
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "    RECURSION:      ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "GetValue() iterates through children and calls their GetValue().\n";
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "    FLEXIBILITY:    ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Since children are stored as the interface, it can hold other chests.\n\n";
 
-        std::cout << "THE BENEFIT:\n";
-        std::cout << "   No need to manually 'Add Up' values when looting.\n";
-        std::cout << "   The Chest handles calculating totals automatically.\n";
-
+        HFL::SetColor(HFL::EColor::White);
         HFL::WaitForInput();
 
-        // --- STEP 3: INTERACTIVE SYSTEM ---
-
-        // Create Player
+        // ======================== INITIALIZATION ========================
         Player MyPlayer;
-        std::unique_ptr<Chest> currentSubChest; // Store the created sub-chest
+        std::unique_ptr<Chest> ActiveChest = nullptr;
 
-        bool InDemo = true;
-        while (InDemo)
+        // ======================== GAME LOOP ========================
+        while (true)
         {
             HFL::ClearScreen();
-            HFL::PrintHeader("Chest Inventory");
+            HFL::PrintHeader("COMPOSITE INVENTORY");
 
-            // 1. Display Current Inventory Status
-            std::cout << "Current Inventory Status:\n";
+            // ======================== DATA DISPLAY ========================
+            HFL::PrintSection("PLAYER INVENTORY");
             MyPlayer.PrintTotalValue();
 
-            std::cout << "\nSelect Action:\n";
-            std::cout << "1. Add Coin to Inventory\n";
-            std::cout << "2. Add Weapon to Inventory\n";
-            std::cout << "3. Create Sub-Chest (Nested Chest)\n";
-            std::cout << "4. Add Items to Sub-Chest\n";
-            std::cout << "5. Loot Sub-Chest (Move to Main Inventory)\n";
-            std::cout << "0. Exit Demo\n";
-            std::cout << "\nChoice: ";
+            HFL::PrintSection("ACTIVE CHEST");
+            if (ActiveChest)
+            {
+                HFL::SetColor(HFL::EColor::Cyan);
+                std::cout << " [Selected: " << ActiveChest->GetName() << "]\n";
+                HFL::SetColor(HFL::EColor::Gray);
 
-            int Choice;
-            std::cin >> Choice;
+                int CurrentChestValue = ActiveChest->GetValue();
 
-            if (std::cin.fail()) { std::cin.clear(); std::cin.ignore(); continue; }
+                std::cout << " Status: ";
+                if (CurrentChestValue == 0)
+                {
+                    HFL::SetColor(HFL::EColor::Red);
+                    std::cout << "Empty\n\n";
+                }
+                else
+                {
+                    HFL::SetColor(HFL::EColor::Green);
+                    std::cout << CurrentChestValue << " Gold Total\n\n";
+                }
+            }
+            else
+            {
+                HFL::SetColor(HFL::EColor::Gray);
+                std::cout << " [No container selected - Items go to main inventory]\n\n";
+            }
 
+            // ======================== COMMANDS ========================
+            HFL::PrintSection("COMMANDS");
+            HFL::SetColor(HFL::EColor::Green);
+            std::cout << " [1] "; HFL::SetColor(HFL::EColor::White); std::cout << "CREATE CONTAINER\n";
+            HFL::SetColor(HFL::EColor::Green);
+            std::cout << " [2] "; HFL::SetColor(HFL::EColor::White); std::cout << "ADD ITEM\n";
+            HFL::SetColor(HFL::EColor::Green);
+            std::cout << " [3] "; HFL::SetColor(HFL::EColor::White); std::cout << "ADD COINS\n";
+            HFL::SetColor(HFL::EColor::Green);
+            std::cout << " [4] "; HFL::SetColor(HFL::EColor::White); std::cout << "PICKUP CONTAINER\n\n";
+            HFL::SetColor(HFL::EColor::Green);
+            std::cout << " [0] "; HFL::SetColor(HFL::EColor::White); std::cout << "CONTINUE\n\n";
+
+            int Choice = HFL::GetValidMenuInput(4);
             if (Choice == 0) break;
 
-            if (Choice == 1)
+            switch (Choice)
             {
-                auto NewCoin = std::make_unique<Coin>(10);
-                MyPlayer.AddToInventory(std::move(NewCoin));
-                HFL::WaitForInput();
-            }
-            else if (Choice == 2)
+            case 1:
             {
-                auto Sword = std::make_unique<Weapon>(500, "Iron Sword");
-                MyPlayer.AddToInventory(std::move(Sword));
-                HFL::WaitForInput();
-            }
-            else if (Choice == 3)
-            {
-                // Create a Sub-Chest (A Composite)
-                currentSubChest = std::make_unique<Chest>("Treasure Chest");
-                std::cout << "\n>> [Player] Created Sub-Chest.\n";
-                HFL::WaitForInput();
-            }
-            else if (Choice == 4)
-            {
-                if (currentSubChest)
-                {
-                    std::cout << "\n>> [Player] Adding items to Sub-Chest...\n";
-                    currentSubChest->AddItem(std::make_unique<Coin>(50));
-                    currentSubChest->AddItem(std::make_unique<Potion>(100, "Healing Potion"));
-                    std::cout << ">> [Player] Added Coin (50) and Potion (100) to Sub-Chest.\n";
-                }
-                else
-                {
-                    std::cout << "\n>> [Error] No Sub-Chest created. Please create one first.\n";
-                }
-                HFL::WaitForInput();
-            }
-            else if (Choice == 5)
-            {
-                if (currentSubChest)
-                {
-                    std::cout << "\n>> [Player] Searching for Sub-Chest to loot...\n";
+                HFL::PrintSection("CONTAINER CREATION");
+                std::string CName;
+                std::cout << "Enter Container Name: ";
+                std::cin >> CName;
 
-                    // LOOT!
-                    MyPlayer.LootChest(currentSubChest.get());
-
-                    // Clear the sub-chest pointer after looting
-                    currentSubChest.reset();
-                }
-                else
-                {
-                    std::cout << "\n>> [Error] No Sub-Chest to loot. Please create one first.\n";
-                }
-                HFL::WaitForInput();
+                ActiveChest = std::make_unique<Chest>(CName);
+                std::cout << ">> " << CName << " created.\n";
+                break;
             }
+            case 2: // Add a Leaf (Item)
+            {
+                auto NewItem = std::make_unique<Item>(HFL::GetRandom(100,2000), ITEM_NAMES[HFL::GetRandom(0,19)]);
+                if (ActiveChest) 
+                {
+                    std::cout << ">> Adding Item to " << ActiveChest->GetName() << "...\n";
+                    ActiveChest->AddItem(std::move(NewItem));
+                }
+                else 
+                {
+                    std::cout << ">> Adding Item directly to Player...\n";
+                    MyPlayer.AddToInventory(std::move(NewItem));
+                }
+                break;
+            }
+            case 3: // Add a Leaf (Coins)
+            {
+                auto NewCoins = std::make_unique<Coin>(HFL::GetRandom(5, 40));
+                if (ActiveChest) 
+                {
+                    std::cout << ">> Dropping coins into " << ActiveChest->GetName() << "...\n";
+                    ActiveChest->AddItem(std::move(NewCoins));
+                }
+                else 
+                {
+                    std::cout << ">> Adding coins to Player...\n";
+                    MyPlayer.AddToInventory(std::move(NewCoins));
+                }
+                break;
+            }
+            case 4: // Move Composite to Player
+            {
+                if (ActiveChest) 
+                {
+                    HFL::SetColor(HFL::EColor::Green);
+                    std::cout << ">> Picking up the " << ActiveChest->GetName() << "!\n";
+                    HFL::SetColor(HFL::EColor::Gray);
+                    std::cout << "NOTICE: The Player treats container as a single item.\n";
+
+                    // Move the whole tree into the player's inventory
+                    MyPlayer.LootChest(ActiveChest.get());
+                    ActiveChest.reset();
+                }
+                else 
+                {
+                    HFL::SetColor(HFL::EColor::Red);
+                    std::cout << "!! Error: No container !!\n";
+                }
+                break;
+            }
+            }
+            HFL::WaitForInput();
         }
 
-        // --- STEP 4: CONCLUSION ---
+        // ======================== CONCLUSION ========================
         HFL::ClearScreen();
-        HFL::PrintHeader("Conclusion");
+        HFL::PrintHeader("CONCLUSION");
 
-        std::cout << "Summary:\n\n";
-        std::cout << "1. Uniformity:\n";
-        std::cout << "   'Inventory->GetValue()' works for Coin and Chest.\n";
-        std::cout << "   They are treated exactly the same way.\n\n";
+        HFL::PrintSection("ARCHITECTURE");
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "The implementation of the Composite Pattern confirms the following:\n\n";
 
-        std::cout << "2. Recursion (Tree Traversal):\n";
-        std::cout << "   MainInventory -> Chest A -> Chest B -> Coin.\n";
-        std::cout << "   The 'GetValue()' call chains down the tree.\n";
-        std::cout << "   It sums up everything automatically.\n\n";
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] UNIFORMITY OF TYPES: ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The Client treats a single 'Coin' and a massive 'Chest' identically.\n"
+            << "    Polymorphism eliminates the need for messy 'type-checking' logic.\n";
 
-        std::cout << "3. Composition (Has-A Relationship):\n";
-        std::cout << "   'Chest' 'Has-A' Items.\n";
-        std::cout << "   When Chest dies, Items are destroyed.\n";
-        std::cout << "   This manages memory naturally.\n\n";
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] RECURSIVE AGGREGATION: ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The Chest delegates GetValue() to its children, who may delegate again.\n"
+            << "    Complex tree-traversal is encapsulated entirely within the objects.\n";
 
-        std::cout << "This is Composite Pattern.\n";
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] NESTED COMPOSITION: ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Structures can be nested infinitely (Chest > Bag > Pouch > Coin).\n"
+            << "    The top-level call remains a single, simple request for data.\n\n";
 
-        std::cout << std::setw(40) << "End of Demo\n";
+        HFL::PrintSection("SUMMARY");
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "The Composite Pattern ensures that software is:\n\n";
+
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] HIERARCHICAL:";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << " Models complex 'Part-Whole' relationships naturally.\n";
+
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] TRANSPARENT: ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The Client interacts with the Interface, not the implementation.\n";
+
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] SCALABLE:    ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "New Leaf types can be added without modifying the Composite logic.\n\n";
+
+        HFL::SetColor(HFL::EColor::White);
         HFL::WaitForInput();
     }
 }

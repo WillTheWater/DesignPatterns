@@ -3,62 +3,62 @@
 #include "FunctionLibrary/HelperFunctionLibrary.h"
 
 // =========================================================================
-// PRINCIPLE: Composite Pattern (Structural)
+// STRUCTURAL DESIGN PATTERN: Composite
 // =========================================================================
 // "Compose objects into tree structures to represent part-whole hierarchies."
 //
 // THE GOAL:
-// Allows you to treat a single object (Coin) and a collection of objects (Chest)
-// in exactly the same way.
+// Allows treating individual objects (Leaf) and compositions of objects 
+// (Composite) uniformly. In this case, a single "Coin" and a "Chest" full 
+// of items both behave as an "Inventory Item."
+//
+// THE BENEFIT:
+// * Uniformity: The client doesn't need to check if an item is a single unit 
+//   or a container; it simply calls GetValue().
+// * Recursive Hierarchy: Composites can contain other Composites (a Chest 
+//   inside a Chest), and the math "just works."
+// * Extensibility: New item types can be added without changing the 
+//   logic of the container or the client.
 //
 // THE EXAMPLE:
-// An Inventory System (Chests and Items).
-// 1. Component (IInventoryItem): Defines 'GetValue()' and 'GetName()'.
-// 2. Leaves (The Objects): Coin, Weapon, Potion. (Single units).
-// 3. Composite (The Group): Chest.
-//    - Contains a list of other items (Coins or other Chests).
-//    - 'GetValue()' sums up values of itself PLUS all children (Recursion).
-//
-// THE SCENARIO:
-// A 'Player' with a 'MainInventory'.
-// Find a 'Treasure Chest'.
-// Add 'Coins' and a 'Sword' to Chest.
-// "Move" (Loot) items from Chest to MainInventory.
-//
-// HOW IT WORKS:
-// Player->CalculateTotalValue() works on Inventory (Composite)
-// Inventory->GetValue() works on Chests (Composite)
-// Chest->GetValue() automatically checks inside itself (Recursion).
-//
-// BENEFIT:
-// You don't have to manually add up values when you loot.
-// The Chest handles its own total. The Inventory handles the grand total.
+// [IInventoryItem]: The Component. Interface for all lootable objects.
+// [Coin/Items/etc]: The Leaves. Primitive items with a fixed value.
+// [Chest]: The Composite. A container that sums its children's values.
+// [Player]: The Client. Manages a MainInventory (the root Composite).
 // =========================================================================
 
 namespace COM
 {
-    // ------------------------------------------------------------------------
-    // 1. THE COMPONENT (The Interface)
-    // ------------------------------------------------------------------------
-    // This interface represents a "Part-Whole" relationship.
-    // Both a "Leaf" (Single Item) and a "Composite" (Chest) implement this.
+    // =========================================================================
+    // THE COMPONENT (The Interface)
+    // ROLE: Defines the common interface for both simple and complex objects.
+    // =========================================================================
     class IInventoryItem
     {
     public:
         virtual ~IInventoryItem() = default;
 
-        // Returns how much the item is worth (in Gold).
+        // The uniform operation used by both Leaf and Composite
         virtual int GetValue() const = 0;
-
         virtual std::string GetName() const = 0;
     };
 
-    // ------------------------------------------------------------------------
-    // 2. LEAVES (The Single Items)
-    // ------------------------------------------------------------------------
-    // These are "Leafs" in the Composite tree.
+    inline std::string ITEM_NAMES[20] =
+    {
+        "Harlequin Crest", "Windforce", "The Grandfather", "Stone of Jordan",
+        "Arkaine's Valor", "Stormshield", "Skin of the Vipermagi", "Wizardspike",
+        "War Traveler", "The Eye of Etlich", "Bonesnap", "Buriza-Do Kyanon",
+        "Shaftstop", "String of Ears", "Magefist", "Raven Frost",
+        "Mara's Kaleidoscope", "The Oculus", "Doombringer", "Guardian Angel"
+    };
 
-    // --- A. COIN ---
+    // =========================================================================
+    // THE LEAVES (The Single Items)
+    // ROLE: Primitive objects that have no children. They perform the 
+    // actual work of returning base values.
+    // =========================================================================
+
+    // ======================== COIN ========================
     class Coin : public IInventoryItem
     {
     public:
@@ -72,11 +72,11 @@ namespace COM
         std::string Name;
     };
 
-    // --- B. WEAPON ---
-    class Weapon : public IInventoryItem
+    // ======================== ITEM ========================
+    class Item : public IInventoryItem
     {
     public:
-        Weapon(int GoldAmount, std::string Name);
+        Item(int GoldAmount, std::string Name);
 
         int GetValue() const override { return Value; }
         std::string GetName() const override { return Name; }
@@ -86,73 +86,53 @@ namespace COM
         std::string Name;
     };
 
-    // --- C. POTION ---
-    class Potion : public IInventoryItem
-    {
-    public:
-        Potion(int GoldAmount, std::string Name);
-
-        int GetValue() const override { return Value; }
-        std::string GetName() const override { return Name; }
-
-    private:
-        int Value;
-        std::string Name;
-    };
-
-    // ------------------------------------------------------------------------
-    // 3. THE COMPOSITE (The Group)
-    // ------------------------------------------------------------------------
-    // This is the "Chest".
-    // It contains a list of other items (Leaves or other Chests).
+    // =========================================================================
+    // THE COMPOSITE (The Group)
+    // ROLE: Stores child components and implements the interface by 
+    // delegating work to those children (Recursion).
+    // =========================================================================
     class Chest : public IInventoryItem
     {
     public:
         Chest(std::string Name);
 
-        // THE "WHOLE" OPERATION 
-        // Chest value, is summed up:
-        // 1. Its own value.
-        // 2. The value of every item inside it.
+        // THE RECURSIVE OPERATION: Sums base value + all children
         int GetValue() const override;
+        std::string GetName() const override { return Name; }
 
-        // COMPOSITION (Aggregation)
-        // The Chest holds a list of items. This is "Has-A" relationship.
+        // Composition Management
         void AddItem(std::unique_ptr<IInventoryItem> Item);
         std::vector<std::unique_ptr<IInventoryItem>>& GetItems() { return Items; }
 
-        std::string GetName() const override { return Name; }
-
     private:
         std::vector<std::unique_ptr<IInventoryItem>> Items;
-
         int BaseValue;
         std::string Name;
     };
 
-    // ------------------------------------------------------------------------
-    // 4. THE CLIENT (The Player)
-    // ------------------------------------------------------------------------
-    // The "Game Logic" that holds the Inventory and interacts with Chests.
+    // =========================================================================
+    // THE CLIENT (The Player)
+    // ROLE: Interacts with the Component interface to manipulate the hierarchy.
+    // =========================================================================
     class Player
     {
     public:
         Player();
 
-        // The Client (Player) acts on the Composite (Chest).
+        // High-level loot logic
         void AddToInventory(std::unique_ptr<IInventoryItem> Item);
         void LootChest(Chest* TargetChest);
 
-        // The Client calls CalculateTotalValue().
-        // It doesn't know if Inventory has 10 Coins or 1 Chest with 10 Coins.
+        // Uses the uniform interface to calculate the grand total
         void PrintTotalValue();
 
     private:
+        // The root of the hierarchy is itself a Composite (Chest)
         std::unique_ptr<Chest> MainInventory;
     };
 
-    // ------------------------------------------------------------------------
-    // 5. DEMO
-    // ------------------------------------------------------------------------
+    // =========================================================================
+    // DEMO IMPLEMENTATION
+    // =========================================================================
     void RunDemo();
 }
