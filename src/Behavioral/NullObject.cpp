@@ -12,135 +12,186 @@ namespace NUL
     }
 
     UIButton::UIButton(std::string Name, std::shared_ptr<IUISound> SoundEffect)
-        : ButtonName(Name), MySound(SoundEffect)
-    {
-        // The pointer remains valid regardless of the behavior logic.
+        : ButtonName(Name), MySound(SoundEffect) {
     }
 
     void UIButton::Click()
     {
         std::cout << "[Button] User clicked: " << ButtonName << "\n";
 
-        // --- THE KEY MOMENT ---
+        // ======================== THE KEY MOMENT ========================
         // Absence of null checks. The call is made directly.
         // NullSound instances result in silence; Real objects result in audio.
         MySound->Play();
     }
 
     // =========================================================================
-    // 5. DEMO IMPLEMENTATION
+    // DEMO RUNNER
     // =========================================================================
+
     void RunDemo()
     {
-        std::cin.clear();
-        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-
-        // --- STEP 1: INTRODUCTION ---
+        // ======================== INTRODUCTION ========================
         HFL::ClearScreen();
-        HFL::PrintHeader("Null Object Pattern (UI System)");
+        HFL::PrintHeader("NULL OBJECT DESIGN PATTERN");
 
-        std::cout << "Definition:\n";
-        std::cout << "Provide an object as a surrogate for the lack of an object of a given type.\n";
-        std::cout << "Enable the treatment of 'nothing' as a valid, functional state.\n\n";
+        HFL::PrintSection("THE DEFINITION");
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "Provide an object as a surrogate for the lack of an object of a given type.\n"
+            << "Enable the treatment of 'nothing' as a valid, functional state.\n\n";
 
-        std::cout << "In This Demo:\n";
-        std::cout << "A UIButton class interacts with an IUISound interface.\n";
-        std::cout << "Behavior alternates between real audio output and a Null Object surrogate.\n";
-        std::cout << "The client code remains agnostic of the audio state.\n";
+        HFL::PrintSection("THE GOAL");
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The Null Object Pattern is about 'Procedural Consistency'.\n"
+            << "By providing a concrete 'do-nothing' instance, it eliminates the need\n"
+            << "for repetitive 'if (ptr != nullptr)' checks throughout the engine.\n\n";
+
+        HFL::PrintSection("THE EXAMPLE");
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "This demonstration features a UI Sound System with two behaviors:\n\n";
+
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] REAL OBJECT:  ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Plays a physical .wav file and updates audio registers.\n";
+
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] NULL OBJECT:  ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "A 'Silent' surrogate that satisfies the interface contract.\n\n";
 
         HFL::WaitForInput();
 
-        // --- STEP 2: THE RULES ---
+        // ======================== THE ARCHITECTURE ========================
         HFL::ClearScreen();
-        HFL::PrintHeader("The Architecture");
+        HFL::PrintHeader("THE ARCHITECTURE");
 
-        std::cout << "To recognize a Null Object, there are 4 key ideas:\n\n";
+        HFL::PrintSection("THE 'NO-OP' SURROGATE");
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Without a Null Object, every single UI interaction requires a safety guard\n"
+            << "to prevent crashes. With a Null Object, 'silence' becomes a valid state\n"
+            << "that can be passed around just like a real sound.\n\n";
 
-        std::cout << "1. Shared Interface:\n";
-        std::cout << "   Both the real object and the null object implement the same base interface.\n";
-        std::cout << "   The client interacts only with this abstraction.\n\n";
+        HFL::PrintSection("IMPLEMENTATION");
 
-        std::cout << "2. No-Op Implementation:\n";
-        std::cout << "   The null object implements all interface methods as 'No Operations' (empty).\n";
-        std::cout << "   It provides expected default values (e.g., return 0 or empty string).\n\n";
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] IUISound Interface\n";
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "    ROLE:           ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The common language between the Button and the Audio Engine.\n\n";
 
-        std::cout << "3. Elimination of Branching:\n";
-        std::cout << "   The pattern removes 'if (ptr != nullptr)' checks from the business logic.\n";
-        std::cout << "   Logic flow remains linear and predictable.\n\n";
-
-        std::cout << "4. Type Safety:\n";
-        std::cout << "   The system always possesses a valid instance.\n";
-        std::cout << "   Runtime crashes due to null pointer dereferencing are architecturally prevented.\n";
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] UIButton Context\n";
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "    SIMPLICITY:     ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Invokes behavior blindly. 100% agnostic of sound settings.\n";
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "    TYPE SAFETY:    ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Guaranteed to have a valid pointer at all times.\n\n";
 
         HFL::WaitForInput();
 
-        // Setup the two behaviors
         auto RealEffect = std::make_shared<ButtonClickSound>();
         auto MutedEffect = std::make_shared<NullSound>();
-
-        // The button starts with sound ENABLED
         UIButton PlayButton("Start Game", RealEffect);
         bool IsMuted = false;
 
-        // --- STEP 3: DEMO ---
+        // ======================== GAME LOOP ========================
         while (true)
         {
             HFL::ClearScreen();
-            HFL::PrintHeader("UI Sound Simulator");
+            HFL::PrintHeader("UI SOUND SIMULATOR");
 
-            std::cout << "SYSTEM SETTINGS:\n";
-            std::cout << ">> Audio State: " << (IsMuted ? "[MUTED]" : "[SOUND ON]") << "\n";
-            std::cout << ">> Active Object: " << PlayButton.GetSoundStatus() << "\n";
-            std::cout << "--------------------------------------------------\n\n";
+            HFL::PrintSection("SYSTEM SETTINGS");
+            HFL::SetColor(HFL::EColor::White);
+            std::cout << "  AUDIO STATE:     "; HFL::SetColor(IsMuted ? HFL::EColor::Red : HFL::EColor::Green);
+            std::cout << (IsMuted ? "[MUTED]" : "[SOUND ON]") << "\n";
 
-            std::cout << "Select an action:\n";
-            std::cout << "1. Click [" << PlayButton.GetButtonName() << "]\n";
-            std::cout << "2. Toggle Mute (Swap Object)\n";
-            std::cout << "0. Exit\n\n";
+            HFL::SetColor(HFL::EColor::White);
+            std::cout << "  ACTIVE OBJECT:   "; HFL::SetColor(HFL::EColor::Cyan);
+            std::cout << PlayButton.GetSoundStatus() << "\n\n";
+
+            HFL::PrintSection("COMMANDS");
+            HFL::SetColor(HFL::EColor::Green);
+            std::cout << " [1] "; HFL::SetColor(HFL::EColor::White); std::cout << "CLICK [" << PlayButton.GetButtonName() << "]\n";
+            HFL::SetColor(HFL::EColor::Green);
+            std::cout << " [2] "; HFL::SetColor(HFL::EColor::White); std::cout << "TOGGLE MUTE (SWAP OBJECT)\n\n";
+            HFL::SetColor(HFL::EColor::Green);
+            std::cout << " [0] "; HFL::SetColor(HFL::EColor::White); std::cout << "CONTINUE\n\n";
 
             int Choice = HFL::GetValidMenuInput(2);
             if (Choice == 0) break;
 
             if (Choice == 1)
             {
-                std::cout << "\n--- EXECUTION LOG ---\n";
+                std::cout << "\n--- LOG ---\n";
+                HFL::SetColor(HFL::EColor::Gray);
                 std::cout << "[Code] Executing: PlayButton.Click();\n";
-                PlayButton.Click(); // This code NEVER CHANGES
+                HFL::SetColor(HFL::EColor::White);
+                PlayButton.Click();
                 std::cout << "---------------------\n";
+                HFL::WaitForInput();
             }
             else if (Choice == 2)
             {
                 IsMuted = !IsMuted;
-                // --- THE PATTERN IN ACTION ---
-                // We physically swap the object inside the button.
                 if (IsMuted) PlayButton.SetSound(MutedEffect);
                 else PlayButton.SetSound(RealEffect);
 
                 std::cout << "\n>> System: Swapped to " << (IsMuted ? "Null Object" : "Real Object") << ".\n";
+                HFL::WaitDots(0.5f);
             }
-
-            HFL::WaitForInput();
         }
 
-        // --- STEP 4: CONCLUSION ---
+        // ======================== CONCLUSION ========================
         HFL::ClearScreen();
-        HFL::PrintHeader("Conclusion");
+        HFL::PrintHeader("CONCLUSION");
 
-        std::cout << "Summary of Null Object:\n\n";
+        HFL::PrintSection("ARCHITECTURE");
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "The implementation of the Null Object confirms the following:\n\n";
 
-        std::cout << "1. Procedural Consistency.\n";
-        std::cout << "   UIButton::Click() remains static regardless of audio settings.\n";
-        std::cout << "   The invocation 'MySound->Play()' requires no conditional guards.\n\n";
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] PROCEDURAL CONSISTENCY: ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The UIButton::Click() logic never changes. It remains\n"
+            << "    agnostic of whether the sound system is active or muted.\n";
 
-        std::cout << "2. Structural Integrity.\n";
-        std::cout << "   The risk of Null Pointer Exceptions is eliminated by design.\n";
-        std::cout << "   The system treats 'absence of behavior' as a first-class object.\n\n";
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] ELIMINATION OF BRANCHING: ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "We successfully removed 'if(ptr != nullptr)' from the loop.\n"
+            << "    Logic flow is now linear, predictable, and easier to test.\n";
 
-        std::cout << "3. Adherence to Interface.\n";
-        std::cout << "   The NullSound class satisfies the IUISound contract.\n";
-        std::cout << "   The client interacts with a valid, predictable API at all times.\n\n";
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] TYPE SAFETY:             ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "By ensuring the button always holds a valid instance, it\n"
+            << "    architecturally prevent 'Null Reference' runtime crashes.\n\n";
 
-        std::cout << std::setw(40) << "End of Demo\n";
+        HFL::PrintSection("SUMMARY");
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "The Null Object Pattern ensures that software is:\n\n";
+
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] ROBUST:    ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Crashes due to missing dependencies are eliminated.\n";
+
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] CLEAN:     ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Business logic is not cluttered with safety checks.\n";
+
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] PREDICTABLE:";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The API always responds, even if the response is 'do nothing'.\n\n";
+
+        HFL::SetColor(HFL::EColor::White);
         HFL::WaitForInput();
     }
 }

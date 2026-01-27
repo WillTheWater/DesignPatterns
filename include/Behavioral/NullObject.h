@@ -3,7 +3,7 @@
 #include "FunctionLibrary/HelperFunctionLibrary.h"
 
 // =========================================================================
-// BEHAVIORAL DESIGN PATTERNS: Null Object
+// BEHAVIORAL DESIGN PATTERNS: NULL OBJECT
 // =========================================================================
 // "Provide an object as a surrogate for the lack of an object of a given type."
 //
@@ -12,23 +12,24 @@
 // object existence before invocation, a "do-nothing" surrogate is provided.
 //
 // THE EXAMPLE:
-// UI Button Sound System.
-// 1. The Interface (IUISound): Defines the required "Play" behavior.
-// 2. The Real Object (ButtonClickSound): Executes standard audio logic.
-// 3. The Null Object (NullSound): Implements "Play" as a no-op (No Operation).
-// 4. The Context (UIButton): Maintains a reference and invokes logic blindly.
+// UI Button Sound System featuring three key workers:
+// 1. THE INTERFACE (IUISound):   Defines the 'Play' contract.
+// 2. THE REAL OBJECT (Click):    Executes standard audio logic.
+// 3. THE NULL OBJECT (Muted):    Implements 'Play' as a no-op (No Operation).
 //
-// THE SCENARIO:
-// In a system with numerous buttons, some possess audio triggers while others are muted.
-// Without Null Object: Logic requires 'if (sound != nullptr)' checks for every interaction.
-// With Null Object: Logic calls 'sound->Play()' directly. The Null Object handles silence.
+// THE BENEFIT:
+// [*] LINEAR LOGIC:     Client code calls 'sound->Play()' without if-checks.
+// [*] CRASH PREVENTION: Null Pointer Exceptions are architecturally impossible.
+// [*] FLEXIBILITY:      Toggle sounds by swapping objects, not changing logic.
 // =========================================================================
 
 namespace NUL
 {
-    // ------------------------------------------------------------------------
-    // 1. THE INTERFACE (The Contract)
-    // ------------------------------------------------------------------------
+    // =========================================================================
+    // THE INTERFACE (The Shared Contract)
+    // ROLE: Defines the required behavior that both real and null objects
+    // must implement. The Client only ever sees this abstraction.
+    // =========================================================================
     class IUISound
     {
     public:
@@ -37,41 +38,41 @@ namespace NUL
         virtual std::string GetStatus() const = 0;
     };
 
-    // ------------------------------------------------------------------------
-    // 2. THE REAL OBJECT (The Active Implementation)
-    // ------------------------------------------------------------------------
+    // =========================================================================
+    // THE REAL OBJECT (The Active Implementation)
+    // ROLE: The specialist. Performs the actual work (playing audio) when 
+    // the system is in an active state.
+    // =========================================================================
     class ButtonClickSound : public IUISound
     {
     public:
         void Play() override;
-        std::string GetStatus() const override { return "Sound Enabled (Real Object)"; }
+        std::string GetStatus() const override { return "Active (Real Object)"; }
     };
 
-    // ------------------------------------------------------------------------
-    // 3. THE NULL OBJECT (The Silent Implementation)
-    // ------------------------------------------------------------------------
+    // =========================================================================
+    // THE NULL OBJECT (The Silent Implementation)
+    // ROLE: The surrogate. Implements the interface as a "No-Operation" to
+    // satisfy dependencies without causing null pointer crashes.
+    // =========================================================================
     class NullSound : public IUISound
     {
     public:
-        // Implementation is intentionally empty.
-        // Interface requirements are met without performing operations.
         void Play() override {}
         std::string GetStatus() const override { return "Muted (Null Object)"; }
     };
 
-    // ------------------------------------------------------------------------
-    // 4. THE CONTEXT (The Consumer)
-    // ------------------------------------------------------------------------
+    // =========================================================================
+    // THE CONTEXT (The Consumer)
+    // ROLE: The high-level UI element. It invokes the sound behavior blindly,
+    // relying on the Null Object to handle the "Muted" state safely.
+    // =========================================================================
     class UIButton
     {
     public:
-        // Dependency is injected via constructor. 
-        // The button remains agnostic of the concrete implementation.
         UIButton(std::string Name, std::shared_ptr<IUISound> SoundEffect);
 
         void Click();
-
-        // Supports runtime behavior swapping.
         void SetSound(std::shared_ptr<IUISound> NewSound) { MySound = NewSound; }
 
         std::string GetButtonName() const { return ButtonName; }
