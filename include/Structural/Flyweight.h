@@ -3,35 +3,32 @@
 #include "FunctionLibrary/HelperFunctionLibrary.h"
 
 // =========================================================================
-// STRUCTURAL DESIGN PATTERNS: Flyweight
+// STRUCTURAL DESIGN PATTERN: Flyweight
 // =========================================================================
 // "Use sharing to support large numbers of fine-grained objects efficiently."
 //
 // THE GOAL:
-// Reduce memory footprint by sharing heavy intrinsic data (Meshes/Textures)
-// between many lightweight extrinsic objects (Soldiers).
+// Reduce memory footprint by sharing heavy "intrinsic" data (Meshes/Textures)
+// between many lightweight "extrinsic" objects (Soldiers).
+//
+// THE BENEFIT:
+// * Performance: Drastically reduces RAM usage for repetitive objects.
+// * Centralization: Heavy assets are managed in one place (The Factory).
+// * Scalability: Allows for thousands of instances where only dozens 
+//   would have been possible otherwise.
 //
 // THE EXAMPLE:
-// A "Giant Roman Army" Simulation.
-// 1. The Flyweight (LegionaryTexture): The heavy shared data (Face image).
-// 2. The Contexts (Legionary, Auxilia, Praetorian): The lightweight objects (Soldiers).
-//    They do NOT own the texture. They just POINT to it.
-// 3. The Factory (TextureFactory): Loads the heavy texture once and gives it to soldiers.
-//
-// THE SCENARIO:
-// We want 1000 Roman Soldiers.
-// If every soldier loads a "Legionary.png" texture, we use 1GB of RAM (Waste).
-// If every soldier points to ONE "LegionaryTexture", we use only 10KB (Efficient).
-//
-// BENEFIT:
-// "Look at this army! 1000 soldiers, but we only loaded 1 texture!"
+// [LegionaryTexture]: The Flyweight. Heavy shared data (The Face image).
+// [RomanSoldierBase]: The Context. Lightweight objects that point to the shared data.
+// [TextureFactory]: The Manager. Ensures textures are only loaded once.
 // =========================================================================
 
 namespace FLY
 {
-    // ------------------------------------------------------------------------
-    // 1. THE COMPONENT (The Interface)
-    // ------------------------------------------------------------------------
+    // =========================================================================
+    // THE COMPONENT (The Interface)
+    // ROLE: Defines the contract for all soldier types.
+    // =========================================================================
     class IRomanSoldier
     {
     public:
@@ -40,9 +37,10 @@ namespace FLY
         virtual std::string GetSoldierType() const = 0;
     };
 
-    // ------------------------------------------------------------------------
-    // 2. THE FLYWEIGHT (The Shared Part / Intrinsic State)
-    // ------------------------------------------------------------------------
+    // =========================================================================
+    // THE FLYWEIGHT (The Shared Part / Intrinsic State)
+    // ROLE: Holds the heavy data that is identical across many instances.
+    // =========================================================================
     class LegionaryTexture
     {
     public:
@@ -54,18 +52,22 @@ namespace FLY
         std::string Filename;
     };
 
-    // ------------------------------------------------------------------------
-    // 3. THE CONTEXTS (The Unique Parts / Extrinsic State)
-    // ------------------------------------------------------------------------
+    // =========================================================================
+    // THE CONTEXTS (The Unique Parts / Extrinsic State)
+    // ROLE: Lightweight objects that contain unique state but share the Flyweight.
+    // =========================================================================
 
-    // Abstract base to handle the shared pointer—avoiding your previous DRY violation.
+    // Abstract base to handle the shared pointer—maintaining DRY principles.
     class RomanSoldierBase : public IRomanSoldier
     {
     protected:
         std::shared_ptr<LegionaryTexture> MySharedFace;
-        RomanSoldierBase(std::shared_ptr<LegionaryTexture> SharedFace) : MySharedFace(SharedFace) {}
+        RomanSoldierBase(std::shared_ptr<LegionaryTexture> SharedFace)
+            : MySharedFace(SharedFace) {
+        }
     };
 
+    // ======================== LEGIONARY ========================
     class Legionary : public RomanSoldierBase
     {
     public:
@@ -74,6 +76,7 @@ namespace FLY
         std::string GetSoldierType() const override;
     };
 
+    // ======================== AUXILIA ========================
     class Auxilia : public RomanSoldierBase
     {
     public:
@@ -82,6 +85,7 @@ namespace FLY
         std::string GetSoldierType() const override;
     };
 
+    // ======================== PRAETORIAN ========================
     class Praetorian : public RomanSoldierBase
     {
     public:
@@ -90,17 +94,22 @@ namespace FLY
         std::string GetSoldierType() const override;
     };
 
-    // ------------------------------------------------------------------------
-    // 4. THE FACTORY / MANAGER (The Loader)
-    // ------------------------------------------------------------------------
+    // =========================================================================
+    // THE FACTORY / MANAGER (The Loader)
+    // ROLE: Controls Flyweight creation and ensures assets are reused.
+    // =========================================================================
     class TextureFactory
     {
     public:
-        // A real factory uses a map to manage resources, not a single static pointer.
+        // Returns an existing texture if available, or creates a new one if not.
         std::shared_ptr<LegionaryTexture> GetTexture(const std::string& Filename);
+
     private:
         std::unordered_map<std::string, std::shared_ptr<LegionaryTexture>> TextureCache;
     };
 
+    // =========================================================================
+    // DEMO IMPLEMENTATION
+    // =========================================================================
     void RunDemo();
 }

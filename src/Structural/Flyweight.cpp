@@ -3,221 +3,367 @@
 namespace FLY
 {
     // =========================================================================
-    // 2. THE FLYWEIGHT IMPLEMENTATION
+    // THE FLYWEIGHT IMPLEMENTATION (Intrinsic State)
+    // ROLE: Manages the "Heavy" data that never changes between instances.
     // =========================================================================
+
     LegionaryTexture::LegionaryTexture(const std::string& Filename) : Filename(Filename)
     {
-        std::cout << "[Flyweight] Loading Texture: " << Filename << "...\n";
-        std::cout << "   [VRAM] Allocating 1MB of Memory for Pixels...\n";
-        std::cout << "[Flyweight] Texture Loaded (Heavy Intrinsic State).\n";
+        HFL::SetColor(HFL::EColor::Cyan);
+        std::cout << "[Flyweight] Loading Heavy Texture: " << Filename;
+        HFL::WaitDots(0.4f);
+
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "\n   [VRAM] Allocating 1.0 MB for Pixel Buffer";
+        HFL::WaitDots(0.2f);
+
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << " SUCCESS.\n";
+        HFL::SetColor(HFL::EColor::Gray);
     }
 
     void LegionaryTexture::Render()
     {
-        std::cout << "   [VRAM] Drawing: " << Filename << " (Intrinsic State).\n";
+        // In a real engine, this would bind the texture ID to the GPU pipeline.
+        std::cout << "   [GPU] Sampling Texture: " << Filename << " (Intrinsic Shared Data)\n";
     }
 
     std::string LegionaryTexture::GetFilename() const { return Filename; }
 
     // =========================================================================
-    // 3. THE CONTEXT IMPLEMENTATIONS
+    // THE CONTEXT IMPLEMENTATIONS (Extrinsic State)
+    // ROLE: Lightweight objects that vary by behavior but share the same Flyweight.
     // =========================================================================
 
-    Legionary::Legionary(std::shared_ptr<LegionaryTexture> SharedFace) : RomanSoldierBase(SharedFace)
-    {
-        // Reference counting is handled by the base class constructor.
+    // ======================== LEGIONARY ========================
+    Legionary::Legionary(std::shared_ptr<LegionaryTexture> SharedFace)
+        : RomanSoldierBase(SharedFace) {
     }
 
     void Legionary::Draw()
     {
-        std::cout << "   [Soldier] Legionary draws shield.\n";
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << " [Unit] Legionary raises Shield.\n";
+        HFL::SetColor(HFL::EColor::Gray);
         if (MySharedFace) MySharedFace->Render();
+        HFL::Wait(0.02f);
     }
 
-    std::string Legionary::GetSoldierType() const { return "Legionary (Shield)"; }
+    std::string Legionary::GetSoldierType() const { return "Legionary"; }
 
-    Auxilia::Auxilia(std::shared_ptr<LegionaryTexture> SharedFace) : RomanSoldierBase(SharedFace) {}
+    // ======================== AUXILIA ========================
+    Auxilia::Auxilia(std::shared_ptr<LegionaryTexture> SharedFace)
+        : RomanSoldierBase(SharedFace) {
+    }
 
     void Auxilia::Draw()
     {
-        std::cout << "   [Soldier] Auxilia throws spear.\n";
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << " [Unit] Auxilia readies Spear.\n";
+        HFL::SetColor(HFL::EColor::Gray);
         if (MySharedFace) MySharedFace->Render();
+        HFL::Wait(0.02f);
     }
 
-    std::string Auxilia::GetSoldierType() const { return "Auxilia (Spear)"; }
+    std::string Auxilia::GetSoldierType() const { return "Auxilia"; }
 
-    Praetorian::Praetorian(std::shared_ptr<LegionaryTexture> SharedFace) : RomanSoldierBase(SharedFace) {}
+
+    // ======================== PRAETORIAN ========================
+    Praetorian::Praetorian(std::shared_ptr<LegionaryTexture> SharedFace)
+        : RomanSoldierBase(SharedFace) {
+    }
 
     void Praetorian::Draw()
     {
-        std::cout << "   [Soldier] Praetorian swings sword.\n";
+        HFL::SetColor(HFL::EColor::Yellow);
+        std::cout << " [Elite] Praetorian unsheathes Sword.\n";
+        HFL::SetColor(HFL::EColor::Gray);
         if (MySharedFace) MySharedFace->Render();
+        HFL::Wait(0.02f);
     }
 
-    std::string Praetorian::GetSoldierType() const { return "Praetorian (Elite)"; }
+    std::string Praetorian::GetSoldierType() const { return "Praetorian"; }
+
 
     // =========================================================================
-    // 4. THE FACTORY IMPLEMENTATION
+    // THE FACTORY IMPLEMENTATION (The Gatekeeper)
+    // ROLE: Ensures we never load the same heavy asset twice.
     // =========================================================================
+
     std::shared_ptr<LegionaryTexture> TextureFactory::GetTexture(const std::string& Filename)
     {
         auto it = TextureCache.find(Filename);
+
         if (it == TextureCache.end())
         {
+            // Case: Cache Miss. Create the heavy object for the first time.
             auto NewTexture = std::make_shared<LegionaryTexture>(Filename);
             TextureCache[Filename] = NewTexture;
             return NewTexture;
         }
+
+        // Case: Cache Hit. Reuse the existing object.
         return it->second;
     }
 
+
     // =========================================================================
-    // 5. DEMO IMPLEMENTATION
+    // DEMO IMPLEMENTATION
     // =========================================================================
+
     void RunDemo()
     {
-        // Clear buffer - Essential for cin stability
         std::cin.clear();
         std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
-        // --- STEP 1: INTRODUCTION ---
+        // ======================== INTRODUCTION ========================
         HFL::ClearScreen();
-        HFL::PrintHeader("Flyweight Pattern (Roman Army)");
+        HFL::PrintHeader("FLYWEIGHT DESIGN PATTERN");
 
-        std::cout << "Definition:\n";
-        std::cout << "Use sharing to support large numbers of fine-grained objects efficiently.\n";
-        std::cout << "Separate Intrinsic State (Shared/Constant) from Extrinsic State (Contextual).\n\n";
+        HFL::PrintSection("THE DEFINITION");
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "Use sharing to support large numbers of fine-grained objects efficiently.\n"
+            << "Separate Intrinsic State (Shared/Constant) from Extrinsic State (Contextual).\n\n";
 
-        std::cout << "In This Demo:\n";
-        std::cout << "We will simulate a Giant Roman Army (1000+ Soldiers).\n";
-        std::cout << "Intrinsic Data: Heavy textures and meshes (Loaded once).\n";
-        std::cout << "Extrinsic Data: Unit type and unique pointers (Per soldier).\n";
+        HFL::PrintSection("THE GOAL");
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The Flyweight Pattern is about 'Efficiency through Resource Sharing'.\n"
+            << "It solves the problem of memory exhaustion when a system requires thousands\n"
+            << "of similar objects by extracting heavy, identical data into a shared\n"
+            << "object, leaving only the unique 'context' in the individual instances.\n\n";
+
+        HFL::PrintSection("THE EXAMPLE");
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "This demonstration simulates a massive Roman Army using three components:\n\n";
+
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] THE FLYWEIGHT:       ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The heavy 'Intrinsic' data (A 1MB Texture) shared by all.\n";
+
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] THE FACTORY:         ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The 'Gatekeeper' that ensures assets are only loaded once.\n";
+
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] THE CONTEXT:         ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The unique 'Extrinsic' units (Soldiers) that point to the shared data.\n\n";
+
+        HFL::PrintSection("THE MATH (10,000 SOLDIERS)");
+        HFL::SetColor(HFL::EColor::Red);
+        std::cout << " [*] NAIVE WAY:   10,000 x 1MB Texture = 10.0 GB (CRASH)\n";
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << " [*] FLYWEIGHT:   1 x 1MB + (10,000 x 8b) = 1.08 MB (OPTIMIZED)\n\n";
 
         HFL::WaitForInput();
 
-        // --- STEP 2: THE PROBLEM ---
+        // ======================== THE ARCHITECTURE ========================
         HFL::ClearScreen();
-        HFL::PrintHeader("Step 1: The Problem (Memory Exhaustion)");
+        HFL::PrintHeader("THE ARCHITECTURE");
 
-        std::cout << "Scenario: Spawning 10,000 Soldiers.\n\n";
+        HFL::PrintSection("INTRINSIC VS EXTRINSIC");
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The secret to Flyweight is identifying what is 'Intrinsic' (constant across\n"
+            << "all units, like a texture) and what is 'Extrinsic' (unique per unit,\n"
+            << "like their current animation state or position on the battlefield).\n\n";
 
-        std::cout << "THE NAIVE WAY (Deep Copying):\n";
-        std::cout << "If every Soldier instance owns its own 1MB Texture object:\n";
-        std::cout << "  - 10,000 Soldiers * 1.01 MB = ~10.1 GB RAM.\n";
-        std::cout << "  >> RESULT: System Crash / Out of Memory.\n\n";
+        HFL::PrintSection("IMPLEMENTATION");
 
-        std::cout << "THE FLYWEIGHT WAY (State Sharing):\n";
-        std::cout << "If Texture is stored once and shared via pointers:\n";
-        std::cout << "  - 1 Texture * 1 MB = 1 MB.\n";
-        std::cout << "  - 10,000 Pointers * 8 bytes = 80 KB.\n";
-        std::cout << "  - Army Total: ~1.08 MB.\n";
-        std::cout << "  >> RESULT: 99.9% Memory Reduction.\n\n";
+        // ======================== THE FLYWEIGHT ========================
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] LegionaryTexture (The Shared Asset)\n";
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "    STATE:          ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Intrinsic. It contains the heavy raw pixel data.\n";
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "    LIFECYCLE:      ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Managed by shared pointers; it lives as long as soldiers need it.\n\n";
 
+        // ======================== THE CONTEXT ========================
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] RomanSoldierBase (The Context)\n";
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "    STATE:          ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Extrinsic. Contains unique logic for Legionaries vs Praetorians.\n";
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "    EFFICIENCY:     ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Extremely lightweight. It only holds a pointer to the heavy data.\n\n";
+
+        HFL::SetColor(HFL::EColor::White);
         HFL::WaitForInput();
 
-        // --- STEP 3: THE ARCHITECTURE ---
-        HFL::ClearScreen();
-        HFL::PrintHeader("Step 2: Architecture Components");
-
-        std::cout << "1. The Flyweight (LegionaryTexture):\n";
-        std::cout << "   - Contains INTRINSIC state. Constant and immutable.\n\n";
-
-        std::cout << "2. The Factory (TextureFactory):\n";
-        std::cout << "   - The 'Gatekeeper'. Ensures unique assets are never duplicated.\n";
-        std::cout << "   - Returns existing references from a Cache.\n\n";
-
-        std::cout << "3. The Context (Soldier Subclasses):\n";
-        std::cout << "   - Contains EXTRINSIC state (Unique behavior/position).\n";
-        std::cout << "   - References the Flyweight to perform heavy operations (Drawing).\n";
-
-        HFL::WaitForInput();
-
-        // --- STEP 4: INTERACTIVE SPAWNING ---
+        // ======================== INITIALIZATION ========================
+        HFL::PrintSection("INITIALIZATION");
         TextureFactory MyFactory;
-        std::shared_ptr<LegionaryTexture> SharedFace = MyFactory.GetTexture("legionary_face.png");
+        std::shared_ptr<LegionaryTexture> SharedFace = MyFactory.GetTexture("roman_face.png");
         std::vector<std::unique_ptr<IRomanSoldier>> RomanArmy;
+        HFL::WaitForInput();
 
-        bool InDemo = true;
-        while (InDemo)
+        int Count_Legionary = 0;
+        int Count_Auxilia = 0;
+        int Count_Praetorian = 0;
+        int TotalDrawCalls = 0;
+
+        // ======================== GAME LOOP ========================
+        while (true)
         {
             HFL::ClearScreen();
-            HFL::PrintHeader("Roman Army Builder");
+            HFL::PrintHeader("ROMAN ARMY COMMAND");
 
-            std::cout << "Select a Unit Type to Spawn:\n"
-                << "1. Legionary (Shield)\n"
-                << "2. Auxilia (Spear)\n"
-                << "3. Praetorian (Elite)\n"
-                << "4. Draw Army\n"
-                << "0. Exit\n\n";
+            // ======================== ARMY COMPOSITION ========================
+            HFL::PrintSection("ARMY COMPOSITION");
+            HFL::SetColor(HFL::EColor::White);
+            std::cout << "  LEGIONARIES:     "; HFL::SetColor(HFL::EColor::Green);
+            std::cout << std::left << std::setw(18) << Count_Legionary;
+            HFL::SetColor(HFL::EColor::White);
+            std::cout << "  AUXILIA:         "; HFL::SetColor(HFL::EColor::Green);
+            std::cout << Count_Auxilia << "\n";
 
-            // Precise memory tracking
+            HFL::SetColor(HFL::EColor::White);
+            std::cout << "  PRAETORIANS:     "; HFL::SetColor(HFL::EColor::Green);
+            std::cout << std::left << std::setw(18) << Count_Praetorian;
+            HFL::SetColor(HFL::EColor::White);
+            std::cout << "  TOTAL UNITS:     "; HFL::SetColor(HFL::EColor::Cyan);
+            std::cout << RomanArmy.size() << "\n";
+
+            HFL::SetColor(HFL::EColor::White);
+            std::cout << "  DRAW CALLS:      "; HFL::SetColor(HFL::EColor::Yellow);
+            std::cout << TotalDrawCalls << " (Total Lifetime Samples)\n";
+
+            // ======================== MEMORY STATISTICS ========================
+            HFL::PrintSection("RESOURCES & MEMORY");
             double ExtrinsicRAM = (RomanArmy.size() * sizeof(void*)) / 1024.0;
-            std::cout << "Army Size: " << RomanArmy.size() << "\n";
-            std::cout << "Intrinsic (Shared) Cost: 1.00 MB\n";
-            std::cout << "Extrinsic (Unique) Cost: " << std::fixed << std::setprecision(4) << ExtrinsicRAM << " KB\n";
+
+            HFL::SetColor(HFL::EColor::White);
+            std::cout << "  INTRINSIC COST:  "; HFL::SetColor(HFL::EColor::Cyan);
+            std::cout << "1.00 MB (Shared Texture)\n";
+
+            HFL::SetColor(HFL::EColor::White);
+            std::cout << "  EXTRINSIC COST:  "; HFL::SetColor(HFL::EColor::Yellow);
+            std::cout << std::fixed << std::setprecision(2) << ExtrinsicRAM << " KB (Unique Pointers)\n\n";
+
+            HFL::PrintSection("COMMANDS");
+            HFL::SetColor(HFL::EColor::Green);
+            std::cout << " [1] "; HFL::SetColor(HFL::EColor::White); std::cout << "CREATE BATCH (LEGIONARIES)\n";
+            HFL::SetColor(HFL::EColor::Green);
+            std::cout << " [2] "; HFL::SetColor(HFL::EColor::White); std::cout << "CREATE BATCH (AUXILIA)\n";
+            HFL::SetColor(HFL::EColor::Green);
+            std::cout << " [3] "; HFL::SetColor(HFL::EColor::White); std::cout << "CREATE BATCH (PRAETORIANS)\n";
+            HFL::SetColor(HFL::EColor::Green);
+            std::cout << " [4] "; HFL::SetColor(HFL::EColor::White);  std::cout << "DRAW ARMY\n\n";
+            HFL::SetColor(HFL::EColor::Green);
+            std::cout << " [0] "; HFL::SetColor(HFL::EColor::White); std::cout << "CONTINUE\n\n";
 
             int Choice = HFL::GetValidMenuInput(4);
-
             if (Choice == 0) break;
+
             if (Choice == 4)
             {
-                for (const auto& S : RomanArmy) S->Draw();
-                HFL::WaitForInput();
+                HFL::PrintSection("GPU RENDERING PIPELINE");
+                if (RomanArmy.empty())
+                {
+                    HFL::SetColor(HFL::EColor::Red);
+                    std::cout << " [!] The battlefield is empty. Create units first.\n";
+                    HFL::Wait(2);
+                }
+                else
+                {
+                    HFL::ClearScreen();
+                    int Tally = 0;
+                    for (const auto& S : RomanArmy)
+                    {
+                        S->Draw();
+                        TotalDrawCalls++;
+                        Tally++;
+                        if (Tally == 9)
+                        {
+                            HFL::ClearScreen();
+                            Tally = 0;
+                        }
+                    }
+                    HFL::Wait(1);
+                }
             }
             else
             {
-                // Batch spawning for performance testing simulation
-                int Batch = 100;
-                for (int i = 0; i < Batch; ++i)
+                int BatchSize = HFL::GetRandom(10, 90);
+
+                HFL::SetColor(HFL::EColor::Gray);
+                std::cout << " Recruiting " << BatchSize << " units"; HFL::WaitDots(0.6f);
+
+                for (int i = 0; i < BatchSize; ++i)
                 {
-                    if (Choice == 1) RomanArmy.push_back(std::make_unique<Legionary>(SharedFace));
-                    else if (Choice == 2) RomanArmy.push_back(std::make_unique<Auxilia>(SharedFace));
-                    else if (Choice == 3) RomanArmy.push_back(std::make_unique<Praetorian>(SharedFace));
+                    if (Choice == 1)
+                    {
+                        RomanArmy.push_back(std::make_unique<Legionary>(SharedFace));
+                        Count_Legionary++;
+                    }
+                    else if (Choice == 2)
+                    {
+                        RomanArmy.push_back(std::make_unique<Auxilia>(SharedFace));
+                        Count_Auxilia++;
+                    }
+                    else if (Choice == 3)
+                    {
+                        RomanArmy.push_back(std::make_unique<Praetorian>(SharedFace));
+                        Count_Praetorian++;
+                    }
                 }
             }
         }
 
-        // --- STEP 5: MEMORY LIFECYCLE & RAII ---
+        // ======================== CONCLUSION ========================
         HFL::ClearScreen();
-        HFL::PrintHeader("Step 3: Lifecycle Management");
+        HFL::PrintHeader("CONCLUSION");
 
-        std::cout << "The Army of " << RomanArmy.size() << " soldiers is currently in memory.\n";
-        std::cout << "Each soldier holds a 'std::shared_ptr' to the Intrinsic Flyweight.\n\n";
+        HFL::PrintSection("ARCHITECTURE");
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "The implementation of the Flyweight Pattern confirms the following:\n\n";
 
-        // IMPORTANT: Total count is (Army Size + 1) because the 'SharedFace' variable in this function also holds a reference.
-        std::cout << "Current Flyweight Reference Count: " << SharedFace.use_count() << "\n";
-        std::cout << "  (1 reference in Demo Scope + " << RomanArmy.size() << " references in Army vector)\n\n";
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] RESOURCE DE-DUPLICATION: ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The 'TextureFactory' acts as a cache. Thousands of soldiers\n"
+            << "    point to a single VRAM allocation rather than cloning it.\n";
 
-        HFL::WaitForInput();
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] STATE SEPARATION:        ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Heavy 'Intrinsic' state is static and shared, while lightweight\n"
+            << "    'Extrinsic' state (unit type/logic) remains unique to the instance.\n";
 
-        std::cout << ">> Action: RomanArmy.clear() triggered.\n";
-        RomanArmy.clear();
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] RAII LIFECYCLE:          ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "By using std::shared_ptr, the heavy Flyweight asset is only\n"
+            << "    released when the last soldier reference is destroyed.\n\n";
 
-        std::cout << ">> Result: All Context objects (Soldiers) destroyed.\n";
-        std::cout << ">> Result: Shared references held by soldiers were released.\n\n";
+        HFL::PrintSection("SUMMARY");
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "The Flyweight Pattern ensures that software is:\n\n";
 
-        std::cout << "New Flyweight Reference Count: " << SharedFace.use_count() << "\n";
-        std::cout << "  (The Texture is STILL in memory because the Factory/Demo Scope still needs it).\n";
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] EFFICIENT: ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Reduces memory footprint by 99% in repetitive environments.\n";
 
-        HFL::WaitForInput();
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] SCALABLE:  ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Enables massive 'AAA' scale simulations on modest hardware.\n";
 
-        // --- STEP 6: CONCLUSION ---
-        HFL::ClearScreen();
-        HFL::PrintHeader("Conclusion: The Power of Flyweight");
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] CENTRALIZED:";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Asset loading logic is consolidated within a single Factory.\n\n";
 
-        std::cout << "1. INTRINSIC STATE (The Flyweight):\n";
-        std::cout << "   - Heavy data (1MB Texture) was stored once.\n";
-        std::cout << "   - Sharing logic: TotalMemory = Intrinsic + (Count * Extrinsic)\n\n";
-
-        std::cout << "2. EXTRINSIC STATE (The Context):\n";
-        std::cout << "   - Soldiers only stored unique identifiers and pointers.\n";
-        std::cout << "   - Result: Huge memory savings for massive scale.\n\n";
-
-        std::cout << "3. DETERMINISTIC DESTRUCTION:\n";
-        std::cout << "   - No manual 'delete' was required.\n";
-        std::cout << "   - When the last 'std::shared_ptr' goes out of scope, the Texture is freed.\n\n";
-
-        std::cout << std::setw(40) << "Demo Complete.\n";
+        HFL::SetColor(HFL::EColor::White);
         HFL::WaitForInput();
     }
 }

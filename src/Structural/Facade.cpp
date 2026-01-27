@@ -141,7 +141,6 @@ namespace FAC
 
     void RunDemo()
     {
-        std::srand(static_cast<unsigned int>(time(NULL)));
         std::cin.clear();
         std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
