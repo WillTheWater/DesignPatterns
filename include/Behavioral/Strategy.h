@@ -3,7 +3,7 @@
 #include "FunctionLibrary/HelperFunctionLibrary.h"
 
 // =========================================================================
-// BEHAVIORAL DESIGN PATTERNS: Strategy
+// BEHAVIORAL DESIGN PATTERNS: STRATEGY
 // =========================================================================
 // "Define a family of algorithms, encapsulate each one, and make them interchangeable."
 //
@@ -12,28 +12,25 @@
 // Enables the mini-map to calculate routes based on varying terrain constraints 
 // (Walking vs. Riding vs. Flying) at runtime.
 //
-// THE EXAMPLE:
-// Fantasy World Navigation / Mini-Map.
-// 1. The Strategy Interface (IPathStrategy): Defines the 'CalculateRoute' contract.
-// 2. Concrete Strategies (Walking, Mount, Flying): Implement specific traversal rules.
-// 3. The Context (MapNavigator): Maintains the active strategy and executes it.
+// THE BENEFIT:
+// [*] INTERCHANGEABLE: Change travel modes at runtime without conditional logic.
+// [*] ENCAPSULATION:   Individual pathing rules are isolated in their own classes.
+// [*] SCALABILITY:     Add new travel modes (e.g., Swimming) without modifying the Navigator.
 //
-// THE SCENARIO:
-// A character switches between travel modes. 
-// Walking: Limited by roads and terrain.
-// Riding: Can leap over small obstacles (Fences/Streams).
-// Flying: Direct line-of-sight pathing, ignoring all ground obstacles.
+// THE EXAMPLE:
+// [IPathStrategy]: The Interface. Defines the 'CalculateRoute' contract.
+// [Walking/Flying]: The Strategies. Isolated algorithms for different terrain.
+// [MapNavigator]: The Context. The user of the tools. Executes the active logic.
 // =========================================================================
 
 namespace STR
 {
-    // ------------------------------------------------------------------------
-    // 1. THE STRATEGY INTERFACE (The Contract)
-    // ------------------------------------------------------------------------
-    // This defines a common "language" for all travel modes.
-    // By interacting only with this interface, the MapNavigator remains 
-    // agnostic of the specific math or rules used by different mounts.
-    // ------------------------------------------------------------------------
+    // =========================================================================
+    // THE STRATEGY INTERFACE (The Shared Contract)
+    // ROLE: Defines the common "language" for all travel modes. By interacting 
+    // only with this interface, the MapNavigator remains agnostic of the 
+    // specific math or rules used by different mounts.
+    // =========================================================================
     class IPathStrategy
     {
     public:
@@ -42,14 +39,14 @@ namespace STR
         virtual std::string GetModeName() const = 0;
     };
 
-    // ------------------------------------------------------------------------
-    // 2. CONCRETE STRATEGIES (Encapsulated Algorithms)
-    // ------------------------------------------------------------------------
-    // Each class represents a single, isolated algorithm.
-    // Putting "Walking" and "Flying" in their own classes prevents a single 
-    // "Pathfinder" class from becoming a massive, unmaintainable mess of 
-    // 'if-else' statements.
-    // ------------------------------------------------------------------------
+    // =========================================================================
+    // THE CONCRETE STRATEGIES (Encapsulated Algorithms)
+    // ROLE: Specialized workers that represent a single, isolated algorithm.
+    // Separating these prevents the Navigator from becoming a massive, 
+    // unmaintainable mess of 'if-else' statements.
+    // =========================================================================
+
+    // ======================== WALKING (Ground Logic) ========================
     class WalkingPath : public IPathStrategy
     {
     public:
@@ -57,6 +54,7 @@ namespace STR
         std::string GetModeName() const override { return "On Foot"; }
     };
 
+    // ======================== MOUNT (Agile Logic) ========================
     class MountPath : public IPathStrategy
     {
     public:
@@ -64,6 +62,7 @@ namespace STR
         std::string GetModeName() const override { return "Bear Mount"; }
     };
 
+    // ======================== FLYING (Direct Logic) ========================
     class FlyingPath : public IPathStrategy
     {
     public:
@@ -71,14 +70,12 @@ namespace STR
         std::string GetModeName() const override { return "Griffon Flying Mount"; }
     };
 
-    // ------------------------------------------------------------------------
-    // 3. THE CONTEXT (The Consumer)
-    // ------------------------------------------------------------------------
-    // The MapNavigator is the "Brain" that uses the tools.
-    // It does not implement pathfinding logic itself; it delegates that task
-    // to the active strategy. This satisfies the Open-Closed Principle:
-    // New mounts can be added to the game without ever touching this class.
-    // ------------------------------------------------------------------------
+    // =========================================================================
+    // THE CONTEXT (The Consumer)
+    // ROLE: The high-level Navigator. It does not implement pathfinding logic 
+    // itself; it delegates that task to the active strategy. It supports 
+    // runtime flexibility via dependency injection.
+    // =========================================================================
     class MapNavigator
     {
     public:
@@ -88,7 +85,7 @@ namespace STR
         // Delegation: The Navigator simply calls the current strategy.
         void UpdateMiniMap(const std::string& Goal);
 
-        // Runtime Flexibility: Behavior can be swapped instantly (e.g., when a player mounts).
+        // Runtime Flexibility: Behavior can be swapped instantly.
         void ChangeTravelMode(std::shared_ptr<IPathStrategy> NewStrategy);
 
         std::string GetCurrentMode() const { return ActiveStrategy->GetModeName(); }
@@ -98,5 +95,8 @@ namespace STR
         std::shared_ptr<IPathStrategy> ActiveStrategy;
     };
 
+    // =========================================================================
+    // DEMO IMPLEMENTATION
+    // =========================================================================
     void RunDemo();
 }
