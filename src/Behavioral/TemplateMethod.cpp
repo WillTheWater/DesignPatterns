@@ -3,155 +3,234 @@
 namespace TMP
 {
     // =========================================================================
-    // BLACKSMITHING
+    // CONCRETE STEP IMPLEMENTATIONS
+    // ROLE: Subclasses provide the "How-To" for specific steps. The overall
+    // sequence is managed by the Base Class Template Method in the header.
     // =========================================================================
-    void Blacksmithing::PrepareMaterials() { std::cout << "[Blacksmith] Smelting iron ore into ingots.\n"; }
-    void Blacksmithing::ApplyHeat() { std::cout << "[Blacksmith] Heating metal in the coal forge.\n"; }
-    void Blacksmithing::ShapeMaterial() { std::cout << "[Blacksmith] Hammering the sword on an anvil.\n"; }
-    void Blacksmithing::ApplyTreatment() { std::cout << "[Blacksmith] Quenching steel in oil for tempering.\n"; }
 
-    // =========================================================================
-    // WOODWORKING
-    // =========================================================================
-    void Woodworking::PrepareMaterials() { std::cout << "[Woodworker] Selecting an oak log.\n"; }
-    void Woodworking::ShapeMaterial() { std::cout << "[Woodworker] Chiseling and sanding the wood.\n"; }
-    void Woodworking::ApplyTreatment() { std::cout << "[Woodworker] Applying protective varnish.\n"; }
+        // ======================== BLACKSMITHING ========================
+    void Blacksmithing::PrepareMaterials() { std::cout << "   [Blacksmith] Smelting iron ore into ingots.\n"; }
+    void Blacksmithing::ApplyHeat() { std::cout << "   [Blacksmith] Heating metal in the coal forge.\n"; }
+    void Blacksmithing::ShapeMaterial() { std::cout << "   [Blacksmith] Hammering the sword on an anvil.\n"; }
+    void Blacksmithing::ApplyTreatment() { std::cout << "   [Blacksmith] Quenching steel in oil for tempering.\n"; }
 
-    // =========================================================================
-    // ALCHEMY
-    // =========================================================================
-    void Alchemy::PrepareMaterials() { std::cout << "[Alchemy] Grinding herbs and minerals into powder.\n"; }
-    void Alchemy::ApplyHeat() { std::cout << "[Alchemy] Boiling the solution in a glass beaker.\n"; }
-    void Alchemy::ShapeMaterial() { std::cout << "[Alchemy] Distilling the essence into a vial.\n"; }
+    // ======================== WOODWORKING ========================
+    void Woodworking::PrepareMaterials() { std::cout << "   [Woodworker] Selecting an oak log.\n"; }
+    void Woodworking::ShapeMaterial() { std::cout << "   [Woodworker] Chiseling and sanding the wood.\n"; }
+    void Woodworking::ApplyTreatment() { std::cout << "   [Woodworker] Applying protective varnish.\n"; }
 
-    // =========================================================================
-    // TAILORING
-    // =========================================================================
-    void Tailoring::PrepareMaterials() { std::cout << "[Tailor] Measuring and cutting fine silk sheets.\n"; }
-    void Tailoring::ShapeMaterial() { std::cout << "[Tailor] Sewing the fabric into a noble's tunic.\n"; }
+    // ======================== ALCHEMY ========================
+    void Alchemy::PrepareMaterials() { std::cout << "   [Alchemy] Grinding herbs and minerals into powder.\n"; }
+    void Alchemy::ApplyHeat() { std::cout << "   [Alchemy] Boiling the solution in a glass beaker.\n"; }
+    void Alchemy::ShapeMaterial() { std::cout << "   [Alchemy] Distilling the essence into a vial.\n"; }
+
+    // ======================== TAILORING ========================
+    void Tailoring::PrepareMaterials() { std::cout << "   [Tailor] Measuring and cutting fine silk sheets.\n"; }
+    void Tailoring::ShapeMaterial() { std::cout << "   [Tailor] Sewing the fabric into a noble's tunic.\n"; }
 
     // =========================================================================
     // DEMO IMPLEMENTATION
     // =========================================================================
+
     void RunDemo()
     {
         std::cin.clear();
         std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
+        // ======================== INTRODUCTION ========================
         HFL::ClearScreen();
-        HFL::PrintHeader("Template Method Pattern (Fantasy Crafting)");
+        HFL::PrintHeader("TEMPLATE METHOD PATTERN");
 
-        std::cout << "Definition:\n";
-        std::cout << "Fix the algorithm's skeleton in the base class.\n";
-        std::cout << "Defer specific step implementations to specialized subclasses.\n\n";
+        HFL::PrintSection("THE DEFINITION");
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "Define the skeleton of an algorithm in an operation, deferring some steps to subclasses.\n"
+            << "Template Method lets subclasses redefine certain steps of an algorithm without\n"
+            << "changing the algorithm's structure.\n\n";
 
-        std::cout << "In This Demo:\n";
-        std::cout << "Crafting always follows: Prepare -> [Heat] -> Shape -> [Treatment].\n";
-        std::cout << "Four professions (Smithing, Woodworking, Alchemy, Tailoring)\n use the same skeleton.\n";
-        std::cout << "They use 'Control Hooks' to skip steps that don't apply to their craft.\n";
+        HFL::PrintSection("THE GOAL");
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The Template Method Pattern is about 'Structural Enforcement'.\n"
+            << "It locks the sequence of a process (The Skeleton) in a base class,\n"
+            << "ensuring that subclasses can only change 'What' happens in a step,\n"
+            << "but never 'When' or in what order those steps occur.\n\n";
+
+        HFL::PrintSection("THE EXAMPLE");
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "This demonstration features a Universal Crafting Station:\n\n";
+
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] THE TEMPLATE: ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The fixed order: Prepare -> Heat? -> Shape -> Treatment? -> Done.\n";
+
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] THE HOOKS:    ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Optional steps like 'Heat' that are toggled by specific professions.\n\n";
+
+        HFL::PrintSection("THE BENEFIT");
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] NO DUPLICATION:   ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Common workflow logic is written once in the base class.\n";
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] RIGIDITY:         ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Subclasses cannot accidentally skip the 'Preparation' phase.\n";
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] CLEAN SUBCLASSES: ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "A Tailor only writes 2 methods; the base handles the rest.\n";
 
         HFL::WaitForInput();
 
-        // --- STEP 2: THE RULES ---
+        // ======================== THE ARCHITECTURE ========================
         HFL::ClearScreen();
-        HFL::PrintHeader("Step 1: The Architecture");
+        HFL::PrintHeader("THE ARCHITECTURE");
 
-        std::cout << "To recognize a Template Method, look for these 4 ideas:\n\n";
+        HFL::PrintSection("RECOGNIZING THE PATTERN");
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "To recognize a Template Method, look for these 4 markers:\n\n";
 
-        std::cout << "1. Non-Virtual Template Method:\n";
-        std::cout << "   The base class defines the fixed order of operations.\n\n";
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] NON-VIRTUAL TEMPLATE METHOD\n";
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "    The base class defines a final method that dictates the sequence.\n\n";
 
-        std::cout << "2. Primitive Operations:\n";
-        std::cout << "   Subclasses are forced to implement the essential parts (e.g., Prepare).\n\n";
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] PRIMITIVE OPERATIONS\n";
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "    Subclasses are forced (via = 0) to implement essential core logic.\n\n";
 
-        std::cout << "3. Hooks and Guards:\n";
-        std::cout << "   Optional steps (Hooks) and Booleans (Guards) allow for branching.\n\n";
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] HOOKS AND GUARDS\n";
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "    Optional steps and booleans allow subclasses to branch the logic.\n\n";
 
-        std::cout << "4. Inversion of Control:\n";
-        std::cout << "   The base class calls the subclass code.\n";
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] INVERSION OF CONTROL\n";
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "    The 'Hollywood Principle': Don't call us, we'll call you.\n\n";
 
         HFL::WaitForInput();
 
-        // Setup the Crafting Stations
-        // Uses a pointer to the base class to show that the Station 
-        // doesn't care about the specific profession.
-        CraftingProcess* CurrentWorker = nullptr;
-        std::string StationName = "Empty Station";
-
-        // Concrete instances
+        // Object Setup
         Blacksmithing Forge;
         Woodworking Carpenter;
         Alchemy Lab;
         Tailoring Shop;
 
+        CraftingProcess* CurrentWorker = nullptr;
+        std::string StationName = "UNASSIGNED";
+
+        // ======================== GAME LOOP ========================
         while (true)
         {
             HFL::ClearScreen();
-            HFL::PrintHeader("The Universal Crafting");
+            HFL::PrintHeader("UNIVERSAL CRAFTING STATION");
 
-            std::cout << "CRAFT STATION STATUS:\n";
-            std::cout << ">> Current Station: " << (CurrentWorker ? "ASSIGNED" : "NONE") << "\n";
-            std::cout << "--------------------------------------------------\n\n";
+            HFL::PrintSection("STATION STATUS");
+            HFL::SetColor(HFL::EColor::White);
+            std::cout << "  ACTIVE WORKER:   "; HFL::SetColor(HFL::EColor::Cyan);
+            std::cout << StationName << "\n";
+            HFL::SetColor(HFL::EColor::White);
+            std::cout << "  PTR STATUS:      "; HFL::SetColor(HFL::EColor::Gray);
+            std::cout << (CurrentWorker ? "VALID BINDING" : "NULL") << "\n\n";
 
-            std::cout << "1. Blacksmith\n";
-            std::cout << "2. Woodworking\n";
-            std::cout << "3. Alchemy\n";
-            std::cout << "4. Tailoring\n";
-            std::cout << "5. [ CRAFT BUTTON ]\n";
-            std::cout << "0. Exit\n\n";
+            HFL::PrintSection("COMMANDS");
+            HFL::SetColor(HFL::EColor::Green);
+            std::cout << " [1] "; HFL::SetColor(HFL::EColor::White); std::cout << "ASSIGN BLACKSMITH\n";
+            HFL::SetColor(HFL::EColor::Green);
+            std::cout << " [2] "; HFL::SetColor(HFL::EColor::White); std::cout << "ASSIGN WOODWORKER\n";
+            HFL::SetColor(HFL::EColor::Green);
+            std::cout << " [3] "; HFL::SetColor(HFL::EColor::White); std::cout << "ASSIGN ALCHEMIST\n";
+            HFL::SetColor(HFL::EColor::Green);
+            std::cout << " [4] "; HFL::SetColor(HFL::EColor::White); std::cout << "ASSIGN TAILOR\n";
+            HFL::SetColor(HFL::EColor::Yellow);
+            std::cout << " [5] "; HFL::SetColor(HFL::EColor::White); std::cout << "CRAFT\n\n";
+            HFL::SetColor(HFL::EColor::Green);
+            std::cout << " [0] "; HFL::SetColor(HFL::EColor::White); std::cout << "CONTINUE\n\n";
 
             int Choice = HFL::GetValidMenuInput(5);
             if (Choice == 0) break;
 
-            std::cout << "\n--- SYSTEM EXECUTION LOG ---\n";
+            std::cout << "\n======================== EXECUTION LOG ========================\n";
+            HFL::SetColor(HFL::EColor::Gray);
 
             if (Choice >= 1 && Choice <= 4)
             {
-                if (Choice == 1) { CurrentWorker = &Forge;     StationName = "Blacksmith Forge"; }
-                else if (Choice == 2) { CurrentWorker = &Carpenter; StationName = "Woodworking Bench"; }
-                else if (Choice == 3) { CurrentWorker = &Lab;       StationName = "Alchemy Lab"; }
-                else if (Choice == 4) { CurrentWorker = &Shop;      StationName = "Tailoring Table"; }
+                if (Choice == 1) { CurrentWorker = &Forge;     StationName = "BLACKSMITH"; }
+                else if (Choice == 2) { CurrentWorker = &Carpenter; StationName = "WOODWORKER"; }
+                else if (Choice == 3) { CurrentWorker = &Lab;       StationName = "ALCHEMIST"; }
+                else if (Choice == 4) { CurrentWorker = &Shop;      StationName = "TAILOR"; }
 
-                std::cout << ">> System: Swapped to " << StationName << ".\n";
-                std::cout << ">> System: Template Method pointer updated.\n";
+                std::cout << ">> System: Swapped polymorphism binding to " << StationName << ".\n";
             }
             else if (Choice == 5)
             {
                 if (CurrentWorker)
                 {
-                    // THIS IS THE MOMENT:
-                    // Calls the same function on the same pointer type,
-                    // but the Template Method dictates a different flow.
-                    std::cout << "[Station] 'Craft' signal sent to Template...\n";
+                    std::cout << "[Context] Calling: Base->CraftItem();\n";
+                    HFL::SetColor(HFL::EColor::White);
                     CurrentWorker->CraftItem();
                 }
                 else
                 {
-                    std::cout << "!! ERROR: No assigned station.\n";
+                    HFL::SetColor(HFL::EColor::Red);
+                    std::cout << "!! Error: Select a profession before crafting.\n";
                 }
             }
-            std::cout << "----------------------------\n";
 
+            std::cout << "===============================================================\n";
             HFL::WaitForInput();
         }
 
-        // --- STEP 4: CONCLUSION ---
+        // ======================== CONCLUSION ========================
         HFL::ClearScreen();
-        HFL::PrintHeader("Conclusion");
+        HFL::PrintHeader("CONCLUSION");
 
-        std::cout << "Summary of Template Method:\n\n";
+        HFL::PrintSection("ARCHITECTURE");
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "The implementation of the Template Method Pattern confirms the following:\n\n";
 
-        std::cout << "1. Logic Centralization.\n";
-        std::cout << "   Boilerplate flow code is written once and inherited by all crafts.\n\n";
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] LOGIC CENTRALIZATION:     ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The sequence 'Prepare -> Heat -> Shape' is written once.\n"
+            << "    This prevents errors where a developer might forget a step.\n";
 
-        std::cout << "2. Protected Algorithm Structure.\n";
-        std::cout << "   The non-virtual 'CraftItem' prevents subclasses from breaking the sequence.\n\n";
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] PROTECTED STRUCTURE:      ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Because CraftItem() is non-virtual, subclasses literally cannot\n"
+            << "    change the order. They can only fill in the specifics.\n";
 
-        std::cout << "3. Granular Customization.\n";
-        std::cout << "   The Tailor only writes 2 methods. The Smith writes 4.\n";
-        std::cout << "   Subclasses only implement the 'How' for the steps they need.\n\n";
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] HOOK FLEXIBILITY:         ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "By using Hooks like 'RequiresHeat', the algorithm remains generic\n"
+            << "    enough to support wildly different use-cases like Tailoring vs Smithing.\n\n";
 
-        std::cout << std::setw(40) << "End of Demo\n";
+        HFL::PrintSection("SUMMARY");
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "The Template Method Pattern ensures that software is:\n\n";
+
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] STANDARDIZED: ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "All subclasses follow the exact same procedural standard.\n";
+
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] EFFICIENT:    ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Redundant 'workflow' code is removed from subclasses.\n";
+
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] PREDICTABLE:  ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The execution flow is guaranteed by the base class.\n\n";
+
+        HFL::SetColor(HFL::EColor::White);
         HFL::WaitForInput();
     }
 }

@@ -3,40 +3,41 @@
 #include "FunctionLibrary/HelperFunctionLibrary.h"
 
 // =========================================================================
-// BEHAVIORAL DESIGN PATTERNS: Template Method
+// BEHAVIORAL DESIGN PATTERNS: TEMPLATE METHOD
 // =========================================================================
 // "Define the skeleton of an algorithm in an operation, deferring some steps to subclasses."
 //
 // THE GOAL:
 // Fix the structure of a multi-step process while allowing specific steps 
 // to be customized. This prevents logic duplication and enforces a strict 
-// order of operations.
+// order of operations across various implementations.
+//
+// THE BENEFIT:
+// [*] CODE REUSE:     Common algorithm steps are moved into the base class.
+// [*] INVERSION:      The base class calls subclass methods, not the other way around.
+// [*] ENFORCEMENT:    The sequence of execution is locked via a non-virtual method.
 //
 // THE EXAMPLE:
-// Fantasy Crafting System.
-// 1. Abstract Class (CraftingProcess): Defines the Template Method 'CraftItem'.
-// 2. Concrete Primitives: Steps like 'PrepareMaterials' and 'ShapeMaterial'.
-// 3. Hooks: Optional steps like 'ApplyHeat' or 'ApplyTreatment'.
-// 4. Control Hooks: Booleans like 'RequiresHeat' to toggle algorithm branches.
-//
-// THE SCENARIO:
-// Different professions follow the same "Gather -> Process -> Finish" workflow.
-// Without Template Method: Each class duplicates the sequencing logic, leading to errors.
-// With Template Method: The base class enforces the sequence. Subclasses only 
-// provide the specific "how-to" for the steps relevant to their craft.
+// [CraftingProcess]: The Template. Defines the 'CraftItem' sequence.
+// [Primitives]:      Required steps (Prepare/Shape) that every craft must implement.
+// [Hooks]:           Optional steps (Heat/Treatment) that crafts can toggle or ignore.
+// [Concrete Crafts]: Blacksmith, Alchemist, etc., that provide the "how-to".
 // =========================================================================
 
 namespace TMP
 {
-    // ------------------------------------------------------------------------
-    // 1. THE ABSTRACT CLASS (The Blueprint)
-    // ------------------------------------------------------------------------
+    // =========================================================================
+    // THE ABSTRACT CLASS (The Blueprint)
+    // ROLE: Defines the 'Template Method' which is a non-virtual function 
+    // containing the immutable skeleton. It provides default behavior for 
+    // hooks and requires implementation for primitives.
+    // =========================================================================
     class CraftingProcess
     {
     public:
         virtual ~CraftingProcess() = default;
 
-        // --- THE TEMPLATE METHOD ---
+        // THE TEMPLATE METHOD
         // Definition of the immutable skeleton. It is non-virtual to prevent 
         // subclasses from altering the order of the crafting stages.
         void CraftItem()
@@ -74,11 +75,14 @@ namespace TMP
         void Complete() { std::cout << "   [Step] Crafting sequence finished successfully.\n"; }
     };
 
-    // ------------------------------------------------------------------------
-    // 2. CONCRETE IMPLEMENTATIONS (The Variations)
-    // ------------------------------------------------------------------------
+    // =========================================================================
+    // THE CONCRETE IMPLEMENTATIONS (The Variations)
+    // ROLE: Specialized workers that fill in the "blanks" of the algorithm.
+    // Each class focuses only on its specific domain logic without worrying 
+    // about the overall workflow.
+    // =========================================================================
 
-    // Blacksmith: Requires Heat and Cooling (Treatment).
+    // ======================== BLACKSMITHING (Heavy Metal) ========================
     class Blacksmithing : public CraftingProcess
     {
     protected:
@@ -90,7 +94,7 @@ namespace TMP
         void ApplyTreatment() override;
     };
 
-    // Woodworker: No Heat. Requires Varnishing (Treatment).
+    // ======================== WOODWORKING (Natural) ========================
     class Woodworking : public CraftingProcess
     {
     protected:
@@ -100,7 +104,7 @@ namespace TMP
         void ApplyTreatment() override;
     };
 
-    // Alchemist: Requires Heat. No Treatment (Cooling not needed).
+    // ======================== ALCHEMY (Chemical) ========================
     class Alchemy : public CraftingProcess
     {
     protected:
@@ -110,7 +114,7 @@ namespace TMP
         void ApplyHeat() override;
     };
 
-    // Tailor: No Heat. No Treatment. Just raw preparation and shaping.
+    // ======================== TAILORING (Fabric) ========================
     class Tailoring : public CraftingProcess
     {
     protected:
@@ -118,5 +122,8 @@ namespace TMP
         void ShapeMaterial() override;
     };
 
+    // =========================================================================
+    // DEMO IMPLEMENTATION
+    // =========================================================================
     void RunDemo();
 }
