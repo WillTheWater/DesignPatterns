@@ -4,7 +4,7 @@
 #include <vector>
 
 // =========================================================================
-// BEHAVIORAL DESIGN PATTERNS: Iterator
+// BEHAVIORAL DESIGN PATTERN: ITERATOR
 // =========================================================================
 // "Provide a way to access the elements of an aggregate object sequentially 
 // without exposing its underlying representation."
@@ -12,18 +12,27 @@
 // THE GOAL:
 // Decouple the traversal logic from the collection itself. This allows 
 // for different types of traversal (e.g., Filtering, Reverse, Shuffled) 
-// without modifying the container class.
+// without modifying the container class or exposing its internal structure.
+//
+// THE BENEFIT:
+// * Uniform Interface: The UI can traverse any list using the same methods.
+// * Multiple Traversals: You can have several iterators active on one list.
+// * Encapsulation: The underlying storage (vector, list, tree) remains hidden.
+// * Single Responsibility: The collection manages data; the iterator manages state.
 //
 // THE EXAMPLE:
-// Smart Quest Log.
-// 1. The Data (Quest): A simple struct with a name and a status.
-// 2. The Aggregate (QuestLog): A collection of many quests.
-// 3. The Iterator (ActiveQuestIterator): A "smart" remote that skips 
-//    completed/hidden quests and only shows what the player needs to do.
+// [Quest]: The Data. A simple struct with a name and a status.
+// [QuestLog]: The Aggregate. A collection that yields specialized iterators.
+// [QuestFilterIterator]: The Smart Remote. Traverses the log while 
+//   automatically skipping entries that don't match the desired status.
 // =========================================================================
 
 namespace ITR
 {
+    // =========================================================================
+    // THE DATA (The Element)
+    // ROLE: The individual object being stored and traversed.
+    // =========================================================================
     enum class QuestStatus { Available, Active, Completed, Hidden };
 
     struct Quest
@@ -34,27 +43,30 @@ namespace ITR
         void Display() const;
     };
 
-    // ------------------------------------------------------------------------
-    // 1. THE ITERATOR INTERFACE
-    // ------------------------------------------------------------------------
-    // By defining a generic interface, the UI can work with any 
-    // iterator (Active, Completed, or Daily quests) without knowing the rules.
+    // =========================================================================
+    // THE ITERATOR INTERFACE
+    // ROLE: Defines the contract for traversal. By working with this interface,
+    // the UI/Client can iterate through filtered quests without knowing the logic.
+    // =========================================================================
     class IQuestIterator
     {
     public:
         virtual ~IQuestIterator() = default;
+
         virtual bool HasNext() const = 0;
         virtual Quest* Next() = 0;
         virtual Quest* Current() const = 0;
     };
 
-    // ------------------------------------------------------------------------
-    // 2. THE CONCRETE ITERATOR (Smart Filter Logic)
-    // ------------------------------------------------------------------------
+    // =========================================================================
+    // THE CONCRETE ITERATOR (Smart Filter Logic)
+    // ROLE: Implements the traversal algorithm. It maintains a reference to 
+    // the collection and its own current position.
+    // =========================================================================
     class QuestFilterIterator : public IQuestIterator
     {
     public:
-        // TargetStatus so this one class can handle ANY filter.
+        // Uses a TargetStatus so this one class can handle ANY filtered view.
         QuestFilterIterator(std::vector<Quest>& QuestList, QuestStatus TargetStatus);
 
         bool HasNext() const override;
@@ -62,6 +74,7 @@ namespace ITR
         Quest* Current() const override;
 
     private:
+        // Internal logic to jump over quests that don't match filter.
         void AdvanceToNextMatch();
 
         std::vector<Quest>& Quests;
@@ -69,31 +82,33 @@ namespace ITR
         size_t Position = 0;
     };
 
-    // ------------------------------------------------------------------------
-    // 3. THE AGGREGATE (The Container)
-    // ------------------------------------------------------------------------
+    // =========================================================================
+    // THE AGGREGATE (The Container)
+    // ROLE: Holds the data and provides "Factory Methods" to create iterators.
+    // The UI should never access the 'AllQuests' vector directly.
+    // =========================================================================
     class QuestLog
     {
     public:
         void AddQuest(const std::string& Name, QuestStatus Status);
 
-        // --- THE ITERATOR FACTORY METHOD ---
-        // This is the ONLY way the outside classes should get an iterator.
-        // 1. Encapsulation: The UI doesn't need to know 'ActiveQuestIterator' exists.
-        //    It only cares about the 'IQuestIterator' interface.
-        // 2. Ownership: Returning a unique_ptr make sure that the caller 
-        //    now owns this "remote control" and is responsible for its lifetime.
-        // 3. Polymorphism: 'CreateCompletedIterator()' can be added later;
-        //    the UI would treat it exactly the same way.
+        // ======================== ITERATOR FACTORY METHODS ========================
+        // 1. Encapsulation: The UI only interacts with IQuestIterator.
+        // 2. Ownership: Returns unique_ptr to ensure the caller manages the "remote".
+        // 3. Polymorphism: Different filters use the same return type.
         std::unique_ptr<IQuestIterator> CreateActiveIterator();
         std::unique_ptr<IQuestIterator> CreateCompletedIterator();
         std::unique_ptr<IQuestIterator> CreateHiddenIterator();
         std::unique_ptr<IQuestIterator> CreateAvailableIterator();
+
         const std::vector<Quest>& GetAllQuestsRaw() const { return AllQuests; }
 
     private:
         std::vector<Quest> AllQuests;
     };
 
+    // =========================================================================
+    // DEMO IMPLEMENTATION
+    // =========================================================================
     void RunDemo();
 }

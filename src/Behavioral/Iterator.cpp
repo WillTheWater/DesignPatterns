@@ -2,26 +2,38 @@
 
 namespace ITR
 {
+    // =========================================================================
+    // DATA REPRESENTATION
+    // =========================================================================
+
     void Quest::Display() const
     {
         std::string StatusStr;
-        switch (Status) {
-        case QuestStatus::Available: StatusStr = "[ AVAILABLE ]"; break;
-        case QuestStatus::Active:    StatusStr = "[ ACTIVE ]"; break;
-        case QuestStatus::Completed: StatusStr = "[ COMPLETE ]"; break;
-        case QuestStatus::Hidden:    StatusStr = "[ HIDDEN ]"; break;
+        HFL::EColor Color = HFL::EColor::Gray;
+
+        switch (Status)
+        {
+        case QuestStatus::Available: StatusStr = "[ AVAILABLE ]"; Color = HFL::EColor::White; break;
+        case QuestStatus::Active:    StatusStr = "[  ACTIVE   ]"; Color = HFL::EColor::Cyan; break;
+        case QuestStatus::Completed: StatusStr = "[  COMPLETE  ]"; Color = HFL::EColor::Green; break;
+        case QuestStatus::Hidden:    StatusStr = "[  HIDDEN    ]"; Color = HFL::EColor::Red; break;
         }
-        std::cout << "   " << StatusStr << " " << Name << "\n";
+
+        HFL::SetColor(Color);
+        std::cout << "    " << std::left << std::setw(15) << StatusStr;
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << Name << "\n";
     }
 
     // =========================================================================
-    // ITERATOR LOGIC: The "Smart" Traversal
+    // CONCRETE ITERATOR LOGIC: The "Smart" Traversal
+    // ROLE: Encapsulates the filtering algorithm so the UI stays "clean".
     // =========================================================================
 
     QuestFilterIterator::QuestFilterIterator(std::vector<Quest>& QuestList, QuestStatus TargetStatus)
         : Quests(QuestList), Filter(TargetStatus), Position(0)
     {
-        // Immediately find the first match so HasNext() is accurate on start
+        // Immediately find the first match so HasNext() is accurate upon creation
         if (Position < Quests.size() && Quests[Position].Status != Filter)
         {
             AdvanceToNextMatch();
@@ -40,7 +52,10 @@ namespace ITR
         }
     }
 
-    bool QuestFilterIterator::HasNext() const { return Position < Quests.size(); }
+    bool QuestFilterIterator::HasNext() const
+    {
+        return Position < Quests.size();
+    }
 
     Quest* QuestFilterIterator::Current() const
     {
@@ -55,7 +70,8 @@ namespace ITR
     }
 
     // =========================================================================
-    // AGGREGATE LOGIC
+    // AGGREGATE LOGIC: QuestLog
+    // ROLE: The collection that yields specialized iterators via Factory Methods.
     // =========================================================================
 
     void QuestLog::AddQuest(const std::string& Name, QuestStatus Status)
@@ -63,65 +79,129 @@ namespace ITR
         AllQuests.push_back({ Name, Status });
     }
 
-    std::unique_ptr<IQuestIterator> QuestLog::CreateActiveIterator() 
-    { 
-        return std::make_unique<QuestFilterIterator>(AllQuests, QuestStatus::Active); 
-    }
-
-    std::unique_ptr<IQuestIterator> QuestLog::CreateCompletedIterator() 
-    { 
-        return std::make_unique<QuestFilterIterator>(AllQuests, QuestStatus::Completed); 
-    }
-
-    std::unique_ptr<IQuestIterator> QuestLog::CreateHiddenIterator() 
-    { 
-        return std::make_unique<QuestFilterIterator>(AllQuests, QuestStatus::Hidden); 
-    }
-
-    std::unique_ptr<IQuestIterator> QuestLog::CreateAvailableIterator() 
+    std::unique_ptr<IQuestIterator> QuestLog::CreateActiveIterator()
     {
-        return std::make_unique<QuestFilterIterator>(AllQuests, QuestStatus::Available); 
+        return std::make_unique<QuestFilterIterator>(AllQuests, QuestStatus::Active);
+    }
+
+    std::unique_ptr<IQuestIterator> QuestLog::CreateCompletedIterator()
+    {
+        return std::make_unique<QuestFilterIterator>(AllQuests, QuestStatus::Completed);
+    }
+
+    std::unique_ptr<IQuestIterator> QuestLog::CreateHiddenIterator()
+    {
+        return std::make_unique<QuestFilterIterator>(AllQuests, QuestStatus::Hidden);
+    }
+
+    std::unique_ptr<IQuestIterator> QuestLog::CreateAvailableIterator()
+    {
+        return std::make_unique<QuestFilterIterator>(AllQuests, QuestStatus::Available);
     }
 
     // =========================================================================
     // DEMO IMPLEMENTATION
     // =========================================================================
+
     void RunDemo()
     {
         std::cin.clear();
         std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
-        // --- STEP 1: INTRODUCTION ---
+        // ======================== INTRODUCTION ========================
         HFL::ClearScreen();
-        HFL::PrintHeader("Iterator Pattern");
+        HFL::PrintHeader("ITERATOR DESIGN PATTERN");
 
-        std::cout << "Definition:\n";
-        std::cout << "Provide a way to access elements of a collection sequentially\n";
-        std::cout << "without exposing the underlying structure (Vector, List, Tree, etc.).\n\n";
+        HFL::PrintSection("THE DEFINITION");
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "Provide a way to access the elements of an aggregate object sequentially\n"
+            << "without exposing its underlying representation.\n\n";
 
-        std::cout << "In This Demo:\n";
-        std::cout << "A 'Quest Log' contains different types of quests (Active, Complete, Hidden).\n";
-        std::cout << "Instead of the UI checking every quest, it asks for a specific\n";
-        std::cout << "Iterator that filters the data automatically.\n";
+        HFL::PrintSection("THE GOAL");
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The Iterator Pattern is about 'Separation of Traversal'. It allows\n"
+            << "looping through complex collections (Quest Logs, Inventories, Skill Trees)\n"
+            << "using a uniform interface, regardless of how the data is actually stored.\n\n";
+
+        HFL::PrintSection("THE EXAMPLE");
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "This demonstration features a Quest Log with three specialized components:\n\n";
+
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] THE AGGREGATE:       ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The QuestLog. It owns the raw std::vector of data.\n";
+
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] THE INTERFACE:       ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "IQuestIterator. Defines the standard 'Remote Control' buttons.\n";
+
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] THE SMART FILTER:    ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "A Concrete Iterator that skips irrelevant quests automatically.\n\n";
+
+        HFL::PrintSection("THE BENEFIT");
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] UNIFORM ACCESS:  ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The UI uses the same 'while' loop for Active, Completed, or Hidden quests.\n";
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] ENCAPSULATION:   ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The UI never sees the underlying std::vector or filtering logic.\n";
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] FLEXIBILITY:     ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Could change the storage to a Map or Linked List without breaking the UI.\n";
 
         HFL::WaitForInput();
 
-        // --- STEP 2: THE ROLES ---
+        // ======================== THE ARCHITECTURE ========================
         HFL::ClearScreen();
-        HFL::PrintHeader("Step 1: The Roles");
+        HFL::PrintHeader("THE ARCHITECTURE");
 
-        std::cout << "1. The Aggregate (QuestLog):\n";
-        std::cout << "   - Holds the raw vector of quests.\n";
-        std::cout << "   - Factory methods create specific Iterators (Active, Hidden, etc.).\n\n";
+        HFL::PrintSection("THE 'SMART REMOTE'");
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Without an Iterator, the UI must manually check 'if (Status == Active)'\n"
+            << "inside every loop. With an Iterator, that complexity is 'pushed' into\n"
+            << "a dedicated object, leaving the UI code clean and declarative.\n\n";
 
-        std::cout << "2. The Iterator Interface (IQuestIterator):\n";
-        std::cout << "   - Standardizes how to move: HasNext() and Next().\n\n";
+        HFL::PrintSection("IMPLEMENTATION");
 
-        std::cout << "3. The Concrete Iterator (QuestFilterIterator):\n";
-        std::cout << "   - Encapsulates the filtering logic. The UI never sees 'noise'.\n";
+        // ======================== THE AGGREGATE ========================
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] QuestLog (The Aggregate)\n";
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "    ROLE:           ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The Container. It is responsible for data storage and ownership.\n";
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "    FACTORY:        ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Creates specific iterators (Active/Complete) on demand.\n\n";
 
+        // ======================== THE ITERATOR ========================
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] QuestFilterIterator (The Concrete Iterator)\n";
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "    ROLE:           ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The Traversal logic. It knows how to 'AdvanceToNextMatch'.\n";
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "    SIMPLICITY:     ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Exposes only HasNext(), Next(), and Current().\n";
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "    DECOUPLING:     ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The UI only knows the Interface, not the Filter logic.\n\n";
+
+        HFL::SetColor(HFL::EColor::White);
         HFL::WaitForInput();
 
+        // ======================== INITIALIZATION ========================
         QuestLog PlayerLog;
         PlayerLog.AddQuest("Kill 10 Rats", QuestStatus::Completed);
         PlayerLog.AddQuest("Find the Lost Ring", QuestStatus::Active);
@@ -131,31 +211,35 @@ namespace ITR
         PlayerLog.AddQuest("Slay the Dragon", QuestStatus::Active);
         PlayerLog.AddQuest("Collect 5 Herbs", QuestStatus::Completed);
 
-        // --- STEP 3: INTERACTIVE SIMULATION ---
+        // ======================== INTERACTIVE LOOP ========================
         while (true)
         {
             HFL::ClearScreen();
-            HFL::PrintHeader("Quest Log Interface");
+            HFL::PrintHeader("QUEST LOG INTERFACE");
 
-            std::cout << "Select View Mode:\n";
-            std::cout << "1. All Quests\n";
-            std::cout << "2. Active Quests\n";
-            std::cout << "3. Completed Quests\n";
-            std::cout << "4. Hidden Quests\n";
-            std::cout << "0. Exit\n\n";
+            HFL::PrintSection("VIEW MODES");
+            HFL::SetColor(HFL::EColor::Green);
+            std::cout << " [1] "; HFL::SetColor(HFL::EColor::White); std::cout << "ALL QUESTS\n";
+            HFL::SetColor(HFL::EColor::Green);
+            std::cout << " [2] "; HFL::SetColor(HFL::EColor::White); std::cout << "ACTIVE QUESTS\n";
+            HFL::SetColor(HFL::EColor::Green);
+            std::cout << " [3] "; HFL::SetColor(HFL::EColor::White); std::cout << "COMPLETED QUESTS\n";
+            HFL::SetColor(HFL::EColor::Green);
+            std::cout << " [4] "; HFL::SetColor(HFL::EColor::White); std::cout << "HIDDEN QUESTS\n\n";
+            HFL::SetColor(HFL::EColor::Green);
+            std::cout << " [0] "; HFL::SetColor(HFL::EColor::White); std::cout << "CONTINUE\n\n";
 
             int Choice = HFL::GetValidMenuInput(4);
             if (Choice == 0) break;
 
-            std::cout << "\n--- EXECUTION LOG ---\n";
+            HFL::PrintSection("EXECUTION LOG");
+            HFL::SetColor(HFL::EColor::Gray);
 
             if (Choice == 1)
             {
-                std::cout << "[System] Direct access: UI is manually looping through 'std::vector<Quest>'.\n";
-                std::cout << "[System] Logic: No filtering, just raw dumping.\n\n";
+                std::cout << "[System] Direct access: UI is manually looping 'std::vector<Quest>'.\n";
+                std::cout << "[System] Logic: No filtering applied.\n\n";
 
-                // This demonstrates why direct access is "fragile":
-                // If the vector changes to a map, this code breaks.
                 for (const auto& Q : PlayerLog.GetAllQuestsRaw())
                 {
                     Q.Display();
@@ -165,39 +249,74 @@ namespace ITR
             {
                 std::unique_ptr<IQuestIterator> It = nullptr;
 
-                // OBTAIN: Choose the right filter.
-                if (Choice == 2) It = PlayerLog.CreateActiveIterator();
+                // OBTAIN: The Facade-style Factory creates the specific worker
+                if (Choice == 2)      It = PlayerLog.CreateActiveIterator();
                 else if (Choice == 3) It = PlayerLog.CreateCompletedIterator();
                 else if (Choice == 4) It = PlayerLog.CreateHiddenIterator();
 
-                std::cout << "[System] Using IQuestIterator to filter results...\n\n";
+                std::cout << "[System] Using IQuestIterator to filter results...\n";
+                std::cout << "[System] UI loop remains identical regardless of filter type.\n\n";
 
-                // TRAVERSE: This loop is UNIFORM. It works for any filter!
+                // TRAVERSE: The Client loop is identical for ANY iterator type (Polymorphism)
                 while (It && It->HasNext())
                 {
                     Quest* q = It->Next();
                     if (q) q->Display();
                 }
             }
-            std::cout << "----------------------\n";
+
+            HFL::SetColor(HFL::EColor::Gray);
+            std::cout << "\n--------------------------------------------------\n";
             HFL::WaitForInput();
         }
 
-        // --- STEP 4: CONCLUSION ---
+        // ======================== CONCLUSION ========================
         HFL::ClearScreen();
-        HFL::PrintHeader("Conclusion");
+        HFL::PrintHeader("CONCLUSION");
 
-        std::cout << "Summary:\n\n";
-        std::cout << "1. Logic Encapsulation:\n";
-        std::cout << "   The filtering logic is hidden inside the Iterator class.\n\n";
+        HFL::PrintSection("ARCHITECTURE");
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "The implementation of the Iterator Pattern confirms the following:\n\n";
 
-        std::cout << "2. Clean UI Code:\n";
-        std::cout << "   The display loop remains simple and doesn't change when adding filters.\n\n";
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] LOGIC ENCAPSULATION:     ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The UI no longer contains 'if (Status == X)' checks. The filtering\n"
+            << "    logic is hidden entirely inside the QuestFilterIterator.\n";
 
-        std::cout << "3. Multiple Views:\n";
-        std::cout << "   The same data can be viewed in many ways by swapping Iterators.\n";
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] UNIFORM TRAVERSAL:       ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The UI loop is identical for Active, Completed, or Hidden views.\n"
+            << "    It only knows how to call 'Next()' on an interface.\n";
 
-        std::cout << std::setw(40) << "End of Demo\n";
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] FACTORY ABSTRACTION:     ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The QuestLog handles the creation and configuration of iterators,\n"
+            << "    returning a unique_ptr to shield the UI from lifecycle management.\n\n";
+
+        HFL::PrintSection("SUMMARY");
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "The Iterator Pattern ensures that software is:\n\n";
+
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] CLEAN:     ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The presentation layer is separated from the traversal algorithm.\n";
+
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] FLEXIBLE:  ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "New filters (e.g. DailyQuests) can be added without touching the UI.\n";
+
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] DECOUPLED: ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Swapping a 'std::vector' for a 'std::map' only requires changing the\n"
+            << "    Iterator, leaving the character's Quest Log UI 100% untouched.\n\n";
+
+        HFL::SetColor(HFL::EColor::White);
         HFL::WaitForInput();
     }
 }
