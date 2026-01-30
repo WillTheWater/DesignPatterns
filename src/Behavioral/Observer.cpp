@@ -3,63 +3,85 @@
 namespace OBS
 {
     // =========================================================================
-    // SUBJECT LOGIC
+    // SUBJECT LOGIC (The Source of Truth)
+    // ROLE: Perform internal state changes and broadcast results via Delegates.
     // =========================================================================
 
-    void StatsComponent::TakeDamage(float Amount) {
+    void StatsComponent::TakeDamage(float Amount)
+    {
         Health = std::max(0.0f, Health - Amount);
+
+        std::cout << "[Subject] Health reduced. Broadcasting to listeners...\n";
         OnHealthChanged.Broadcast(Health, MaxHealth);
     }
 
-    void StatsComponent::Heal(float Amount) {
+    void StatsComponent::Heal(float Amount)
+    {
         Health = std::min(MaxHealth, Health + Amount);
+
+        std::cout << "[Subject] Health restored. Broadcasting to listeners...\n";
         OnHealthChanged.Broadcast(Health, MaxHealth);
     }
 
-    void StatsComponent::GainXP(float Amount) {
+    void StatsComponent::GainXP(float Amount)
+    {
         CurrentXP += Amount;
-        if (CurrentXP >= XPToLevel) {
+        if (CurrentXP >= XPToLevel)
+        {
             LevelUp();
         }
-        else {
+        else
+        {
+            std::cout << "[Subject] XP Gained. Broadcasting to listeners...\n";
             OnXPChanged.Broadcast(CurrentXP, XPToLevel);
         }
     }
 
-    void StatsComponent::LevelUp() {
+    void StatsComponent::LevelUp()
+    {
         Level++;
         Health = MaxHealth; // Level up heals to full
         CurrentXP = 0.0f;   // Reset XP
 
+        std::cout << "[Subject] LEVEL UP! Broadcasting multiple events...\n";
         OnLevelUp.Broadcast(Level);
         OnHealthChanged.Broadcast(Health, MaxHealth);
         OnXPChanged.Broadcast(CurrentXP, XPToLevel);
     }
 
     // =========================================================================
-    // OBSERVER LOGIC (UI Drawing)
+    // OBSERVER LOGIC (The UI Listener)
+    // ROLE: Update a local cache of data to keep the UI in sync without 
+    // constantly polling the Subject for information.
     // =========================================================================
 
-    void HUDWidget::UpdateHealth(float Current, float Max) {
+    void HUDWidget::UpdateHealth(float Current, float Max)
+    {
         LastHealth = Current;
         LastMaxHealth = Max;
+        std::cout << "[Observer] HUD Cache updated: Health.\n";
     }
 
-    void HUDWidget::UpdateXP(float Current, float Max) {
+    void HUDWidget::UpdateXP(float Current, float Max)
+    {
         LastXP = Current;
         LastMaxXP = Max;
+        std::cout << "[Observer] HUD Cache updated: XP.\n";
     }
 
-    void HUDWidget::UpdateLevel(int NewLevel) {
+    void HUDWidget::UpdateLevel(int NewLevel)
+    {
         LastLevel = NewLevel;
-        std::cout << "\n   [HUD EVENT] Level Up detected! Now Level " << NewLevel << "\n";
+        HFL::SetColor(HFL::EColor::Cyan);
+        std::cout << "[Observer] HUD EVENT: Level Up detected! Now Level " << NewLevel << "\n";
+        HFL::SetColor(HFL::EColor::Gray);
     }
 
-    // FIXED: Added HUDWidget:: scope
-    void HUDWidget::DrawHUD() {
+    void HUDWidget::DrawHUD()
+    {
         int Segments = 20;
 
-        std::cout << "   Character Level: "; 
+        std::cout << "   Character Level: ";
         HFL::SetColor(HFL::EColor::Green);
         std::cout << LastLevel << "\n";
         HFL::SetColor(HFL::EColor::White);
@@ -84,134 +106,211 @@ namespace OBS
     // =========================================================================
     // DEMO IMPLEMENTATION
     // =========================================================================
+
     void RunDemo()
     {
-        // Clear input buffer
         std::cin.clear();
         std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
-        // --- STEP 1: INTRODUCTION ---
+        // ======================== INTRODUCTION ========================
         HFL::ClearScreen();
-        HFL::PrintHeader("Observer Pattern (Delegates)");
+        HFL::PrintHeader("OBSERVER DESIGN PATTERN");
 
-        std::cout << "Definition:\n";
-        std::cout << "Define a one-to-many dependency so that when one object changes state,\n";
-        std::cout << "all its dependents are notified automatically.\n\n";
+        HFL::PrintSection("THE DEFINITION");
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "Define a one-to-many dependency between objects so that when one\n"
+            << "object changes state, all its dependents are notified automatically.\n\n";
 
-        std::cout << "In This Demo:\n";
-        std::cout << "StatsComponent: The Subject (Source of Truth for Health/XP).\n";
-        std::cout << "HUDWidget: The Observer (Draws bars based on notifications).\n";
-        std::cout << "The StatsComponent has ZERO knowledge that the HUD exists.\n";
+        HFL::PrintSection("THE GOAL");
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The Observer Pattern is about 'Event-Driven Decoupling'.\n"
+            << "It allows a 'Subject' to broadcast state changes to an unknown number\n"
+            << "of 'Observers' (UI, VFX, SFX) without creating hard dependencies.\n"
+            << "The Subject triggers an event; the Observers decide how to react.\n\n";
+
+        HFL::PrintSection("THE EXAMPLE");
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "This demonstration features a Player Stats system and a decoupled HUD:\n\n";
+
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] THE SUBJECT:  ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "StatsComponent. Source of truth for Health, XP, and Level.\n";
+
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] THE OBSERVER: ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "HUDWidget. A passive listener that draws the visual interface.\n";
+
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] THE DELEGATE: ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The subscription manager that connects Subject to Observer.\n\n";
+
+        HFL::PrintSection("THE BENEFIT");
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] LOOSE COUPLING:  ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The Player logic never needs to #include the UI or Sound headers.\n";
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] MEMORY SAFETY:   ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Using weak_ptr prevents crashing if a listener is destroyed mid-game.\n";
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] EXTENSIBILITY:   ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "New systems (Achievements, Analytics) can listen without changing code.\n";
 
         HFL::WaitForInput();
 
-        // --- STEP 2: THE ROLES ---
+        // ======================== THE ARCHITECTURE ========================
         HFL::ClearScreen();
-        HFL::PrintHeader("Step 1: The Roles");
+        HFL::PrintHeader("THE ARCHITECTURE");
 
-        std::cout << "There are three distinct roles in this system:\n\n";
+        HFL::PrintSection("THE 'EVENT BRIDGE'");
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Without an Observer, the Player must manually tell the HUD to update.\n"
+            << "With an Observer, the Player simply shouts 'I changed!' into a Delegate,\n"
+            << "and whoever is subscribed handles the rest automatically.\n\n";
 
-        std::cout << "1. The Subject (StatsComponent):\n";
-        std::cout << "   - Holds the 'Raw Data' (Health, XP, Level).\n";
-        std::cout << "   - Owns the Broadcasters (Delegates).\n";
-        std::cout << "   - It broadcasts: 'Health changed to 80!'\n\n";
+        HFL::PrintSection("IMPLEMENTATION");
 
-        std::cout << "2. The Observer (HUDWidget):\n";
-        std::cout << "   - Holds a 'Cache' of the data it needs to display.\n";
-        std::cout << "   - It doesn't modify the data; it only listens and draws.\n\n";
+        // ======================== THE SUBJECT ========================
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] StatsComponent (The Subject)\n";
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "    ROLE:           ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The Broadcaster. It owns the Delegates and triggers 'Broadcast()'.\n";
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "    KNOWLEDGE:      ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Zero. It does not know who (if anyone) is listening.\n\n";
 
-        std::cout << "3. The Delegate (The Bridge):\n";
-        std::cout << "   - Manages the list of listeners.\n";
-        std::cout << "   - Uses weak_ptr to ensure that if the HUD is deleted,\n";
-        std::cout << "     the system won't crash when broadcasting.\n";
+        // ======================== THE OBSERVER ========================
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] HUDWidget (The Observer)\n";
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "    ROLE:           ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The Listener. It 'Binds' its functions to the Subject's Delegates.\n";
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "    LIFECYCLE:      ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Safe. It uses weak_ptr to ensure the Subject doesn't call a dead object.\n\n";
 
+        HFL::SetColor(HFL::EColor::White);
         HFL::WaitForInput();
 
-        // --- STEP 3: THE WIRING ---
-        HFL::ClearScreen();
-        HFL::PrintHeader("Step 2: The Wiring");
-
-        std::cout << "Connecting the systems. This is the only time they meet.\n\n";
-
-        // Setup lifetimes
+        // ======================== INITIALIZATION ========================
         auto PlayerStats = std::make_shared<StatsComponent>();
         auto PlayerHUD = std::make_shared<HUDWidget>();
 
+        HFL::SetColor(HFL::EColor::White);
         std::cout << "ACTION: Binding HUD methods to Stats Delegates...\n";
+        HFL::WaitDots(0.5f);
 
-        // THE BINDING Logic:
-        // We tell the PlayerStats: "When Health changes, call PlayerHUD->UpdateHealth"
         PlayerStats->OnHealthChanged.Bind(PlayerHUD, &HUDWidget::UpdateHealth);
         PlayerStats->OnXPChanged.Bind(PlayerHUD, &HUDWidget::UpdateXP);
         PlayerStats->OnLevelUp.Bind(PlayerHUD, &HUDWidget::UpdateLevel);
 
+        HFL::SetColor(HFL::EColor::Green);
         std::cout << "SUCCESS: Systems are now decoupled but communicating.\n";
+        HFL::SetColor(HFL::EColor::White);
 
         HFL::WaitForInput();
 
-        // --- STEP 4: INTERACTIVE SIMULATION ---
+        // ======================== GAME LOOP ========================
         while (true)
         {
             HFL::ClearScreen();
-            HFL::PrintHeader("Game HUD Simulation");
+            HFL::PrintHeader("GAME HUD SIMULATION");
 
-            // UI Section
-            // Note: We don't ask PlayerStats for data here. 
-            // We ask the HUD what it has 'observed'.
-            std::cout << "--------------------------------------------------\n";
+            // UI Section: We ask the HUD what it has 'observed'.
+            HFL::PrintSection("HUD RENDERING");
             PlayerHUD->DrawHUD();
-            std::cout << "--------------------------------------------------\n\n";
+            std::cout << "\n";
 
-            std::cout << "1. Take 20 Damage\n";
-            std::cout << "2. Heal 20 Health\n";
-            std::cout << "3. Gain 35 XP\n";
-            std::cout << "0. Exit\n\n";
+            HFL::PrintSection("COMMANDS");
+            HFL::SetColor(HFL::EColor::Green);
+            std::cout << " [1] "; HFL::SetColor(HFL::EColor::White); std::cout << "TAKE DAMAGE\n";
+            HFL::SetColor(HFL::EColor::Green);
+            std::cout << " [2] "; HFL::SetColor(HFL::EColor::White); std::cout << "HEAL HEALTH\n";
+            HFL::SetColor(HFL::EColor::Green);
+            std::cout << " [3] "; HFL::SetColor(HFL::EColor::White); std::cout << "GAIN XP\n\n";
+            HFL::SetColor(HFL::EColor::Green);
+            std::cout << " [0] "; HFL::SetColor(HFL::EColor::White); std::cout << "CONTINUE\n\n";
 
             int Choice = HFL::GetValidMenuInput(3);
             if (Choice == 0) break;
 
-            std::cout << "\n--- BROADCAST LOG ---\n";
+            HFL::PrintSection("BROADCAST LOG");
+            HFL::SetColor(HFL::EColor::Gray);
 
             if (Choice == 1) {
-                std::cout << ">> Action: Triggering Damage logic in StatsComponent...\n";
-                PlayerStats->TakeDamage(20.0f);
+                std::cout << ">> Triggering Damage logic in StatsComponent...\n";
+                PlayerStats->TakeDamage(HFL::GetRandom(2.f, 20.f));
             }
             else if (Choice == 2) {
-                std::cout << ">> Action: Triggering Heal logic in StatsComponent...\n";
-                PlayerStats->Heal(20.0f);
+                std::cout << ">> Triggering Heal logic in StatsComponent...\n";
+                PlayerStats->Heal(HFL::GetRandom(2.f, 20.f));
             }
             else if (Choice == 3) {
-                std::cout << ">> Action: Triggering XP Gain logic in StatsComponent...\n";
-                PlayerStats->GainXP(35.0f);
+                std::cout << ">> Triggering XP Gain logic in StatsComponent...\n";
+                PlayerStats->GainXP(HFL::GetRandom(5.f, 40.f));
             }
 
-            std::cout << "---------------------\n";
+            HFL::SetColor(HFL::EColor::White);
             HFL::WaitForInput();
         }
 
-        // --- STEP 5: CONCLUSION ---
+        // ======================== CONCLUSION ========================
         HFL::ClearScreen();
-        HFL::PrintHeader("Conclusion");
+        HFL::PrintHeader("CONCLUSION");
 
-        std::cout << "Summary of Observer Pattern:\n\n";
+        HFL::PrintSection("ARCHITECTURE");
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "The implementation of the Observer Pattern confirms the following:\n\n";
 
-        std::cout << "1. Loose Coupling:\n";
-        std::cout << "   The StatsComponent logic is 100% independent.\n";
-        std::cout << "   You could add a Sound System or Achievement System\n";
-        std::cout << "   listening to the same events without changing Stats.\n\n";
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] EVENT-DRIVEN DECOUPLING: ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The 'StatsComponent' acts as a pure data source. It functions\n"
+            << "    perfectly whether 0 or 100 observers are listening.\n";
 
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] SMART SUBSCRIPTIONS:     ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The 'Delegate' template manages the complexity of function pointers\n"
+            << "    and argument passing, providing a clean API for the Subject.\n";
 
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] ZERO HEADER POLLUTION:   ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The gameplay logic remains pure. It has no knowledge of UI classes,\n"
+            << "    rendering pipelines, or sound engine headers.\n\n";
 
-        std::cout << "2. Memory Safety:\n";
-        std::cout << "   Because we used weak pointers in our Delegate Bindings,\n";
-        std::cout << "   destroying the HUD object will not cause a null-pointer\n";
-        std::cout << "   crash during the next broadcast.\n\n";
+        HFL::PrintSection("SUMMARY");
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "The Observer Pattern ensures that software is:\n\n";
 
-        std::cout << "3. Real-Time Sync:\n";
-        std::cout << "   The UI is never 'stale'. It updates the exact millisecond\n";
-        std::cout << "   the underlying data changes.\n\n";
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] SCALABLE:  ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Add new features (Achievements, VFX) by simply binding to events.\n";
 
-        std::cout << std::setw(40) << "End of Demo\n";
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] SECURE:    ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Memory leaks and null-pointer crashes are mitigated via weak_ptr.\n";
+
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] EFFICIENT: ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Observers only update when data actually changes, avoiding expensive\n"
+            << "    per-frame 'polling' or checking variables in the Game Loop.\n\n";
+
+        HFL::SetColor(HFL::EColor::White);
         HFL::WaitForInput();
     }
 }
