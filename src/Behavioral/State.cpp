@@ -3,19 +3,20 @@
 namespace STA
 {
     // =========================================================================
-    // CONTEXT IMPLEMENTATION (SILENT)
+    // THE CONTEXT (Player Implementation)
+    // ROLE: Manages the lifecycle of the current "Brain" (State).
     // =========================================================================
 
-    Player::Player() 
+    Player::Player()
     {
-        // Start in the Idle state - No log here
+        // Start in the Idle state - initialization is silent
         CurrentState = std::make_shared<IdleState>();
         CurrentState->Enter(*this);
     }
 
-    void Player::SetState(std::shared_ptr<IPlayerState> NewState) 
+    void Player::SetState(std::shared_ptr<IPlayerState> NewState)
     {
-        if (CurrentState) 
+        if (CurrentState)
         {
             CurrentState->Exit(*this);
         }
@@ -24,25 +25,29 @@ namespace STA
         CurrentState->Enter(*this);
     }
 
-    void Player::HandleInput(int Input) 
+    void Player::HandleInput(int Input)
     {
         CurrentState->HandleInput(*this, Input);
     }
 
-    void Player::Update() 
+    void Player::Update()
     {
         CurrentState->Update(*this);
     }
 
     // =========================================================================
-    // STATE LOGIC: IDLE
+    // CONCRETE STATE: IDLE
     // =========================================================================
 
-    void IdleState::Enter(Player& P) { P;/* Silent */ }
-    void IdleState::Update(Player& P) { P; std::cout << "   [Anim] Character is standing idle...\n"; }
-    void IdleState::Exit(Player& P) { P;/* Silent */ }
+    void IdleState::Enter(Player& P) { (void)P; }
+    void IdleState::Update(Player& P)
+    {
+        (void)P;
+        std::cout << "    [Anim] Character is standing breathing idle...\n";
+    }
+    void IdleState::Exit(Player& P) { (void)P; }
 
-    void IdleState::HandleInput(Player& P, int Input) 
+    void IdleState::HandleInput(Player& P, int Input)
     {
         if (Input == 1) P.SetState(std::make_shared<WalkState>());
         if (Input == 3) P.SetState(std::make_shared<AttackState>());
@@ -50,14 +55,18 @@ namespace STA
     }
 
     // =========================================================================
-    // STATE LOGIC: WALK
+    // CONCRETE STATE: WALK
     // =========================================================================
 
-    void WalkState::Enter(Player& P) { P;/* Silent */ }
-    void WalkState::Update(Player& P) { P; std::cout << "   [Anim] Character is walking forward...\n"; }
-    void WalkState::Exit(Player& P) { P;/* Silent */ }
+    void WalkState::Enter(Player& P) { (void)P; }
+    void WalkState::Update(Player& P)
+    {
+        (void)P;
+        std::cout << "    [Anim] Character is walking forward (Looping)...\n";
+    }
+    void WalkState::Exit(Player& P) { (void)P; }
 
-    void WalkState::HandleInput(Player& P, int Input) 
+    void WalkState::HandleInput(Player& P, int Input)
     {
         if (Input == 2) P.SetState(std::make_shared<IdleState>());
         if (Input == 3) P.SetState(std::make_shared<AttackState>());
@@ -65,146 +74,233 @@ namespace STA
     }
 
     // =========================================================================
-    // STATE LOGIC: ATTACK (Self-Transitioning)
+    // CONCRETE STATE: ATTACK (Self-Transitioning)
     // =========================================================================
 
-    void AttackState::Enter(Player& P) 
+    void AttackState::Enter(Player& P)
     {
-        // 1. Immediate Visual Feedback
         HFL::ClearScreen();
-        HFL::PrintHeader("Animation State Machine");
+        HFL::PrintHeader("ANIMATION STATE MACHINE");
+        HFL::SetColor(HFL::EColor::White);
         std::cout << "CURRENT STATE: [ ATTACKING ]\n";
+        HFL::SetColor(HFL::EColor::Gray);
         std::cout << "--------------------------------------------------\n";
-        std::cout << "   (Anim) Character swings swoard!\n";
 
-        // 2. Real-Time Wait
+        std::cout << "    (Anim) Character swings sword!\n";
         HFL::Wait(1.5f);
 
-        std::cout << "   (Combat) The enemy is hit!\n";
-        std::cout << "   (Combat) The monster flees...\n";
-        HFL::Wait(2.0f);
+        std::cout << "    (Combat) Critical Hit detected!\n";
+        std::cout << "    (Combat) The monster flees...\n";
+        HFL::Wait(1.5f);
 
-        // 3. AUTO-TRANSITION
-        // This effectively "pops" the state back to Idle before the loop continues
+        // AUTO-TRANSITION: Return to Idle once the action is complete
         P.SetState(std::make_shared<IdleState>());
     }
 
-    void AttackState::Update(Player& P) { P;/* Ignore */ }
-    void AttackState::Exit(Player& P) { P;/* Ignore */}
-    void AttackState::HandleInput(Player& P, int Input) { P; Input;/* Ignore */ }
+    void AttackState::Update(Player& P) { (void)P; }
+    void AttackState::Exit(Player& P) { (void)P; }
+    void AttackState::HandleInput(Player& P, int Input) { (void)P; (void)Input; }
 
     // =========================================================================
-    // STATE LOGIC: JUMP (Self-Transitioning)
+    // CONCRETE STATE: JUMP (Self-Transitioning)
     // =========================================================================
 
     void JumpState::Enter(Player& P)
     {
-        // 1. Immediate Visual Feedback
         HFL::ClearScreen();
-        HFL::PrintHeader("Animation State Machine");
+        HFL::PrintHeader("ANIMATION STATE MACHINE");
+        HFL::SetColor(HFL::EColor::White);
         std::cout << "CURRENT STATE: [ JUMPING ]\n";
+        HFL::SetColor(HFL::EColor::Gray);
         std::cout << "--------------------------------------------------\n";
-        std::cout << "   (Anim) Character jumps!\n";
 
-        // 2. Real-Time Wait
-        HFL::Wait(1.f);
+        std::cout << "    (Anim) Character jumps!\n";
+        HFL::Wait(1.0f);
 
-        std::cout << "   (Anim) Character lands!\n";
-        std::cout << "   And recovers...\n";
-        HFL::Wait(2.0f);
+        std::cout << "    (Anim) Character lands!\n";
+        HFL::Wait(1.5f);
 
-        // 3. AUTO-TRANSITION
         P.SetState(std::make_shared<IdleState>());
     }
 
-    void JumpState::Update(Player& P) { P;/* Ignore */ }
-    void JumpState::Exit(Player& P) { P;/* Ignore */ }
-    void JumpState::HandleInput(Player& P, int Input) { P; Input;/* Ignore */ }
+    void JumpState::Update(Player& P) { (void)P; }
+    void JumpState::Exit(Player& P) { (void)P; }
+    void JumpState::HandleInput(Player& P, int Input) { (void)P; (void)Input; }
 
     // =========================================================================
-    // DEMO MAIN
+    // DEMO IMPLEMENTATION
     // =========================================================================
+
     void RunDemo()
     {
         std::cin.clear();
         std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
-        // --- STEP 1: INTRODUCTION ---
+        // ======================== INTRODUCTION ========================
         HFL::ClearScreen();
-        HFL::PrintHeader("State Pattern");
+        HFL::PrintHeader("STATE DESIGN PATTERN");
 
-        std::cout << "Definition:\n";
-        std::cout << "Allow an object to alter its behavior when its internal state changes.\n";
-        std::cout << "The object will appear to change its class.\n\n";
+        HFL::PrintSection("THE DEFINITION");
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "Allow an object to alter its behavior when its internal state changes.\n"
+            << "The object will appear to change its class.\n\n";
 
-        std::cout << "In This Demo:\n";
-        std::cout << "It simulates a Character with 3 (States):\n";
-        std::cout << "- Idle: Waiting for input.\n";
-        std::cout << "- Walking: Moving logic enabled.\n";
-        std::cout << "- Attacking: Inputs locked until animation finishes.\n";
+        HFL::PrintSection("THE GOAL");
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The State Pattern is about 'Encapsulated Polymorphism'.\n"
+            << "Instead of one character class containing 500 lines of if-else\n"
+            << "statements for Idle, Walk, and Attack, we move that logic into\n"
+            << "separate classes that the character swaps between at runtime.\n\n";
+
+        HFL::PrintSection("THE EXAMPLE");
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "This demonstration features an Animation State Machine (ASM):\n\n";
+
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] THE IDLE STATE:    ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Standard waiting behavior. Allows transitions to all states.\n";
+
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] THE ATTACK STATE:  ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Locks movement and input until the swing animation ends.\n";
+
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] THE CONTEXT:       ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The Player class. It is just a vessel for the current state.\n\n";
+
+        HFL::PrintSection("THE BENEFIT");
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] CLEAN UPDATE:    ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The Player's Update() is always one line: CurrentState->Update().\n";
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] INPUT FILTERING: ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The Attack state simply chooses not to implement movement input.\n";
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] SCALABILITY:     ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Adding 'Swimming' or 'Dying' is just adding a new class.\n";
 
         HFL::WaitForInput();
 
-        // --- STEP 2: THE BRAIN SWAP ---
+        // ======================== THE ARCHITECTURE ========================
         HFL::ClearScreen();
-        HFL::PrintHeader("Step 1: The Transition Logic");
+        HFL::PrintHeader("THE ARCHITECTURE");
 
-        std::cout << "Unlike a massive Switch statement, transitions are handled BY states.\n\n";
-        std::cout << "1. IdleState detects 'Move' -> It tells Player: 'SetState(Walk)'.\n";
-        std::cout << "2. The Player exits Idle, enters Walk.\n";
-        std::cout << "3. The Player's Update() now only runs Walk code.\n\n";
+        HFL::PrintSection("THE 'BRAIN SWAP'");
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Unlike a standard Finite State Machine, transitions are 'pushed' by the states themselves.\n"
+            << "When the Player is in 'WalkState' and the user stops moving, the\n"
+            << "WalkState calls 'SetState(Idle)' on the Player.\n\n";
 
+        HFL::PrintSection("IMPLEMENTATION");
 
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] IPlayerState (The Interface)\n";
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "    ROLE:           ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The Contract. Defines Enter, Update, HandleInput, and Exit.\n";
 
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] Player (The Context)\n";
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "    ROLE:           ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The Owner. Holds the shared_ptr to the current state.\n\n";
+
+        HFL::SetColor(HFL::EColor::White);
         HFL::WaitForInput();
 
-        // --- STEP 3: INTERACTIVE SIMULATION ---
+        // ======================== INITIALIZATION ========================
         Player MyPlayer;
 
+        // ======================== GAME LOOP ========================
         while (true)
         {
             HFL::ClearScreen();
-            HFL::PrintHeader("Animation State Machine");
+            HFL::PrintHeader("ANIMATION STATE MACHINE");
 
-            // Display current state info
-            std::cout << "CURRENT STATE: [ " << MyPlayer.GetCurrentStateName() << " ]\n";
-            std::cout << "--------------------------------------------------\n";
+            HFL::PrintSection("CURRENT STATUS");
+            HFL::SetColor(HFL::EColor::White);
+            std::cout << "  ACTIVE STATE:  ";
+            HFL::SetColor(HFL::EColor::Green);
+            std::cout << "[ " << MyPlayer.GetCurrentStateName() << " ]\n";
+            HFL::SetColor(HFL::EColor::Gray);
+            std::cout << "  --------------------------------------------------\n";
             MyPlayer.Update();
-            std::cout << "--------------------------------------------------\n\n";
+            HFL::SetColor(HFL::EColor::Gray);
+            std::cout << "  --------------------------------------------------\n\n";
 
-            // Controls
-            std::cout << "Controls:\n";
-            std::cout << "1. Walk\n";
-            std::cout << "2. Stop/Idle\n";
-            std::cout << "3. Attack\n";
-            std::cout << "4. Jump\n";
-            std::cout << "0. Exit Demo\n";
+            HFL::PrintSection("CONTROLS");
+            HFL::SetColor(HFL::EColor::Green);
+            std::cout << " [1] "; HFL::SetColor(HFL::EColor::White); std::cout << "WALK\n";
+            HFL::SetColor(HFL::EColor::Green);
+            std::cout << " [2] "; HFL::SetColor(HFL::EColor::White); std::cout << "IDLE\n";
+            HFL::SetColor(HFL::EColor::Green);
+            std::cout << " [3] "; HFL::SetColor(HFL::EColor::White); std::cout << "ATTACK\n";
+            HFL::SetColor(HFL::EColor::Green);
+            std::cout << " [4] "; HFL::SetColor(HFL::EColor::White); std::cout << "JUMP\n\n";
+            HFL::SetColor(HFL::EColor::Green);
+            std::cout << " [0] "; HFL::SetColor(HFL::EColor::White); std::cout << "CONTINUE\n\n";
 
             int Choice = HFL::GetValidMenuInput(4);
             if (Choice == 0) break;
 
-            // Handle Input - If choice is '2', this will block for 1.5s 
-            // and then return to Idle before the next loop iteration.
             MyPlayer.HandleInput(Choice);
         }
 
-        // --- STEP 4: CONCLUSION ---
+        // ======================== CONCLUSION ========================
         HFL::ClearScreen();
-        HFL::PrintHeader("Conclusion");
+        HFL::PrintHeader("CONCLUSION");
 
-        std::cout << "Summary of State Pattern:\n\n";
-        std::cout << "1. Encapsulation:\n";
-        std::cout << "   Walking logic doesn't 'pollute' the Idle code.\n\n";
+        HFL::PrintSection("ARCHITECTURE");
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "The implementation of the State Pattern confirms the following:\n\n";
 
-        std::cout << "2. Input Filtering:\n";
-        std::cout << "   The Attack state explicitly ignores movement inputs,\n";
-        std::cout << "   making the code much easier to reason about.\n\n";
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] ENCAPSULATED LOGIC:      ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The Walking logic doesn't 'pollute' the Idle code. Each state\n"
+            << "    is a clean, isolated class with its own responsibilities.\n";
 
-        std::cout << "3. Scalability:\n";
-        std::cout << "   To add 'Swimming', you just create a SwimState class\n";
-        std::cout << "   and add a transition from Walk -> Swim.\n\n";
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] EXPLICIT TRANSITIONS:    ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "State changes are intentional. The code tells a story of how\n"
+            << "    the character moves from one behavior to the next.\n";
 
-        std::cout << std::setw(40) << "End of Demo\n";
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] INPUT FILTERING:         ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Because the Attack state overrides HandleInput to do nothing,\n"
+            << "    we guarantee the player cannot move mid-swing.\n\n";
+
+        HFL::PrintSection("SUMMARY");
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "The State Pattern ensures that software is:\n\n";
+
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] MODULAR:   ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Logic is split into manageable, bite-sized objects.\n";
+
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] RELIABLE:  ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Illegal transitions are impossible if not defined in the state.\n";
+
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] SCALABLE:  ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Adding new behaviors (like 'Dead' or 'Swimming') requires zero\n"
+            << "    changes to the core Player class.\n\n";
+
+        HFL::SetColor(HFL::EColor::White);
         HFL::WaitForInput();
     }
 }
