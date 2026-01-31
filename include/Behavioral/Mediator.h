@@ -3,32 +3,37 @@
 #include "FunctionLibrary/HelperFunctionLibrary.h"
 
 // =========================================================================
-// BEHAVIORAL DESIGN PATTERNS: Mediator
+// BEHAVIORAL DESIGN PATTERN: Mediator
 // =========================================================================
 // "Define an object that encapsulates how a set of objects interact."
 //
 // THE GOAL:
 // Reduce chaotic dependencies between objects. Instead of objects talking 
 // directly to each other (Many-to-Many), they talk only to a central 
-// Mediator (Many-to-One). This promotes loose coupling.
+// Mediator (Many-to-One). This promotes loose coupling and simplifies
+// the maintenance of complex communication workflows.
+//
+// THE BENEFIT:
+// * Decoupling: Colleagues (Participants) don't need to know each other exist.
+// * Centralization: Transaction or communication logic is in one place.
+// * Reusability: Colleagues can be reused in different contexts because
+//   they aren't hardcoded to talk to specific external classes.
 //
 // THE EXAMPLE:
-// A Marketplace Trading System (Player vs. Merchant).
-// 1. The Colleague (Inventory): A 3x3 grid that holds items. Knows nothing 
-//    of the other inventory's existence.
-// 2. The Mediator (IMediator): The interface for communication.
-// 3. The Concrete Mediator (TradeMediator): The "Transaction Hub." It 
-//    validates gold, moves items between inventories.
-//
-// THE SCENARIO:
-// The Player wants to buy a Sword. If the Merchant inventory is clicked, 
-// the Mediator checks the Player's gold, removes the item from the Merchant,
-// and places it in the Player's bag.
+// [ItemSlot]: The Data. A simple container for item properties.
+// [Inventory]: The Colleague. A grid that holds items. It reports clicks
+//   to the mediator but has no logic for "buying" or "selling."
+// [TradeMediator]: The Hub. Orchestrates the exchange of items and gold.
+//   It acts as the referee between the Player and Merchant inventories.
 // =========================================================================
 
 namespace MED
 {
-    struct ItemSlot 
+    // =========================================================================
+    // THE DATA (The Item)
+    // ROLE: A simple pod representing an object in the market.
+    // =========================================================================
+    struct ItemSlot
     {
         std::string Icon = " . ";
         std::string Name = "Empty";
@@ -38,9 +43,11 @@ namespace MED
     class IMediator;
 
     // =========================================================================
-    // 1. THE COLLEAGUE (The Participant)
+    // THE COLLEAGUE (The Participant)
+    // ROLE: Manages local state (the grid) and notifies the Mediator of
+    // user interactions. It never communicates with other Inventories directly.
     // =========================================================================
-    class Inventory 
+    class Inventory
     {
     public:
         Inventory(IMediator* Manager, std::string Name);
@@ -57,31 +64,38 @@ namespace MED
         std::string GetOwnerName() const { return OwnerName; }
 
     private:
-        IMediator* Mediator;           // The Hub
+        IMediator* Mediator;           // The Transaction Hub
         std::vector<ItemSlot> Grid;
         std::string OwnerName;
     };
 
     // =========================================================================
-    // 2. THE MEDIATOR INTERFACE (The Protocol)
+    // THE MEDIATOR INTERFACE (The Protocol)
+    // ROLE: Defines the "Message Center" through which all Colleagues talk.
     // =========================================================================
-    class IMediator 
+    class IMediator
     {
     public:
         virtual ~IMediator() = default;
 
-        // This is the "Message Center" where Colleagues report actions
+        // This is the core contract where Colleagues report actions
         virtual void Notify(Inventory* Sender, int SlotIndex) = 0;
     };
 
+    // =========================================================================
+    // THE CONCRETE MEDIATOR (The Hub)
+    // ROLE: The High-Level Policy. It holds the reference to all colleagues
+    // and enforces the rules of the marketplace (Gold checks, space checks).
+    // =========================================================================
     class TradeMediator : public IMediator
     {
     public:
         TradeMediator();
 
+        // IMPLEMENTATION: Handle the logic for "What happens if a Merchant item is clicked?"
         void Notify(Inventory* Sender, int SlotIndex) override;
-        void RunDemo();
 
+        // Demo specific accessors
         int GetPlayerGold() const { return PlayerGold; }
         std::string GetLastMessage() const { return LastMessage; }
         std::shared_ptr<Inventory> GetPlayerInv() { return PlayerInv; }
@@ -96,5 +110,8 @@ namespace MED
         std::string LastMessage = "Welcome to the Market!";
     };
 
+    // =========================================================================
+    // DEMO ENTRY POINT
+    // =========================================================================
     void RunDemo();
 }
