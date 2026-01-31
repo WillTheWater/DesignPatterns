@@ -1,43 +1,42 @@
 #pragma once
 
 #include "FunctionLibrary/HelperFunctionLibrary.h"
-#include <memory>
-#include <string>
-#include <vector>
-#include <iostream>
 
 // =========================================================================
-// BEHAVIORAL DESIGN PATTERNS: Chain of Responsibility
+// BEHAVIORAL DESIGN PATTERN: Chain of Responsibility
 // =========================================================================
-// "Avoid coupling the sender of a request to its receiver by giving more 
-// than one object a chance to handle the request. Chain the receiving 
+// "Avoid coupling the sender of a request to its receiver by giving more 
+// than one object a chance to handle the request. Chain the receiving 
 // objects and pass the request along the chain until an object handles it."
 //
 // THE GOAL:
-// Instead of a massive "God Function" with hundreds of if-statements, we 
-// create an "Assembly Line" of specialized handlers. Each handler only 
-// cares about one specific task and passes the result to the next.
+// Instead of a massive "God Function" with hundreds of if-statements to 
+// calculate complex object properties, we create an "Assembly Line" of 
+// specialized handlers. Each handler performs one specific transformation 
+// and passes the object to the next link in the chain.
+//
+// THE BENEFIT:
+// * Clean Code: Eliminates deeply nested conditional logic (Loot Tables).
+// * Scalability: New features (like a 'Holiday Event' modifier) can be 
+//   inserted into the chain without modifying existing handlers.
+// * Reusability: Handlers are independent and can be reordered to create 
+//   entirely different item generation logic.
 //
 // THE EXAMPLE:
-// Action-RPG Loot Generator (Diablo-style).
-// 1. Request (LootItem): The object being built (Sword, Armor, etc.).
-// 2. Handler Interface (ItemHandler): The blueprint for all processing links.
-// 3. Concrete Handlers (BaseType, Quality, Rarity, Affix):
-//    - BaseType: Picks the item (Sword/Ring) and base stats.
-//    - Quality: Rolls for "Superior" or "Elite" (+5 bonus).
-//    - Rarity: Rolls for "Common", "Magic", or "Rare".
-//    - Affix: Adds random adjectives and stats based on Rarity.
-//
-// BENEFIT:
-// 1. Clean Code: No nested if-else nightmare for loot tables.
-// 2. Scalability: Want "Holiday Event" loot? Just drop a new link in the chain.
-// 3. Reusability: Handlers are independent and can be reordered easily.
+// [LootItem]: The Request. The object being built (Sword, Armor, etc.).
+// [ItemHandler]: The Interface. The blueprint for all processing links.
+// [Concrete Handlers]:
+//   - BaseTypeHandler: Selects the core item (e.g., "Greatsword").
+//   - QualityHandler: Applies quality multipliers (e.g., "Superior").
+//   - RarityHandler: Determines the tier (Common, Magic, Rare).
+//   - AffixHandler: Rolls for magical prefixes and suffixes.
 // =========================================================================
 
 namespace COR
 {
     // =========================================================================
-    // 1. DATA STRUCTURES
+    // DATA STRUCTURES (The Request)
+    // ROLE: The state object that travels through the "Assembly Line."
     // =========================================================================
     struct Affix
     {
@@ -45,15 +44,18 @@ namespace COR
         std::string Attribute;
     };
 
-    struct LootItem 
+    struct LootItem
     {
+        // Category Data
         std::string BaseType = "";
         std::string Rarity = "";
         std::string Quality = "";
 
+        // Core Combat Stats
         std::string MainStatName = "";
         int MainStatValue = 0;
 
+        // Magical Modifiers
         std::vector<Affix> Prefixes;
         std::vector<Affix> Suffixes;
 
@@ -61,9 +63,11 @@ namespace COR
     };
 
     // =========================================================================
-    // 2. THE HANDLER INTERFACE
+    // THE HANDLER INTERFACE
+    // ROLE: Defines the contract for all processing links and manages
+    // the pointer to the next handler in the sequence.
     // =========================================================================
-    class ItemHandler 
+    class ItemHandler
     {
     protected:
         std::shared_ptr<ItemHandler> NextHandler;
@@ -74,47 +78,56 @@ namespace COR
         // Link the next handler in the chain
         void SetNext(std::shared_ptr<ItemHandler> Next) { NextHandler = Next; }
 
-        // Core processing method
-        virtual void Handle(LootItem& Item) 
+        // Core processing method: Logic + Delegation
+        virtual void Handle(LootItem& Item)
         {
             if (NextHandler) NextHandler->Handle(Item);
         }
     };
 
     // =========================================================================
-    // 3. CONCRETE HANDLERS
+    // CONCRETE HANDLERS
+    // ROLE: Perform one specific task and then delegate to the next link.
     // =========================================================================
 
-    // Sets the base item type and initial stats
-    class BaseTypeHandler : public ItemHandler 
+    // ======================== BASETYPE HANDLER ========================
+    // Sets the base item identity and initial core stats.
+    class BaseTypeHandler : public ItemHandler
     {
     public:
         void Handle(LootItem& Item) override;
     };
 
-    // Rolls for "Superior" or "Elite" (+5 to base stats)
-    class QualityHandler : public ItemHandler 
+    // ======================== QUALITY HANDLER ========================
+    // Rolls for "Superior" or "Elite" (+5 to base stats).
+    class QualityHandler : public ItemHandler
     {
     public:
         void Handle(LootItem& Item) override;
     };
 
-    // Determines if the item is Common, Magic, or Rare
-    class RarityHandler : public ItemHandler 
+    // ======================== RARITY HANDLER ========================
+    // Determines if the item is Common, Magic, or Rare.
+    class RarityHandler : public ItemHandler
     {
     public:
         void Handle(LootItem& Item) override;
     };
 
-    // Adds Prefixes/Suffixes based on Rarity (Magic: 1 each, Rare: 2 each)
-    class AffixHandler : public ItemHandler 
+    // ======================== AFFIX HANDLER ========================
+    // Adds magical adjectives based on the Rarity determined previously.
+    class AffixHandler : public ItemHandler
     {
     public:
         void Handle(LootItem& Item) override;
+
     private:
         static std::unordered_map<std::string, std::string> PrePool;
         static std::unordered_map<std::string, std::string> SufPool;
     };
 
+    // =========================================================================
+    // DEMO IMPLEMENTATION
+    // =========================================================================
     void RunDemo();
 }

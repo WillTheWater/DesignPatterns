@@ -4,7 +4,9 @@ namespace COR
 {
     // =========================================================================
     // DATA IMPLEMENTATION
+    // ROLE: Handles the visual representation of the processed request.
     // =========================================================================
+
     void LootItem::Display() const
     {
         // 1. Determine Color based on Rarity
@@ -19,23 +21,27 @@ namespace COR
 
         // 3. Render Tooltip
         HFL::SetColor(RarityColor);
-        std::cout << "   " << FullName << "\n";
+        std::cout << "    " << FullName << "\n";
+
         HFL::SetColor(HFL::EColor::Gray);
-        std::cout << "   " << Quality << " " << BaseType << " (" << Rarity << ")\n";
+        std::cout << "    " << Quality << " " << BaseType << " (" << Rarity << ")\n";
 
-        // Main Stat
+        // Main Stat Display
         HFL::SetColor(HFL::EColor::White);
-        std::cout << "   - " << MainStatName << ": " << MainStatValue << "\n";
+        std::cout << "    - " << MainStatName << ": " << MainStatValue << "\n";
 
-        // Affix Attributes
-        HFL::SetColor(HFL::EColor::White);
-        for (const auto& p : Prefixes) std::cout << "   - " << p.Attribute << "\n";
-        for (const auto& s : Suffixes) std::cout << "   - " << s.Attribute << "\n";
+        // Affix Attributes (Magical Properties)
+        HFL::SetColor(HFL::EColor::Cyan);
+        for (const auto& p : Prefixes) std::cout << "    - " << p.Attribute << "\n";
+        for (const auto& s : Suffixes) std::cout << "    - " << s.Attribute << "\n";
 
         HFL::SetColor(HFL::EColor::White);
     }
 
-    // Affix Pools
+    // =========================================================================
+    // STATIC POOL INITIALIZATION
+    // =========================================================================
+
     std::unordered_map<std::string, std::string> AffixHandler::PrePool = {
          {"Fiery", "Adds 5-10 Fire Damage"},
          {"Glacial", "Chills enemies on hit"},
@@ -63,7 +69,8 @@ namespace COR
     };
 
     // =========================================================================
-    // HANDLER LOGIC
+    // HANDLER LOGIC (The Assembly Line Workers)
+    // ROLE: Each class modifies the item and delegates to the next link.
     // =========================================================================
 
     void BaseTypeHandler::Handle(LootItem& Item)
@@ -84,7 +91,6 @@ namespace COR
 
     void QualityHandler::Handle(LootItem& Item)
     {
-        // Using float for more granular percentage rolls
         float Roll = HFL::GetRandom<float>(0.0f, 100.0f);
 
         if (Roll <= 15.0f)
@@ -118,16 +124,17 @@ namespace COR
 
     void AffixHandler::Handle(LootItem& Item)
     {
+        // Determine how many magical properties to roll based on previous Rarity handler
         int Count = (Item.Rarity == "Magic") ? 1 : (Item.Rarity == "Rare") ? 2 : 0;
 
         for (int i = 0; i < Count; ++i)
         {
-            // Pick random Prefix from Map using modern random
+            // Pick random Prefix from Map
             auto itPre = PrePool.begin();
             std::advance(itPre, HFL::GetRandom<int>(0, static_cast<int>(PrePool.size()) - 1));
             Item.Prefixes.push_back({ itPre->first, itPre->second });
 
-            // Pick random Suffix from Map using modern random
+            // Pick random Suffix from Map
             auto itSuf = SufPool.begin();
             std::advance(itSuf, HFL::GetRandom<int>(0, static_cast<int>(SufPool.size()) - 1));
             Item.Suffixes.push_back({ itSuf->first, itSuf->second });
@@ -137,119 +144,206 @@ namespace COR
     }
 
     // =========================================================================
-    // DEMO IMPLEMENTATION: Chain of Responsibility
+    // DEMO IMPLEMENTATION
     // =========================================================================
+
     void RunDemo()
     {
         std::cin.clear();
         std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
-        // --- STEP 1: INTRODUCTION ---
+        // ======================== INTRODUCTION ========================
         HFL::ClearScreen();
-        HFL::PrintHeader("Chain of Responsibility Pattern");
+        HFL::PrintHeader("CHAIN OF RESPONSIBILITY");
 
-        std::cout << "Definition:\n";
-        std::cout << "Avoid coupling the sender of a request to its receiver by giving more\n";
-        std::cout << "than one object a chance to handle the request. Chain the receiving\n";
-        std::cout << "objects and pass the request along the chain.\n\n";
+        HFL::PrintSection("THE DEFINITION");
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "Avoid coupling the sender of a request to its receiver by giving more\n"
+            << "than one object a chance to handle the request. Chain the receiving\n"
+            << "objects and pass the request along the chain.\n\n";
 
-        std::cout << "In This Demo:\n";
-        std::cout << "It simulates an 'Item Assembly Line' (ARPG loot factory).\n";
-        std::cout << "A blank 'LootItem' object is passed through a sequence of handlers.\n";
-        std::cout << "Each handler modifies the item before passing it to the next link.\n";
+        HFL::PrintSection("THE GOAL");
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The Chain of Responsibility is about 'Decoupled Processing Chains'.\n"
+            << "It transforms a massive conditional block into a modular assembly line,\n"
+            << "where each link performs a specific transformation on a shared object\n"
+            << "before delegating to the next handler in the sequence.\n\n";
+
+        HFL::PrintSection("THE EXAMPLE");
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "This demonstration features an ARPG Loot Factory with four specialized links:\n\n";
+
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] BASETYPE HANDLER:   ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Selects the core item (Sword, Ring) and base stats.\n";
+
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] QUALITY HANDLER:    ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Rolls for 'Superior' or 'Elite' stat multipliers.\n";
+
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] RARITY HANDLER:     ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Determines the item tier (Common, Magic, or Rare).\n";
+
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] AFFIX HANDLER:      ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Adds magical prefixes/suffixes based on the rolled rarity.\n\n";
+
+        HFL::PrintSection("THE BENEFIT");
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] SINGLE RESPONSIBILITY: ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Each class handles exactly one part of the loot generation math.\n";
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] OPEN/CLOSED:           ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Add new loot rules (e.g. Set Items) by adding a link, not changing old code.\n";
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] DYNAMIC PIPELINES:     ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The order of operations can be swapped or truncated at runtime.\n";
 
         HFL::WaitForInput();
 
-        // --- STEP 2: THE ROLES ---
+        // ======================== THE ARCHITECTURE ========================
         HFL::ClearScreen();
-        HFL::PrintHeader("Step 1: The Roles");
+        HFL::PrintHeader("THE ARCHITECTURE");
 
-        std::cout << "1. The Context (LootItem):\n";
-        std::cout << "   - The object being built. It contains data but no logic.\n\n";
+        HFL::PrintSection("THE 'ASSEMBLY LINE'");
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "In a standard approach, loot generation is a fragile web of if-else logic.\n"
+            << "In this pattern, the 'LootItem' request travels through a pipeline where\n"
+            << "each handler can either process and pass, or terminate the chain.\n\n";
 
-        std::cout << "2. The Base Handler (ItemHandler):\n";
-        std::cout << "   - An interface that defines 'SetNext()' and 'Handle()'.\n";
-        std::cout << "   - It ensures every link in the chain knows who follows it.\n\n";
+        HFL::PrintSection("IMPLEMENTATION");
 
-        std::cout << "3. Concrete Handlers (Base, Quality, Rarity, Affix):\n";
-        std::cout << "   - Specialized workers. One picks the item type, one rolls rarity,\n";
-        std::cout << "     and one adds magical properties based on that rarity.\n";
+        // ======================== THE CONTEXT ========================
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] The Context (LootItem)\n";
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "    ROLE:           ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "A passive data structure representing the 'Request' being handled.\n";
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "    LIFECYCLE:      ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Modified cumulatively as it passes through each concrete link.\n\n";
 
+        // ======================== THE HANDLERS ========================
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] Concrete Handlers (The Links)\n";
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "    ROLE:           ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Autonomous processing units that manage their own logic and delegation.\n";
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "    DECOUPLING:     ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Links only know about the next interface, not the specific implementation.\n";
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "    ABSTRACTION:    ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The 'ItemHandler' base class automates the pointer delegation logic.\n\n";
+
+        HFL::SetColor(HFL::EColor::White);
         HFL::WaitForInput();
 
-
-
-        // ------------------------------------------------------------------------
-        // CONSTRUCTING THE CHAIN (The Assembly Line)
-        // ------------------------------------------------------------------------
-        // A shared_ptr to manage the lifetime of the handlers.
-        // By linking them together, it creates a unidirectional flow of data.
-        // ------------------------------------------------------------------------
+        // ======================== INITIALIZATION ========================
         auto Base = std::make_shared<BaseTypeHandler>();
         auto Quality = std::make_shared<QualityHandler>();
         auto Rarity = std::make_shared<RarityHandler>();
         auto Affixes = std::make_shared<AffixHandler>();
 
-        // Set the order of operations:
-        // Base -> Quality -> Rarity -> Affixes -> Null (End)
+        // Assembly Line: Base -> Quality -> Rarity -> Affixes
         Base->SetNext(Quality);
         Quality->SetNext(Rarity);
         Rarity->SetNext(Affixes);
-        // ------------------------------------------------------------------------
 
-        // --- STEP 3: INTERACTIVE LOOP ---
-        bool bRunning = true;
-        while (bRunning)
+        // ======================== GAME LOOP ========================
+        while (true)
         {
             HFL::ClearScreen();
-            HFL::PrintHeader("Loot Factory: Assembly Line");
+            HFL::PrintHeader("LOOT FACTORY");
 
-            std::cout << "1. Kill Monster\n";
-            std::cout << "0. Exit Demo\n\n";
+            HFL::PrintSection("MENU");
+            HFL::SetColor(HFL::EColor::Green);
+            std::cout << " [1] "; HFL::SetColor(HFL::EColor::White); std::cout << "KILL MONSTER\n";
+            HFL::SetColor(HFL::EColor::Green);
+            std::cout << " [0] "; HFL::SetColor(HFL::EColor::White); std::cout << "CONTINUE\n\n";
 
             int Choice = HFL::GetValidMenuInput(1);
             if (Choice == 0) break;
 
             HFL::ClearScreen();
-            HFL::PrintHeader("Loot Drop:");
+            HFL::PrintHeader("MONSTER SLAIN! DROPPING ITEMS...");
 
             for (int i = 0; i < 3; ++i)
             {
-                // Create a blank request (The "Context")
+                // 1. Create request
                 LootItem NewItem;
 
-                // Start the chain at the first link.
-                // The item will 'bubble' through the handlers automatically.
+                // 2. Start the chain
                 Base->Handle(NewItem);
 
-                // Resulting item is now fully formed
+                // 3. Display
                 NewItem.Display();
                 std::cout << "\n";
-                HFL::Wait(0.5f);
+                HFL::Wait(0.4f);
             }
 
             HFL::WaitForInput();
         }
 
-        // --- STEP 4: CONCLUSION ---
+        // ======================== CONCLUSION ========================
         HFL::ClearScreen();
-        HFL::PrintHeader("Conclusion");
+        HFL::PrintHeader("CONCLUSION");
 
-        std::cout << "Key Takeaways:\n\n";
+        HFL::PrintSection("ARCHITECTURE");
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "The implementation of the Chain of Responsibility confirms the following:\n\n";
 
-        std::cout << "1. Decoupling:\n";
-        std::cout << "   The Main loop only knows about the 'Base' handler.\n";
-        std::cout << "   It doesn't need to know that 'Affixes' or 'Rarity' even exist.\n\n";
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] DECOUPLED INVOCATION:    ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The Client only interacts with the first link in the chain.\n"
+            << "    It remains oblivious to the existence or count of subsequent handlers.\n";
 
-        std::cout << "2. Single Responsibility (SRP):\n";
-        std::cout << "   If we want to change the math for 'Quality', we only touch\n";
-        std::cout << "   the QualityHandler class. The rest of the chain remains safe.\n\n";
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] LOGICAL ISOLATION:       ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Each handler is a self-contained unit. 'Rarity' logic is physically\n"
+            << "    separated from 'Affix' logic, preventing 'God Function' bloat.\n";
 
-        std::cout << "3. The Power of Order:\n";
-        std::cout << "   We can re-order the chain at runtime. Want to roll Rarity BEFORE\n";
-        std::cout << "   Quality? Just change the 'SetNext()' calls.\n\n";
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] EXTENSIBLE PIPELINES:    ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Adding a 'SeasonPassHandler' or 'LegendaryRollHandler' requires zero\n"
+            << "    modification to the existing BaseType or Quality classes.\n\n";
 
-        std::cout << std::setw(45) << "End of Behavioral Demo\n";
+        HFL::PrintSection("SUMMARY");
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "The Chain of Responsibility Pattern ensures that software is:\n\n";
+
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] MODULAR:   ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Complex branching is replaced by a linear sequence of objects.\n";
+
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] ADAPTIVE:  ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The 'Assembly Line' can be re-wired at runtime to suit different game modes.\n";
+
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] MAINTAINABLE:";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Bugs are easily isolated to a specific handler class rather than a 500-line switch.\n\n";
+
+        HFL::SetColor(HFL::EColor::White);
         HFL::WaitForInput();
     }
 }
