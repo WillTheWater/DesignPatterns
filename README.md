@@ -1,88 +1,61 @@
-#  SOLID Principles & Design Patterns
-
+# SOLID Principles & Design Patterns
 **For C++ Game Development Reference**
 
-Work-in-progress reference project aimed at learning core software architecture concepts through **example-driven code and interactive console demos**.
-
-## This project demonstrates:
-
-- ✓ Practical, real-world implementations of each principle and pattern.
-- ✓ Detailed comments for reference.
-- ✓ Interactive console demos to *see* how each principle/pattern works.
-- ✓ Built using **CMake**, with **Windows / macOS / Linux** compatibility.
+A comprehensive, completed reference project dedicated to mastering software architecture through **example-driven code** and **interactive console simulations**. 
 
 ---
 
-## 🛠 Setup & Build Instructions
+## PROJECT STATUS: COMPLETED (29/29)
+This repository serves as a permanent technical library for core C++ architecture, specifically tailored for the performance and scalability requirements of game engines.
 
-- Double-click the **Setup-and-Build script** for Windows or macOS and Linux.
-The scripts automatically configure the project and build **both Debug and Release** versions.
-
----
-
-## Prerequisites
-
-Ensure the following tools are installed:
-
-- **CMake** (3.20+)  
-  https://cmake.org/download/
-- **A C++ compiler**
-  - **Windows**: Visual Studio.
-  - **macOS**: Xcode Command Line Tools.
-  - **Linux**: GCC or Clang.
+### Key Features:
+* **Interactive Demos:** Every pattern includes a standalone console simulation.
+* **Master Switch Logic:** Uses Facades and Interpreters to showcase real-world game systems (Save Systems, Quest Logic).
+* **Zero Header Pollution:** Implementations follow strict decoupling standards.
+* **Cross-Platform:** Built with CMake for Windows, macOS, and Linux.
 
 ---
 
-## Implementation Progress 29 of 29 (Completed)
+## SETUP & BUILD INSTRUCTIONS
 
-### SOLID Principles
-
-- Single Responsibility Principle
-- Open–Closed Principle
-- Liskov Substitution Principle
-- Interface Segregation Principle
-- Dependency Inversion Principle
-
-### Creational Design Patterns
-
-- Singleton
-- Factory Method
-- Abstract Factory
-- Prototype
-- Builder
-
-### Structural Design Patterns
-
-- Façade
-- Adapter
-- Proxy
-- Bridge
-- Composite
-- Decorator
-- Flyweight
-
-### Behavioral Design Patterns
-
-- Null Object
-- Strategy
-- Template Method
-- Iterator
-- Command
-- Observer
-- State
-- Chain of Responsibility
-- Mediator
-- Memento
-- Visitor
-- Interpreter
+1. **Automation:** Double-click the `Setup-and-Build` script for your specific OS.
+2. **Build Output:** The scripts automatically configure and build both **Debug** and **Release** binaries.
+3. **Prerequisites:** * **CMake** (3.20+)
+   * **C++ Compiler** (MSVC, GCC, or Clang)
 
 ---
 
-## Why This Project Exists
+## CURRICULUM OVERVIEW
 
-I'm building this project not to teach, but to learn.  
-Game development is my life's task. 
-**Mastering software architecture from the ground up** requires implementing every principle and pattern myself, step by step. Theory is easy, but **Mastery** takes practice, repetition, and building things with my own hands.
+### SOLID Principles (Core Foundations)
+* **Single Responsibility** (SRP)
+* **Open–Closed** (OCP)
+* **Liskov Substitution** (LSP)
+* **Interface Segregation** (ISP)
+* **Dependency Inversion** (DIP)
 
-> *“We are what we repeatedly do. Excellence, then, is not an act but a habit.”* — Aristotle
+### Creational Patterns (Object Lifecycle)
+* **Singleton** | **Factory Method** | **Abstract Factory** | **Prototype** | **Builder**
+
+### Structural Patterns (Composition & Relationships)
+* **Facade** (The Master Switch)
+* **Adapter** | **Proxy** | **Bridge**
+* **Composite** | **Decorator** | **Flyweight**
+
+### Behavioral Patterns (Communication & Logic)
+* **Interpreter** (Data-Driven Logic)
+* **Command** (Undo/Redo Actions)
+* **State** (FSM) | **Observer** | **Strategy**
+* **Template Method** | **Iterator** | **Memento**
+* **Chain of Responsibility** | **Mediator** | **Visitor**
+* **Null Object**
+
+---
+
+## WHY THIS PROJECT EXISTS
+
+Game development is my life's task. I built this project to move beyond theory and achieve **Mastery** through implementation. By building every pattern from the ground up, I have transformed abstract software principles into a practical toolkit for building complex, scalable game engines.
+
+> "We are what we repeatedly do. Excellence, then, is not an act but a habit." — Aristotle
+
 ---
