@@ -2,13 +2,17 @@
 
 namespace INT
 {
+    // =========================================================================
+    // THE RECURSIVE PARSER (The Tree Builder)
+    // ROLE: A factory function that maps JSON 'Type' keys to C++ Classes.
+    // This allows for infinite nesting without changing the core engine code.
+    // =========================================================================
     std::unique_ptr<Expression> ParseCondition(const json& data)
     {
-        // 1. Identify the 'Type' of the current JSON node
+        // Identify the 'Type' of the current JSON node
         std::string type = data.at("Type").get<std::string>();
 
-        // 2. TERMINAL EXPRESSIONS (The Leaves)
-        // These are the simple rules that don't have children.
+        // TERMINAL EXPRESSIONS (The Leaves)
         if (type == "Level") {
             return std::make_unique<LevelExpression>(data.at("Value").get<int>());
         }
@@ -25,9 +29,8 @@ namespace INT
             );
         }
 
-        // 3. NON-TERMINAL EXPRESSIONS (The Branches)
-        // This is where the magic of the Interpreter pattern happens.
-        // We call ParseCondition RECURSIVELY on the child nodes.
+        // NON-TERMINAL EXPRESSIONS (The Branches)
+        // Magic happens here: ParseCondition is called RECURSIVELY on child nodes.
         if (type == "AND") {
             return std::make_unique<AndExpression>(
                 ParseCondition(data.at("Left")),
@@ -46,12 +49,16 @@ namespace INT
             );
         }
 
-        return nullptr; // You could throw an error here if the Type is unknown
+        return nullptr;
     }
 
+    // =========================================================================
+    // CONTEXT IMPLEMENTATION
+    // =========================================================================
+
     void Context::AddKill(const std::string& Type)
-    { 
-        KillCount[Type]++; 
+    {
+        KillCount[Type]++;
     }
 
     void Context::MarkComplete(const std::string& QuestName)
@@ -65,88 +72,165 @@ namespace INT
         return (it != CompletedQuests.end()) && it->second;
     }
 
+    // =========================================================================
+    // DEMO IMPLEMENTATION
+    // =========================================================================
+
     void RunDemo()
     {
-
         std::cin.clear();
         std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
-        // --- STEP 1: INTRODUCTION ---
+        // ======================== INTRODUCTION ========================
         HFL::ClearScreen();
-        HFL::PrintHeader("Interpreter Pattern: Data-Driven Quest System");
+        HFL::PrintHeader("INTERPRETER DESIGN PATTERN");
 
-        std::cout << "Definition:\n";
-        std::cout << "Define a representation for its grammar along with an interpreter\n";
-        std::cout << "that uses the representation to interpret sentences in the language.\n\n";
+        HFL::PrintSection("THE DEFINITION");
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "Given a language, define a representation for its grammar along with an\n"
+            << "interpreter that uses the representation to interpret sentences in the language.\n\n";
 
-        std::cout << "In This Demo:\n";
-        std::cout << "The quest logic is in a json file 'Quest_Data.json'.\n";
-        std::cout << "The system functions as a mini-compiler that:\n";
-        std::cout << "1. Reads raw JSON data strings.\n";
-        std::cout << "2. Recursively parses them into an Expression Tree.\n";
-        std::cout << "3. Interprets that tree against the live Player Context.\n";
+        HFL::PrintSection("THE GOAL");
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The Interpreter Pattern is about 'Logic as Data'. It turns\n"
+            << "external strings or JSON files into a live 'Logic Tree'. This tree can\n"
+            << "poll the game state to evaluate complex, nested conditions without\n"
+            << "requiring the logic to be hard-coded into the engine.\n\n";
+
+        HFL::PrintSection("THE EXAMPLE");
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "This demonstration features a Data-Driven Quest System using four components:\n\n";
+
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] THE PLAYER CONTEXT:  ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The 'Database' containing live stats (Level, Gold, Kills).\n";
+
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] TERMINAL EXPRESSIONS:";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The Leaf nodes that check single facts (e.g., 'Gold > 100').\n";
+
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] NON-TERMINAL EXPR:   ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The Grammar (AND, OR, NOT) that joins nodes together.\n";
+
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] THE RECURSIVE PARSER:";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The 'Compiler' that reads JSON and assembles the object tree.\n\n";
+
+        HFL::PrintSection("THE BENEFIT");
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] DESIGNER FREEDOM: ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Designers can create new quest types by just editing a JSON file.\n";
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] RECURSIVE POWER:  ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Logic can be nested to any depth (e.g., A and (B or (not C))).\n";
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] READABILITY:      ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The logic tree can describe itself in plain English for the UI.\n";
 
         HFL::WaitForInput();
 
-        // --- STEP 2: THE ARCHITECTURE ---
+        // ======================== THE ARCHITECTURE ========================
         HFL::ClearScreen();
         HFL::PrintHeader("THE ARCHITECTURE");
 
-        std::cout << "1. The Context (Player State):\n";
-        std::cout << "   Global state: Level, Gold, Kill-Maps, and Completion-Maps.\n\n";
+        HFL::PrintSection("THE 'LOGIC TREE'");
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The system works by building a recursive tree structure. It asks\n"
+            << "the root node to 'Interpret', it triggers a chain reaction that filters\n"
+            << "down through the branches to the leaves, returning a final boolean.\n\n";
 
-        std::cout << "2. Terminal Expressions (Leaves):\n";
-        std::cout << "   The basic 'Facts' (Level, Gold, Kill, Quest-Done).\n\n";
+        HFL::PrintSection("IMPLEMENTATION");
 
-        std::cout << "3. Non-Terminal Expressions (Grammar):\n";
-        std::cout << "   Recursive operators: AND, OR, and the new NOT operator.\n\n";
+        // ======================== TERMINAL NODES ========================
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] Terminal Expressions (The Facts)\n";
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "    ROLE:           ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The end-points of the tree. They talk directly to the Context.\n";
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "    EVALUATION:     ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Simple comparisons (Level >= 10, HasItem == true).\n\n";
 
-        std::cout << "4. The Recursive Parser:\n";
-        std::cout << "   A factory function that maps JSON 'Type' keys to C++ Classes,\n";
-        std::cout << "   allowing for infinite nesting without changing code.\n";
+        // ======================== NON-TERMINAL NODES ========================
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] Non-Terminal Expressions (The Gates)\n";
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "    ROLE:           ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The logic gates. They do not know about the Context details.\n";
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "    RECURSION:      ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "They only care if their 'Child' expressions return true or false.\n\n";
 
+        // ======================== THE PARSER ========================
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] The Parser (The Factory)\n";
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "    ROLE:           ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Converts raw JSON 'Types' into actual C++ object instances.\n";
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "    ENCAPSULATION:  ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The game loop never sees the classes; it only sees the 'Expression' interface.\n\n";
+
+        HFL::SetColor(HFL::EColor::White);
         HFL::WaitForInput();
 
-        // --- STEP 3: THE SIMULATION ---
-        // 1. Load the JSON file
+        // ======================== INITIALIZATION ========================
         std::ifstream file("Quest_Data.json");
         if (!file.is_open()) {
-            std::cout << "Error: Quest_Data.json not found!\n";
+            HFL::SetColor(HFL::EColor::Red);
+            std::cout << "[Error] Quest_Data.json not found!\n";
             return;
         }
         json fullData = json::parse(file);
 
-        // 2. The Context (Player State)
         Context PlayerCtx;
-
-        // 3. Parse all quests from the JSON into a Map for easy access
         std::unordered_map<std::string, std::unique_ptr<Expression>> QuestSystem;
 
         for (auto& [key, value] : fullData["Quests"].items()) {
             QuestSystem[key] = ParseCondition(value);
         }
 
+        // ======================== GAME LOOP ========================
         while (true)
         {
             HFL::ClearScreen();
-            HFL::PrintHeader("Active Quests");
+            HFL::PrintHeader("QUEST LOG & PLAYER STATE");
 
             // --- PLAYER CONTEXT DISPLAY ---
-            std::cout << " [ PLAYER STATS ]\n";
-            std::cout << "  Level:         " << PlayerCtx.Level << "\n";
-            std::cout << "  Gold:          " << PlayerCtx.Gold << "\n";
-            std::cout << "  Goblins Slain: " << PlayerCtx.KillCount["Goblin"] << "\n";
-            std::cout << "--------------------------------------------------\n\n";
+            HFL::PrintSection("PLAYER STATS");
+            HFL::SetColor(HFL::EColor::White);
+            std::cout << "  Level:         "; HFL::SetColor(HFL::EColor::Green); std::cout << PlayerCtx.Level << "\n";
+            HFL::SetColor(HFL::EColor::White);
+            std::cout << "  Gold:          "; HFL::SetColor(HFL::EColor::Green); std::cout << PlayerCtx.Gold << "\n";
+            HFL::SetColor(HFL::EColor::White);
+            std::cout << "  Goblins Slain: "; HFL::SetColor(HFL::EColor::Green); std::cout << PlayerCtx.KillCount["Goblin"] << "\n\n";
 
             // --- EVALUATION SECTION ---
+            HFL::PrintSection("ACTIVE QUEST EVALUATION");
+
             auto DisplayQuest = [&](const std::string& ID, const std::string& Name) {
                 if (QuestSystem.find(ID) == QuestSystem.end()) return false;
 
                 bool bDone = PlayerCtx.IsQuestDone(ID);
                 bool bReady = QuestSystem[ID]->Interpret(PlayerCtx);
 
-                if (bDone) HFL::SetColor(HFL::EColor::BrightGreen);
-                else if (bReady) HFL::SetColor(HFL::EColor::BrightCyan);
+                if (bDone) HFL::SetColor(HFL::EColor::Green);
+                else if (bReady) HFL::SetColor(HFL::EColor::Cyan);
+                else HFL::SetColor(HFL::EColor::Gray);
 
                 std::cout << (bDone ? " [COMPLETED] " : (bReady ? " [READY!!]   " : " [LOCKED]    "))
                     << Name << "\n  Req: " << QuestSystem[ID]->ToString() << "\n\n";
@@ -159,27 +243,32 @@ namespace INT
             bool bCanGoblin = DisplayQuest("GoblinSlayer", "Goblin Slayer");
             bool bCanSecret = DisplayQuest("SecretQuest", "The Pacifist");
             bool bCanLegend = DisplayQuest("Legend", "Become a Legend");
+
             if (PlayerCtx.IsQuestDone("Legend"))
             {
                 HFL::ClearScreen();
                 HFL::PrintHeader("** CONGRATULATIONS **");
-                HFL::PrintHeader("You Finished Design Patterns!");
+                std::cout << "\n  You have mastered the Interpreter Pattern!\n";
                 HFL::WaitForInput();
                 break;
             }
 
             // --- INTERACTION ---
-            std::cout << "Actions:\n";
-            std::cout << " 1. Train\n";
-            std::cout << " 2. Fight Goblin\n";
-            std::cout << " 3. Loot\n";
+            HFL::PrintSection("COMMANDS");
+            HFL::SetColor(HFL::EColor::Green);
+            std::cout << " [1] "; HFL::SetColor(HFL::EColor::White); std::cout << "TRAIN\n";
+            HFL::SetColor(HFL::EColor::Green);
+            std::cout << " [2] "; HFL::SetColor(HFL::EColor::White); std::cout << "FIGHT\n";
+            HFL::SetColor(HFL::EColor::Green);
+            std::cout << " [3] "; HFL::SetColor(HFL::EColor::White); std::cout << "LOOT\n";
 
-            if (bCanIntro)  std::cout << " 4. Finish 'Basic Training'\n";
-            if (bCanGoblin) std::cout << " 5. Finish 'Goblin Slayer'\n";
-            if (bCanSecret) std::cout << " 6. Finish 'The Pacifist'\n";
-            if (bCanLegend) std::cout << " 7. Finish 'Become a Legend'\n";
+            if (bCanIntro) { HFL::SetColor(HFL::EColor::Cyan); std::cout << " [4] FINISH 'Basic Training'\n"; }
+            if (bCanGoblin) { HFL::SetColor(HFL::EColor::Cyan); std::cout << " [5] FINISH 'Goblin Slayer'\n"; }
+            if (bCanSecret) { HFL::SetColor(HFL::EColor::Cyan); std::cout << " [6] FINISH 'The Pacifist'\n"; }
+            if (bCanLegend) { HFL::SetColor(HFL::EColor::Cyan); std::cout << " [7] FINISH 'Become a Legend'\n"; }
 
-            std::cout << " 0. Continue\n\n";
+            HFL::SetColor(HFL::EColor::Green);
+            std::cout << "\n [0] "; HFL::SetColor(HFL::EColor::White); std::cout << "CONTINUE\n\n";
 
             int Choice = HFL::GetValidMenuInput(7);
             if (Choice == 0) break;
@@ -195,25 +284,53 @@ namespace INT
             }
         }
 
-        // --- STEP 4: CONCLUSION ---
+        // ======================== CONCLUSION ========================
         HFL::ClearScreen();
-        HFL::PrintHeader("Conclusion: The Data-Driven Interpreter");
+        HFL::PrintHeader("CONCLUSION");
 
-        std::cout << "1. Separation of Concerns:\n";
-        std::cout << "   Define the 'Grammar' (AND, OR, NOT),\n";
-        std::cout << "   while the JSON defines the 'Content'. With the ability to\n";
-        std::cout << "   change the game's rules without changing code.\n\n";
+        HFL::PrintSection("ARCHITECTURE");
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "The implementation of the Interpreter Pattern confirms the following:\n\n";
 
-        std::cout << "2. Recursion:\n";
-        std::cout << "   By using a Recursive Parser, a designer can nest logic\n";
-        std::cout << "   to any depth. An 'AND' can contain an 'OR' which contains\n";
-        std::cout << "   a 'NOT'. The code treats them all as simple Expressions.\n\n";
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] LOGICAL ABSTRACTION:   ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The Game Loop only interacts with the 'Expression' base class. It has\n"
+            << "    no knowledge of whether a quest is a simple check or a complex tree.\n";
 
-        std::cout << "3. Logical Completeness:\n";
-        std::cout << "   With the NOT expression, the quest system\n";
-        std::cout << "   can represent any boolean logic requirement.\n\n";
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] RECURSIVE EVALUATION:  ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "By nesting Non-Terminal nodes (AND, OR, NOT), it can represent any\n"
+            << "    boolean requirement without ever writing a new 'if' statement in C++.\n";
 
-        std::cout << std::setw(40) << "End of Demo\n";
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] DATA-DRIVEN WORKFLOW:  ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "The 'Grammar' is hard-coded, but the 'Sentences' (the quests) are pure\n"
+            << "    JSON. This allows for live logic updates without recompiling the game.\n\n";
+
+        HFL::PrintSection("SUMMARY");
+        HFL::SetColor(HFL::EColor::White);
+        std::cout << "The Interpreter Pattern ensures that software is:\n\n";
+
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] EXTENSIBLE: ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Adding a new condition (e.g. TimeLimitExpression) only requires one class.\n";
+
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] TRANSPARENT:";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "Using ToString(), the system can explain its requirements to players automatically.\n";
+
+        HFL::SetColor(HFL::EColor::Green);
+        std::cout << "[*] COMPLETE:   ";
+        HFL::SetColor(HFL::EColor::Gray);
+        std::cout << "With AND, OR, and NOT, the system is logically complete and can handle\n"
+            << "    any combination of game state variables.\n\n";
+
+        HFL::SetColor(HFL::EColor::White);
         HFL::WaitForInput();
     }
 }
