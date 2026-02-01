@@ -3,31 +3,40 @@
 #include "FunctionLibrary/HelperFunctionLibrary.h"
 
 // =========================================================================
-// BEHAVIORAL DESIGN PATTERNS: Memento (Delta Memento)
+// BEHAVIORAL DESIGN PATTERN: Memento (Delta Memento Variant)
 // =========================================================================
 // "Without violating encapsulation, capture and externalize an object's 
 // internal state so that the object can be restored to this state later."
 //
 // THE GOAL:
 // Provide a "save/restore" mechanism that doesn't expose the object's 
-// private variables. The Delta variant optimizes this by only storing
-// values that have changed from a known baseline.
+// private variables or internal structure. The Delta variant optimizes 
+// this by only storing values that have changed from a known baseline, 
+// saving memory and processing time.
+//
+// THE BENEFIT:
+// * Encapsulation: The Caretaker (storage) never sees the internal logic 
+//   of the Originator (player).
+// * Undo/Redo: Provides a clean way to revert state without complexity.
+// * Efficiency: Delta Mementos only track "dirty" fields, making them 
+//   lightweight for network synchronization or frequent autosaves.
 //
 // THE EXAMPLE:
-// A Level Transition System.
-// 1. The Originator (Player): Has private stats like Health and Buffs.
-// 2. The Memento (PlayerDelta): A package containing only changed stats.
-// 3. The Caretaker (PlayerInstance): Persistent object that carries the 
-//    memento across level loads while the Player object is destroyed.
-//
-// THE SCENARIO:
-// The player moves from Level 1 to Level 2. The Level 1 Player object is 
-// deleted. We capture a Delta Memento of their "volatile" state (damage 
-// taken, active buffs) and apply it to a brand new Player object in Level 2.
+// [PlayerState]: The Data Structure. Represents the full internal state.
+// [PlayerDeltaMemento]: The Snapshot. Contains std::optional fields to 
+//   store only the differences from the baseline state.
+// [Player]: The Originator. The active object that creates and consumes
+//   mementos to persist state across destruction boundaries.
+// [PlayerInstance]: The Caretaker. A persistent manager that holds the 
+//   memento while the main player object is destroyed or reloaded.
 // =========================================================================
 
 namespace MEM
 {
+    // =========================================================================
+    // THE INTERNAL STATE
+    // ROLE: A private data structure representing the full state of a player.
+    // =========================================================================
     struct PlayerState
     {
         int Health = 100;
@@ -38,9 +47,10 @@ namespace MEM
     };
 
     // =========================================================================
-    // 1. THE MEMENTO (The Snapshot)
+    // THE MEMENTO (The Snapshot)
+    // ROLE: An opaque package containing state data. Using std::optional 
+    // ensures it only stores and applies fields that have actually changed.
     // =========================================================================
-    // Uses std::optional to represent "No Change" from baseline.
     struct PlayerDeltaMemento
     {
         std::optional<int> Health;
@@ -53,7 +63,9 @@ namespace MEM
     };
 
     // =========================================================================
-    // 2. THE ORIGINATOR (The Object to Save)
+    // THE ORIGINATOR (The Object to Save)
+    // ROLE: The object that does the work. It knows how to "compress" its
+    // state into a memento and how to "reconstitute" itself from one.
     // =========================================================================
     class Player
     {
@@ -66,7 +78,7 @@ namespace MEM
         void Move(int DistanceX, int DistanceY);
         void SetBuff(std::string Icon);
 
-        // Memento Logic
+        // Memento Logic: The Originator is the only one who handles the Memento contents.
         std::unique_ptr<PlayerDeltaMemento> CaptureDelta(const PlayerState& Baseline);
         void ApplyDelta(const PlayerDeltaMemento& Delta);
 
@@ -77,7 +89,9 @@ namespace MEM
     };
 
     // =========================================================================
-    // 3. THE CARETAKER (The Manager)
+    // THE CARETAKER (The Manager)
+    // ROLE: Responsible for the memento's safekeeping. It never operates on
+    // or even looks inside the memento; it simply holds it.
     // =========================================================================
     class PlayerInstance
     {
@@ -90,5 +104,8 @@ namespace MEM
         std::unique_ptr<PlayerDeltaMemento> SavedDelta;
     };
 
+    // =========================================================================
+    // DEMO IMPLEMENTATION
+    // =========================================================================
     void RunDemo();
 }
