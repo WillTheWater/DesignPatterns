@@ -73,8 +73,9 @@ namespace FTM
 
         // THE FACTORY METHOD:
         // Derived factories will override this to return specific concretions.
-        // Returns 'Enemy*' so the caller stays decoupled from specific types.
-        virtual Enemy* CreateEnemy(int TypeID) = 0;
+        // Returns 'std::unique_ptr<Enemy>' so ownership is transferred to the caller,
+        // eliminating manual memory management and preventing leaks.
+        virtual std::unique_ptr<Enemy> CreateEnemy(int TypeID) = 0;
     };
 
     // =========================================================================
@@ -86,14 +87,14 @@ namespace FTM
     class MeleeFactory : public IEnemyFactory
     {
     public:
-        Enemy* CreateEnemy(int TypeID) override;
+        std::unique_ptr<Enemy> CreateEnemy(int TypeID) override;
     };
 
     // Handles production of Ranged units based on a TypeID.
     class RangedFactory : public IEnemyFactory
     {
     public:
-        Enemy* CreateEnemy(int TypeID) override;
+        std::unique_ptr<Enemy> CreateEnemy(int TypeID) override;
     };
 
     // =========================================================================

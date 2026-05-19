@@ -31,7 +31,7 @@ namespace ISP
     void MainMenuTheme::Play()
     {
         bIsPlaying = true;
-        std::cout << " >> MUSIC: Bgins playing\n";
+        std::cout << " >> MUSIC: Begins playing\n";
     }
 
     void MainMenuTheme::Stop()
@@ -168,7 +168,7 @@ namespace ISP
         HFL::SetColor(HFL::EColor::White);
         std::cout << "    CONSTRAINT:     ";
         HFL::SetColor(HFL::EColor::Gray);
-        std::cout << "No looping logic—SFX are inherently finite.\n\n";
+        std::cout << "No looping logicï¿½SFX are inherently finite.\n\n";
 
         // ======================== INTERFACE 2 ========================
         HFL::SetColor(HFL::EColor::Green);
@@ -184,7 +184,7 @@ namespace ISP
         HFL::SetColor(HFL::EColor::White);
         std::cout << "    CONSTRAINT:     ";
         HFL::SetColor(HFL::EColor::Gray);
-        std::cout << "No 3D positioning—music is usually global/2D.\n\n";
+        std::cout << "No 3D positioningï¿½music is usually global/2D.\n\n";
 
         HFL::SetColor(HFL::EColor::White);
         HFL::WaitForInput();

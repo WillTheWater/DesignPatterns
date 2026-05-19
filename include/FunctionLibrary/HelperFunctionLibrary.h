@@ -53,21 +53,27 @@ namespace HFL
     void WaitDots(float Seconds);
 
     // Random number generator std::random
-    static std::random_device rd;
-    static std::mt19937 gen(rd());
-    
+    // NOTE: The generator is wrapped in an inline function to ensure a single
+    //       instance across all translation units, avoiding ODR violations.
+    inline std::mt19937& GetGenerator()
+    {
+        static std::random_device rd;
+        static std::mt19937 gen(rd());
+        return gen;
+    }
+
     template <typename T>
     T GetRandom(T Min, T Max)
     {
-        if constexpr (std::is_floating_point_v<T>) 
+        if constexpr (std::is_floating_point_v<T>)
         {
             std::uniform_real_distribution<T> dis(Min, Max);
-            return dis(gen);
+            return dis(GetGenerator());
         }
-        else 
+        else
         {
             std::uniform_int_distribution<T> dis(Min, Max);
-            return dis(gen);
+            return dis(GetGenerator());
         }
     }
 }

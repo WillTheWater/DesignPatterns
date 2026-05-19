@@ -87,7 +87,6 @@ namespace HFL
                 std::cout << "Invalid selection.\n";
             }
         }
-        SetColor(EColor::White);
     }
 
     void ClearScreen()
@@ -104,7 +103,10 @@ namespace HFL
         SetColor(EColor::Magenta);
         std::cout << "\n[Press Enter to continue...]";
         std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-        if (std::cin.peek() == '\n') std::cin.get();
+        if (std::cin.gcount() == 0 && std::cin.eof())
+        {
+            std::cin.clear();
+        }
     }
 
     void PrintHeader(const std::string& Title)

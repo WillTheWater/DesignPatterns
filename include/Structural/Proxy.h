@@ -39,6 +39,10 @@ namespace PRX
 
         virtual int GetWidth() = 0;
         virtual int GetHeight() = 0;
+
+        // STATE QUERY: Returns true if the real subject is loaded in memory.
+        // The Proxy overrides this to report its lazy-loading status.
+        virtual bool IsLoaded() const { return true; }
     };
 
     // =========================================================================

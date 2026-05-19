@@ -226,8 +226,7 @@ namespace PRX
                 std::cout << " ";
                 for (int i = 0; i < (int)AssetLibrary.size(); ++i)
                 {
-                    auto* P = static_cast<RemoteTextureProxy*>(AssetLibrary[i].get());
-                    if (P->IsLoaded())
+                    if (AssetLibrary[i]->IsLoaded())
                     {
                         HFL::SetColor(HFL::EColor::Green);
                         std::cout << "[REAL] ";

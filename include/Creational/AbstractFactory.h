@@ -73,10 +73,10 @@ namespace AFT
     public:
         virtual ~IBiomeNPCFactory() = default;
 
-        virtual INPC* CreateNPC() = 0;
-        virtual ICombatBehavior* CreateCombat() = 0;
-        virtual IAIBehavior* CreateBehavior() = 0;
-        virtual ILootTable* CreateLootTable() = 0;
+        virtual std::unique_ptr<INPC> CreateNPC() = 0;
+        virtual std::unique_ptr<ICombatBehavior> CreateCombat() = 0;
+        virtual std::unique_ptr<IAIBehavior> CreateBehavior() = 0;
+        virtual std::unique_ptr<ILootTable> CreateLootTable() = 0;
     };
 
     // =========================================================================
@@ -171,28 +171,28 @@ namespace AFT
     class ForestBiomeFactory : public IBiomeNPCFactory
     {
     public:
-        INPC* CreateNPC() override;
-        ICombatBehavior* CreateCombat() override;
-        IAIBehavior* CreateBehavior() override;
-        ILootTable* CreateLootTable() override;
+        std::unique_ptr<INPC> CreateNPC() override;
+        std::unique_ptr<ICombatBehavior> CreateCombat() override;
+        std::unique_ptr<IAIBehavior> CreateBehavior() override;
+        std::unique_ptr<ILootTable> CreateLootTable() override;
     };
 
     class DesertBiomeFactory : public IBiomeNPCFactory
     {
     public:
-        INPC* CreateNPC() override;
-        ICombatBehavior* CreateCombat() override;
-        IAIBehavior* CreateBehavior() override;
-        ILootTable* CreateLootTable() override;
+        std::unique_ptr<INPC> CreateNPC() override;
+        std::unique_ptr<ICombatBehavior> CreateCombat() override;
+        std::unique_ptr<IAIBehavior> CreateBehavior() override;
+        std::unique_ptr<ILootTable> CreateLootTable() override;
     };
 
     class SwampBiomeFactory : public IBiomeNPCFactory
     {
     public:
-        INPC* CreateNPC() override;
-        ICombatBehavior* CreateCombat() override;
-        IAIBehavior* CreateBehavior() override;
-        ILootTable* CreateLootTable() override;
+        std::unique_ptr<INPC> CreateNPC() override;
+        std::unique_ptr<ICombatBehavior> CreateCombat() override;
+        std::unique_ptr<IAIBehavior> CreateBehavior() override;
+        std::unique_ptr<ILootTable> CreateLootTable() override;
     };
 
     // =========================================================================

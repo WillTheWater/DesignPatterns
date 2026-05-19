@@ -6,16 +6,16 @@ namespace FTM
     // MELEE FACTORY
     // ROLE: Handles instantiation of physical, close-quarters combatants.
     // =========================================================================
-    Enemy* MeleeFactory::CreateEnemy(int TypeID)
+    std::unique_ptr<Enemy> MeleeFactory::CreateEnemy(int TypeID)
     {
         switch (TypeID)
         {
         case 1:
             std::cout << "[MeleeFactory] Creating a Skeleton.\n";
-            return new Skeleton();
+            return std::make_unique<Skeleton>();
         case 2:
             std::cout << "[MeleeFactory] Creating a Golem.\n";
-            return new Golem();
+            return std::make_unique<Golem>();
         default:
             return nullptr;
         }
@@ -25,16 +25,16 @@ namespace FTM
     // RANGED FACTORY
     // ROLE: Handles instantiation of magical or projectile-based combatants.
     // =========================================================================
-    Enemy* RangedFactory::CreateEnemy(int TypeID)
+    std::unique_ptr<Enemy> RangedFactory::CreateEnemy(int TypeID)
     {
         switch (TypeID)
         {
         case 1:
             std::cout << "[RangedFactory] Creating a Skeleton Mage.\n";
-            return new SkeletonMage();
+            return std::make_unique<SkeletonMage>();
         case 2:
             std::cout << "[RangedFactory] Creating a Skeleton Archer.\n";
-            return new SkeletonArcher();
+            return std::make_unique<SkeletonArcher>();
         default:
             return nullptr;
         }
@@ -54,11 +54,10 @@ namespace FTM
 
         for (int i = 1; i <= 2; ++i)
         {
-            Enemy* NewEnemy = CurrentFactory->CreateEnemy(i);
+            auto NewEnemy = CurrentFactory->CreateEnemy(i);
             if (NewEnemy)
             {
                 NewEnemy->Attack();
-                delete NewEnemy;
             }
         }
         std::cout << "---------------------------------------------------\n";
@@ -190,7 +189,7 @@ namespace FTM
 
                 HFL::Wait(0.4f);
 
-                Enemy* NewEnemy = CurrentFactory->CreateEnemy(RandomSubtype);
+                auto NewEnemy = CurrentFactory->CreateEnemy(RandomSubtype);
                 if (NewEnemy)
                 {
                     TotalSpawned++;
@@ -205,8 +204,6 @@ namespace FTM
                         if (RandomSubtype == 1) Mages++;
                         else Archers++;
                     }
-
-                    delete NewEnemy;
                 }
             }
 

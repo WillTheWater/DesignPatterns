@@ -45,9 +45,10 @@ namespace PRO
         Zombie(std::string Name, int Health);
         virtual ~Zombie() = default;
 
-        // THE CORE METHOD: Returns a copy of itself.
-        // This utilizes 'Co-variant Return Types' in derived classes.
-        virtual Zombie* Clone() const = 0;
+        // THE CORE METHOD: Returns a unique_ptr-wrapped copy of itself.
+        // Using std::unique_ptr ensures automatic memory management and
+        // aligns with modern C++ ownership semantics across the codebase.
+        virtual std::unique_ptr<Zombie> Clone() const = 0;
 
         virtual void Attack() const;
         std::string GetName() const { return Name; }
@@ -70,7 +71,7 @@ namespace PRO
     {
     public:
         Crawler();
-        Crawler* Clone() const override; // Covariant return
+        std::unique_ptr<Zombie> Clone() const override;
         void Attack() const override;
     };
 
@@ -79,7 +80,7 @@ namespace PRO
     {
     public:
         Walker();
-        Walker* Clone() const override;
+        std::unique_ptr<Zombie> Clone() const override;
         void Attack() const override;
     };
 
@@ -88,7 +89,7 @@ namespace PRO
     {
     public:
         Bloater();
-        Bloater* Clone() const override;
+        std::unique_ptr<Zombie> Clone() const override;
         void Attack() const override;
     };
 

@@ -25,12 +25,12 @@ namespace PRO
     // ======================== CRAWLER ========================
     Crawler::Crawler() : Zombie("Crawler", 20) {}
 
-    Crawler* Crawler::Clone() const
+    std::unique_ptr<Zombie> Crawler::Clone() const
     {
         // DEEP COPY via Copy Constructor:
-        // 'new Crawler(*this)' allocates new memory and stamps the Prototype's
+        // std::make_unique allocates new memory and stamps the Prototype's
         // current state (Name/Health) into the new object instantly.
-        return new Crawler(*this);
+        return std::make_unique<Crawler>(*this);
     }
 
     void Crawler::Attack() const { std::cout << "   *Sprints on all fours and bites!*\n"; }
@@ -38,14 +38,14 @@ namespace PRO
     // ======================== WALKER ========================
     Walker::Walker() : Zombie("Walker", 100) {}
 
-    Walker* Walker::Clone() const { return new Walker(*this); }
+    std::unique_ptr<Zombie> Walker::Clone() const { return std::make_unique<Walker>(*this); }
 
     void Walker::Attack() const { std::cout << "   *Walks slowly but relentlessly...*\n"; }
 
     // ======================== BLOATER ========================
     Bloater::Bloater() : Zombie("Bloater", 300) {}
 
-    Bloater* Bloater::Clone() const { return new Bloater(*this); }
+    std::unique_ptr<Zombie> Bloater::Clone() const { return std::make_unique<Bloater>(*this); }
 
     void Bloater::Attack() const { std::cout << "   *Slams into the ground, causing a gas cloud!*\n"; }
 
@@ -224,10 +224,10 @@ namespace PRO
 
                 for (int i = 0; i < FinalAmount; ++i)
                 {
-                    // THE CORE ACTION: Copying the RAM of the Master Prototype
-                    // Wraping the raw pointer from Clone() into a unique_ptr
-                    // ensures the memory is freed automatically when the vector is destroyed.
-                    Horde.push_back(std::unique_ptr<Zombie>(Prototype->Clone()));
+                    // THE CORE ACTION: Copying the RAM of the Master Prototype.
+                    // Clone() returns a unique_ptr, so ownership transfers cleanly
+                    // into the vector without any raw pointer intermediates.
+                    Horde.push_back(Prototype->Clone());
                 }
 
                 if (Choice == 1) CrawlerCount += FinalAmount;

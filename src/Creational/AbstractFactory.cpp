@@ -28,22 +28,22 @@ namespace AFT
     // =========================================================================
 
     // ======================== FOREST BIOME FACTORY ========================
-    INPC* ForestBiomeFactory::CreateNPC() { return new ForestNPC(); }
-    ICombatBehavior* ForestBiomeFactory::CreateCombat() { return new ForestCombat(); }
-    IAIBehavior* ForestBiomeFactory::CreateBehavior() { return new ForestBehavior(); }
-    ILootTable* ForestBiomeFactory::CreateLootTable() { return new ForestLoot(); }
+    std::unique_ptr<INPC> ForestBiomeFactory::CreateNPC() { return std::make_unique<ForestNPC>(); }
+    std::unique_ptr<ICombatBehavior> ForestBiomeFactory::CreateCombat() { return std::make_unique<ForestCombat>(); }
+    std::unique_ptr<IAIBehavior> ForestBiomeFactory::CreateBehavior() { return std::make_unique<ForestBehavior>(); }
+    std::unique_ptr<ILootTable> ForestBiomeFactory::CreateLootTable() { return std::make_unique<ForestLoot>(); }
 
     // ======================== DESERT BIOME FACTORY ========================
-    INPC* DesertBiomeFactory::CreateNPC() { return new DesertNPC(); }
-    ICombatBehavior* DesertBiomeFactory::CreateCombat() { return new DesertCombat(); }
-    IAIBehavior* DesertBiomeFactory::CreateBehavior() { return new DesertBehavior(); }
-    ILootTable* DesertBiomeFactory::CreateLootTable() { return new DesertLoot(); }
+    std::unique_ptr<INPC> DesertBiomeFactory::CreateNPC() { return std::make_unique<DesertNPC>(); }
+    std::unique_ptr<ICombatBehavior> DesertBiomeFactory::CreateCombat() { return std::make_unique<DesertCombat>(); }
+    std::unique_ptr<IAIBehavior> DesertBiomeFactory::CreateBehavior() { return std::make_unique<DesertBehavior>(); }
+    std::unique_ptr<ILootTable> DesertBiomeFactory::CreateLootTable() { return std::make_unique<DesertLoot>(); }
 
     // ======================== SWAMP BIOME FACTORY ========================
-    INPC* SwampBiomeFactory::CreateNPC() { return new SwampNPC(); }
-    ICombatBehavior* SwampBiomeFactory::CreateCombat() { return new SwampCombat(); }
-    IAIBehavior* SwampBiomeFactory::CreateBehavior() { return new SwampBehavior(); }
-    ILootTable* SwampBiomeFactory::CreateLootTable() { return new SwampLoot(); }
+    std::unique_ptr<INPC> SwampBiomeFactory::CreateNPC() { return std::make_unique<SwampNPC>(); }
+    std::unique_ptr<ICombatBehavior> SwampBiomeFactory::CreateCombat() { return std::make_unique<SwampCombat>(); }
+    std::unique_ptr<IAIBehavior> SwampBiomeFactory::CreateBehavior() { return std::make_unique<SwampBehavior>(); }
+    std::unique_ptr<ILootTable> SwampBiomeFactory::CreateLootTable() { return std::make_unique<SwampLoot>(); }
 
     // =========================================================================
     // CLIENT IMPLEMENTATION: NPC SPAWNER
@@ -59,10 +59,10 @@ namespace AFT
         }
 
         // The client creates multiple related objects without knowing their concrete types.
-        INPC* NewNPC = CurrentFactory->CreateNPC();
-        IAIBehavior* AI = CurrentFactory->CreateBehavior();
-        ICombatBehavior* Combat = CurrentFactory->CreateCombat();
-        ILootTable* Loot = CurrentFactory->CreateLootTable();
+        auto NewNPC = CurrentFactory->CreateNPC();
+        auto AI = CurrentFactory->CreateBehavior();
+        auto Combat = CurrentFactory->CreateCombat();
+        auto Loot = CurrentFactory->CreateLootTable();
 
         if (NewNPC)
         {
@@ -75,12 +75,6 @@ namespace AFT
 
             std::cout << "\n>> [Action] You defeat the " << NewNPC->GetName() << "!\n";
             Loot->DropLoot();
-
-            // Cleanup local production
-            delete NewNPC;
-            delete AI;
-            delete Combat;
-            delete Loot;
         }
     }
 

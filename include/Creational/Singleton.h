@@ -96,6 +96,77 @@ namespace SGT
     };
 
     // =========================================================================
+    // TEMPLATE SPECIALIZATION IMPLEMENTATIONS
+    // ROLE: Custom logic for different asset types using the same function name.
+    // NOTE: These are defined inline in the header to ensure visibility across
+    //       all translation units. Placing them in a .cpp file would cause a
+    //       linker error when the template is instantiated in other files.
+    // =========================================================================
+
+    // --- SPECIALIZATION 1: TEXTURES ---
+    template <>
+    inline void AssetManager::LoadAsset<Texture>(const std::string& AssetPath)
+    {
+        std::cout << ">> [Manager] Routing request to Texture Cache...\n";
+
+        auto It = TextureCache.find(AssetPath);
+        if (It != TextureCache.end())
+        {
+            It->second++; // Increment Reference Count
+            std::cout << "   [Cache Hit] Texture '" << AssetPath << "' found.\n";
+            std::cout << "   [Status] Reference Count updated to: " << It->second << "\n";
+        }
+        else
+        {
+            std::cout << "   [Cache Miss] Loading Texture '" << AssetPath << "' from Disk...\n";
+            TextureCache[AssetPath] = 1;
+            std::cout << "   [Status] Asset Registered in Texture Cache.\n";
+        }
+    }
+
+    // --- SPECIALIZATION 2: SOUNDS ---
+    template <>
+    inline void AssetManager::LoadAsset<Sound>(const std::string& AssetPath)
+    {
+        std::cout << ">> [Manager] Routing request to Sound Cache...\n";
+
+        auto It = SoundCache.find(AssetPath);
+        if (It != SoundCache.end())
+        {
+            It->second++;
+            std::cout << "   [Cache Hit] Sound '" << AssetPath << "' found.\n";
+            std::cout << "   [Status] Reference Count updated to: " << It->second << "\n";
+        }
+        else
+        {
+            std::cout << "   [Cache Miss] Loading Sound '" << AssetPath << "' from Disk...\n";
+            SoundCache[AssetPath] = 1;
+            std::cout << "   [Status] Asset Registered in Sound Cache.\n";
+        }
+    }
+
+    // --- SPECIALIZATION 3: FONTS ---
+    template <>
+    inline void AssetManager::LoadAsset<Font>(const std::string& AssetPath)
+    {
+        std::cout << ">> [Manager] Routing request to Font Cache...\n";
+
+        auto It = FontCache.find(AssetPath);
+        if (It != FontCache.end())
+        {
+            It->second++;
+            std::cout << "   [Cache Hit] Font '" << AssetPath << "' found.\n";
+            std::cout << "   [Status] Reference Count updated to: " << It->second << "\n";
+        }
+        else
+        {
+            std::cout << "   [Cache Miss] Loading Font '" << AssetPath << "' from Disk...\n";
+            FontCache[AssetPath] = 1;
+            std::cout << "   [Status] Asset Registered in Font Cache.\n";
+        }
+    }
+
+    // =========================================================================
     // DEMO IMPLEMENTATION
     // =========================================================================
     void RunDemo();
